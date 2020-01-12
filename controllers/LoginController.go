@@ -3,7 +3,6 @@ package controllers
 import (
 	"NTOJ/models"
 	"github.com/astaxie/beego"
-	"github.com/jinzhu/gorm"
 )
 
 type LoginController struct {
@@ -16,10 +15,7 @@ func (this *LoginController) Get() {
 
 func (this *LoginController) Post() {
 	this.TplName = "login.html"
-	DB, er := gorm.Open("sqlite3", "test.db")
-	if er != nil {
-		panic("Failed to connect database")
-	}
+	DB := models.GetDatabase()
 	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
@@ -27,6 +23,8 @@ func (this *LoginController) Post() {
 	if !DB.Where("Email = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
 		if loginPass == user.Password {
 			this.Data["loginReturnData"] = "logged in!"
+			this.SetSession("LST", models.GeneToken(user.Name))
+			this.SetSession("UN", user.Name)
 		} else {
 			this.Data["loginReturnData"] = "login failed!!"
 		}

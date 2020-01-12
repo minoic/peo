@@ -3,7 +3,6 @@ package controllers
 import (
 	"NTOJ/models"
 	"github.com/astaxie/beego"
-	"github.com/jinzhu/gorm"
 )
 
 type RegController struct {
@@ -35,10 +34,7 @@ func (this *RegController) Post() {
 		Email:    registerEmail,
 		Password: registerPassword,
 	}
-	DB, er := gorm.Open("sqlite3", "test.db")
-	if er != nil {
-		panic("Failed to connect database")
-	}
+	DB := models.GetDatabase()
 	defer DB.Close()
 	DB.Create(&newUser)
 	var tmp models.User
