@@ -1,7 +1,7 @@
 package main
 
 import (
-	"NTOJ/controllers"
+	"NTPE/controllers"
 	"github.com/astaxie/beego"
 )
 
@@ -14,6 +14,6 @@ func main() {
 	beego.Router("/", &controllers.IndexController{})
 	beego.Router("/reg", &controllers.RegController{})
 	beego.Router("/login", &controllers.LoginController{})
+	beego.Router("/pe-admin-settings", &controllers.PEAdminSettingsController{})
 	beego.Run()
-
 }

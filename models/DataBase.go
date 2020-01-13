@@ -11,6 +11,7 @@ type User struct {
 	Name     string
 	Email    string
 	Password string
+	IsAdmin  bool
 }
 
 type WareKey struct {
@@ -20,19 +21,26 @@ type WareKey struct {
 	Exp    time.Time
 }
 
+type PEAdminSetting struct {
+	gorm.Model
+	Key   string
+	Value string
+}
+
 func init() {
-	DB, err := gorm.Open("sqlite3", "test.db")
+	DB, err := gorm.Open("sqlite3", "sqlite3.db")
 	if err != nil {
 		panic(err.Error())
 	}
 	defer DB.Close()
 	DB.AutoMigrate(&User{})
 	DB.AutoMigrate(&WareKey{})
+	DB.AutoMigrate(&PEAdminSetting{})
 	return
 }
 
 func GetDatabase() *gorm.DB {
-	DB, err := gorm.Open("sqlite3", "test.db")
+	DB, err := gorm.Open("sqlite3", "sqlite3.db")
 	if err != nil {
 		panic(err.Error())
 	}

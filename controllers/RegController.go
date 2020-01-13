@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"NTOJ/models"
+	"NTPE/models"
 	"github.com/astaxie/beego"
 )
 
