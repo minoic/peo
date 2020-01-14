@@ -8,10 +8,11 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string
-	Email    string
-	Password string
-	IsAdmin  bool
+	Name       string
+	Email      string
+	Password   string
+	IsAdmin    bool
+	externalID int
 }
 
 type WareKey struct {
@@ -27,15 +28,31 @@ type PEAdminSetting struct {
 	Value string
 }
 
+type ProductSpec struct {
+	gorm.Model
+	Memory            int
+	Cpu               int
+	Swap              int
+	Disk              int
+	Io                int
+	Nest              int
+	Egg               int
+	Pack              int
+	StartOnCompletion bool
+	Environment       string
+	OomDisabled       bool
+	DockerImage       string
+	ValidDuration     time.Duration
+	Node              int
+}
+
 func init() {
 	DB, err := gorm.Open("sqlite3", "sqlite3.db")
 	if err != nil {
 		panic(err.Error())
 	}
 	defer DB.Close()
-	DB.AutoMigrate(&User{})
-	DB.AutoMigrate(&WareKey{})
-	DB.AutoMigrate(&PEAdminSetting{})
+	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &ProductSpec{})
 	return
 }
 

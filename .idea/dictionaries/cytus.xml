@@ -2,7 +2,9 @@
   <dictionary name="cytus">
     <words>
       <w>algo</w>
+      <w>beego</w>
       <w>gethostname</w>
+      <w>gorm</w>
       <w>islogged</w>
       <w>lstoken</w>
       <w>nightgod</w>
