@@ -10,11 +10,11 @@ type LoginController struct {
 }
 
 func (this *LoginController) Get() {
-	this.TplName = "login.html"
+	this.TplName = "Login.html"
 }
 
 func (this *LoginController) Post() {
-	this.TplName = "login.html"
+	this.TplName = "Login.html"
 	DB := models.GetDatabase()
 	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")

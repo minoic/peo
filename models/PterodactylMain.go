@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"github.com/astaxie/beego"
 	"io/ioutil"
 	"net/http"
@@ -42,6 +43,52 @@ type PterodactylEgg struct {
 	StartUp     string    `json:"startup"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type PterodactylNode struct {
+	Id                 int       `json:"id"`
+	Public             bool      `json:"public"`
+	Name               string    `json:"name"`
+	Description        string    `json:"description"`
+	LocationId         int       `json:"location_id"`
+	FQDN               string    `json:"fqdn"`
+	Scheme             string    `json:"scheme"`
+	BehindProxy        bool      `json:"behind_proxy"`
+	MaintenanceMode    bool      `json:"maintenance_mode"`
+	Memory             int       `json:"memory"`
+	MemoryOverAllocate int       `json:"memory_overallocate"`
+	Disk               int       `json:"disk"`
+	DiskOverAllocate   int       `json:"disk_overallocate"`
+	UploadSize         int       `json:"upload_size"`
+	DaemonListen       int       `json:"daemon_listen"`
+	DaemonSftp         int       `json:"daemon_sftp"`
+	DaemonBase         string    `json:"daemon_base"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+}
+
+type PterodactylServerLimit struct {
+	Memory int `json:"memory"`
+	Swap   int `json:"swap"`
+	Disk   int `json:"disk"`
+	IO     int `json:"io"`
+	CPU    int `json:"cpu"`
+}
+type PterodactylServer struct {
+	Id          int                    `json:"id"`
+	ExternalId  int                    `json:"external_id"`
+	Uuid        string                 `json:"uuid"`
+	Identifier  string                 `json:"identifier"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Suspended   bool                   `json:"suspended"`
+	Limits      PterodactylServerLimit `json:"limits"`
+	UserId      int                    `json:"user"`
+	NodeId      int                    `json:"node"`
+	Allocation  int                    `json:"allocation"`
+	NestId      int                    `json:"nest"`
+	EggId       int                    `json:"egg"`
+	PackId      int                    `json:"pack"`
 }
 
 func pterodactylGethostname(params ParamsData) string {
@@ -166,7 +213,7 @@ func PterodactylGetExternalUser(params ParamsData, externalID int) (PterodactylU
 
 func PterodactylGetAllUsers(params ParamsData) []PterodactylUser {
 	body, status := pterodactylApi(params, "", "users/", "GET")
-	if status == 400 || status == 404 {
+	if status != 200 {
 		return []PterodactylUser{}
 	}
 	type userDecoder struct {
@@ -198,4 +245,104 @@ func PterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg 
 		return dec.Attributes
 	}
 	return PterodactylEgg{}
+}
+
+func PterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
+	body, status := pterodactylApi(data, "", "nodes/"+strconv.Itoa(nodeID), "GET")
+	if status != 200 {
+		return PterodactylNode{}
+	}
+	type decoder struct {
+		Attributes PterodactylNode `json:"attributes"`
+	}
+	var dec decoder
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		return dec.Attributes
+	}
+	return PterodactylNode{}
+}
+
+func PterodactylGetServer(data ParamsData, ID int, isExternal bool) PterodactylServer {
+	var endPoint string
+	if isExternal {
+		endPoint = "servers/external/" + strconv.Itoa(ID)
+	} else {
+		endPoint = "servers/" + strconv.Itoa(ID)
+	}
+	body, status := pterodactylApi(data, "", endPoint, "GET")
+	if status != 200 {
+		return PterodactylServer{}
+	}
+	type decoder struct {
+		Attributes PterodactylServer
+	}
+	var dec decoder
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		return dec.Attributes
+	}
+	return PterodactylServer{}
+}
+
+func PterodactylGetAllServers(data ParamsData) []PterodactylServer {
+	body, status := pterodactylApi(data, "", "servers", "GET")
+	if status != 200 {
+		return []PterodactylServer{}
+	}
+	type sDecoder struct {
+		Attributes PterodactylServer `json:"attributes"`
+	}
+	type decoder struct {
+		Data []sDecoder `json:"data"`
+	}
+	var dec decoder
+	var servers []PterodactylServer
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		for _, v := range dec.Data {
+			servers = append(servers, v.Attributes)
+		}
+	}
+	return servers
+}
+
+func pterodactylGetServerID(data ParamsData, serverExternalID int) int {
+	server := PterodactylGetServer(data, serverExternalID, true)
+	if server == (PterodactylServer{}) {
+		return 0
+	}
+	return server.Id
+}
+func PterodactylSuspendServer(data ParamsData, serverExternalID int) error {
+	serverID := pterodactylGetServerID(data, serverExternalID)
+	if serverID == 0 {
+		return errors.New("suspend failed because server not found: " + strconv.Itoa(serverID))
+	}
+	_, status = pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/suspend", "POST")
+	if status != 204 {
+		return errors.New("cant suspend server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
+	}
+	return nil
+}
+
+func PterodactylUnsuspendServer(data ParamsData, serverExternalID int) error {
+	serverID := pterodactylGetServerID(data, serverExternalID)
+	if serverID == 0 {
+		return errors.New("unsuspend failed because server not found: " + strconv.Itoa(serverID))
+	}
+	_, status = pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/unsuspend", "POST")
+	if status != 204 {
+		return errors.New("cant unsuspend server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
+	}
+	return nil
+}
+
+func PterodactylDeleteServer(data ParamsData, serverExternalID int) error {
+	serverID := pterodactylGetServerID(data, serverExternalID)
+	if serverID == 0 {
+		return errors.New("delete failed because server not found: " + strconv.Itoa(serverID))
+	}
+	_, status = pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID), "DELETE")
+	if status != 204 {
+		return errors.New("cant delete server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
+	}
+	return nil
 }

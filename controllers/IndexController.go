@@ -10,7 +10,7 @@ type IndexController struct {
 }
 
 func (this *IndexController) Get() {
-	this.TplName = "index.html"
+	this.TplName = "Index.html"
 	params := models.ParamsData{
 		Serverhostname: "pte.nightgod.xyz",
 		Serversecure:   false,

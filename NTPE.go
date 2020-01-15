@@ -15,5 +15,6 @@ func main() {
 	beego.Router("/reg", &controllers.RegController{})
 	beego.Router("/login", &controllers.LoginController{})
 	beego.Router("/pe-admin-settings", &controllers.PEAdminSettingsController{})
+	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Run()
 }

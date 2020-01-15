@@ -10,11 +10,11 @@ type RegController struct {
 }
 
 func (this *RegController) Get() {
-	this.TplName = "reg.html"
+	this.TplName = "Register.html"
 }
 
 func (this *RegController) Post() {
-	this.TplName = "reg.html"
+	this.TplName = "Register.html"
 	//beego.Info("user posted!")
 	registerEmail := this.GetString("registerEmail")
 	registerPassword := this.GetString("registerPassword")

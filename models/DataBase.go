@@ -28,7 +28,7 @@ type PEAdminSetting struct {
 	Value string
 }
 
-type ProductSpec struct {
+type WareSpec struct {
 	gorm.Model
 	Memory            int
 	Cpu               int
@@ -52,7 +52,7 @@ func init() {
 		panic(err.Error())
 	}
 	defer DB.Close()
-	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &ProductSpec{})
+	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{})
 	return
 }
 
