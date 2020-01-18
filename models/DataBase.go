@@ -8,11 +8,10 @@ import (
 
 type User struct {
 	gorm.Model
-	Name       string
-	Email      string
-	Password   string
-	IsAdmin    bool
-	externalID int
+	Name     string
+	Email    string
+	Password string
+	IsAdmin  bool
 }
 
 type WareKey struct {

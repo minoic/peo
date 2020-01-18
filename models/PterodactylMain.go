@@ -101,7 +101,8 @@ func pterodactylGethostname(params ParamsData) string {
 	//todo: rtrim($hostname, '/')
 	return hostname
 }
-func pterodactylApi(params ParamsData, data string, endPoint string, method string) (string, int) {
+
+func pterodactylApi(params ParamsData, data interface{}, endPoint string, method string) (string, int) {
 	url := pterodactylGethostname(params) + "/api/application/" + endPoint
 	beego.Info(url)
 	var res string
@@ -111,8 +112,9 @@ func pterodactylApi(params ParamsData, data string, endPoint string, method stri
 		if err != nil {
 			beego.Error("cant marshal data:" + err.Error())
 		}
+		beego.Info("ujson: ", string(ujson))
 		ubody := bytes.NewReader(ujson)
-		req, _ := http.NewRequest("POST", url, ubody)
+		req, _ := http.NewRequest(method, url, ubody)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
 		req.Header.Set("Accept", "Application/vnd.pterodactyl.v1+json")
 		req.ContentLength = int64(len(ujson))
@@ -127,6 +129,7 @@ func pterodactylApi(params ParamsData, data string, endPoint string, method stri
 		res = string(body)
 		status = resp.StatusCode
 		beego.Info("Pterodactyl Post status:" + resp.Status)
+		beego.Info(string(body))
 
 	} else {
 		req, _ := http.NewRequest(method, url, nil)
@@ -135,19 +138,19 @@ func pterodactylApi(params ParamsData, data string, endPoint string, method stri
 		//beego.Info(req.Header.Get("Authorization"))
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			panic("cant Do req:" + err.Error())
+			panic("cant Do req: " + err.Error())
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		beego.Info("status:" + resp.Status)
+		beego.Info("status: " + resp.Status)
 	}
 	return res, status
 }
 
 type TestRet struct {
-	isSuccess bool
+	IsSuccess bool
 	err       string
 }
 
@@ -171,6 +174,7 @@ func Test() {
 		Serverpassword: "4byjDYceumT4ylszaCWENzEQWBZCPgEZMh1AtNRonZsnnljp",
 	}
 	PterodactylTestConnection(params)
+	pterodactylGetEnv(params, 1, 17)
 }
 
 func PterodactylGetUser(params ParamsData, externalID int) (PterodactylUser, bool) {
@@ -316,7 +320,7 @@ func PterodactylSuspendServer(data ParamsData, serverExternalID int) error {
 	if serverID == 0 {
 		return errors.New("suspend failed because server not found: " + strconv.Itoa(serverID))
 	}
-	_, status = pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/suspend", "POST")
+	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/suspend", "POST")
 	if status != 204 {
 		return errors.New("cant suspend server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
 	}
@@ -328,7 +332,7 @@ func PterodactylUnsuspendServer(data ParamsData, serverExternalID int) error {
 	if serverID == 0 {
 		return errors.New("unsuspend failed because server not found: " + strconv.Itoa(serverID))
 	}
-	_, status = pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/unsuspend", "POST")
+	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/unsuspend", "POST")
 	if status != 204 {
 		return errors.New("cant unsuspend server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
 	}
@@ -340,9 +344,95 @@ func PterodactylDeleteServer(data ParamsData, serverExternalID int) error {
 	if serverID == 0 {
 		return errors.New("delete failed because server not found: " + strconv.Itoa(serverID))
 	}
-	_, status = pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID), "DELETE")
+	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID), "DELETE")
 	if status != 204 {
 		return errors.New("cant delete server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
+	}
+	return nil
+}
+
+func PterodactylCreateUser(data ParamsData, userInfo interface{}) error {
+	_, status := pterodactylApi(data, userInfo, "users/", "POST")
+	if status != 201 {
+		return errors.New("cant create user with status code: " + strconv.Itoa(status))
+	}
+	return nil
+}
+func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string {
+	ret := map[string]string{}
+	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID)+"?include=variables", "GET")
+	if status != 200 {
+		return map[string]string{}
+	}
+	type decoder struct {
+		Attributes struct {
+			Relationships struct {
+				Variables struct {
+					Data []map[string]interface{} `json:"data"`
+				} `json:"variables"`
+			} `json:"relationships"`
+		} `json:"attributes"`
+	}
+	var dec decoder
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		beego.Info(dec.Attributes.Relationships.Variables.Data)
+		for _, v := range dec.Attributes.Relationships.Variables.Data {
+			keys := v["attributes"].(map[string]interface{})
+			key := keys["env_variable"].(string)
+			value := keys["default_value"].(string)
+			if key != "" {
+				ret[key] = value
+			}
+		}
+	} else {
+		beego.Error(err.Error())
+	}
+	beego.Info("envInfo: ", ret)
+	return ret
+}
+func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) error {
+	eggInfo := PterodactylGetEgg(data, serverInfo.NestId, serverInfo.EggId)
+	envInfo := pterodactylGetEnv(data, serverInfo.NestId, serverInfo.EggId)
+	postData := map[string]interface{}{
+		"name":         serverInfo.Name,
+		"user":         serverInfo.UserId,
+		"nest":         serverInfo.NestId,
+		"egg":          serverInfo.EggId,
+		"docker_image": eggInfo.DockerImage,
+		"startup":      eggInfo.StartUp,
+		"oom_disabled": false,
+		"limits": map[string]interface{}{
+			"memory": serverInfo.Limits.Memory,
+			"swap":   serverInfo.Limits.Swap,
+			"io":     serverInfo.Limits.IO,
+			"cpu":    serverInfo.Limits.CPU,
+			"disk":   serverInfo.Limits.Disk,
+		},
+		"feature_limits": map[string]interface{}{
+			"database":    0,
+			"allocations": 0,
+		},
+		"deploy": map[string]interface{}{
+			"locations":    nil,
+			"dedicated_ip": nil,
+			"port_range":   nil,
+		},
+		"environment":         envInfo,
+		"start_on_completion": true,
+		"external_id":         serverInfo.ExternalId,
+	}
+	body, status := pterodactylApi(data, postData, "servers", "POST")
+	if status == 400 {
+		return errors.New("could not find any nodes satisfying the request")
+	}
+	if status != 201 {
+		return errors.New("failed to create the server, received the error code: " + strconv.Itoa(status))
+	}
+	var server PterodactylServer
+	if err := json.Unmarshal([]byte(body), &server); err == nil {
+		beego.Info("New server created: ", server)
+	} else {
+		beego.Error(err.Error())
 	}
 	return nil
 }
