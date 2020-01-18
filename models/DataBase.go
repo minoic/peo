@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	uuid "github.com/satori/go.uuid"
 	"time"
 )
 
@@ -12,6 +13,7 @@ type User struct {
 	Email    string
 	Password string
 	IsAdmin  bool
+	UUID     uuid.UUID `gorm:"not null;unique"`
 }
 
 type WareKey struct {

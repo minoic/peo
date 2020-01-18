@@ -3,6 +3,7 @@ package controllers
 import (
 	"NTPE/models"
 	"github.com/astaxie/beego"
+	"github.com/satori/go.uuid"
 )
 
 type RegController struct {
@@ -29,15 +30,17 @@ func (this *RegController) Post() {
 	beego.Info(registerName + " " + registerEmail + " " + registerPassword + " " + registerPasswordConfirm)
 	this.Data["textType"] = "success"
 	this.Data["textData"] = "Register Success!"
+	newUuid := uuid.NewV4()
 	newUser := models.User{
 		Name:     registerName,
 		Email:    registerEmail,
 		Password: registerPassword,
+		UUID:     newUuid,
 	}
 	DB := models.GetDatabase()
 	defer DB.Close()
 	DB.Create(&newUser)
 	var tmp models.User
 	DB.Last(&tmp)
-	beego.Info("last user in sql:" + tmp.Name)
+	beego.Info("last user in sql:", tmp)
 }

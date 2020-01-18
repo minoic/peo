@@ -30,3 +30,14 @@ func Islogged(sess session.Store) bool {
 		return true
 	}
 }
+
+func IsAdmin(sess session.Store) bool {
+	userName := sess.Get("UN").(string)
+	DB := GetDatabase()
+	var user User
+	if DB.Where("Name = ?", userName).First(&user).RecordNotFound() {
+		beego.Error("cant find user: " + userName)
+		return false
+	}
+	return user.IsAdmin
+}

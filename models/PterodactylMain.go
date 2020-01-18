@@ -400,14 +400,14 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		"docker_image": eggInfo.DockerImage,
 		"startup":      eggInfo.StartUp,
 		"oom_disabled": false,
-		"limits": map[string]interface{}{
+		"limits": map[string]int{
 			"memory": serverInfo.Limits.Memory,
 			"swap":   serverInfo.Limits.Swap,
 			"io":     serverInfo.Limits.IO,
 			"cpu":    serverInfo.Limits.CPU,
 			"disk":   serverInfo.Limits.Disk,
 		},
-		"feature_limits": map[string]interface{}{
+		"feature_limits": map[string]int{
 			"database":    0,
 			"allocations": 0,
 		},
