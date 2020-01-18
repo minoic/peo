@@ -387,7 +387,6 @@ func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 	} else {
 		beego.Error(err.Error())
 	}
-	beego.Info("envInfo: ", ret)
 	return ret
 }
 func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) error {
