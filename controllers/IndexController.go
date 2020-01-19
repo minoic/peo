@@ -22,7 +22,4 @@ func (this *IndexController) Get() {
 	} else {
 		beego.Info("user not found")
 	}
-	if err := models.PterodactylUnsuspendServer(params, "test"); err != nil {
-		beego.Error(err.Error())
-	}
 }

@@ -31,6 +31,8 @@ type PEAdminSetting struct {
 
 type WareSpec struct {
 	gorm.Model
+	WareName          string
+	WareDescription   string
 	Memory            int
 	Cpu               int
 	Swap              int
@@ -38,13 +40,11 @@ type WareSpec struct {
 	Io                int
 	Nest              int
 	Egg               int
-	Pack              int
 	StartOnCompletion bool
-	Environment       string
 	OomDisabled       bool
 	DockerImage       string
 	ValidDuration     time.Duration
-	Node              int
+	DeleteDuration    time.Duration
 }
 
 func init() {

@@ -174,7 +174,7 @@ func Test() {
 		Serverpassword: "4byjDYceumT4ylszaCWENzEQWBZCPgEZMh1AtNRonZsnnljp",
 	}
 	PterodactylTestConnection(params)
-	pterodactylGetEnv(params, 1, 17)
+	PterodactylGetEnv(params, 1, 17)
 }
 
 func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
@@ -366,7 +366,7 @@ func PterodactylCreateUser(data ParamsData, userInfo interface{}) error {
 	}
 	return nil
 }
-func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string {
+func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string {
 	ret := map[string]string{}
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID)+"?include=variables", "GET")
 	if status != 200 {
@@ -399,7 +399,7 @@ func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 }
 func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) error {
 	eggInfo := PterodactylGetEgg(data, serverInfo.NestId, serverInfo.EggId)
-	envInfo := pterodactylGetEnv(data, serverInfo.NestId, serverInfo.EggId)
+	envInfo := PterodactylGetEnv(data, serverInfo.NestId, serverInfo.EggId)
 	postData := map[string]interface{}{
 		"name":         serverInfo.Name,
 		"user":         serverInfo.UserId,
