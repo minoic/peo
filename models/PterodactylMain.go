@@ -32,6 +32,16 @@ type PterodactylUser struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
+type PterodactylNest struct {
+	id          int
+	uuid        string
+	author      string
+	name        string
+	description string
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
 type PterodactylEgg struct {
 	Id          int       `json:"id"`
 	Uuid        string    `json:"uuid"`
@@ -149,22 +159,9 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 	return res, status
 }
 
-type TestRet struct {
-	IsSuccess bool
-	err       string
-}
-
 func PterodactylTestConnection(params ParamsData) {
 	test, _ := pterodactylApi(params, "", "nodes", "GET")
 	beego.Info("PterodactylAPI returns: ", test)
-}
-
-func PterodactylGetOption() {
-
-}
-
-func PterodactylCreateAccount() {
-
 }
 
 func Test() {
@@ -189,11 +186,10 @@ func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (Pte
 	if status == 404 || status == 400 {
 		return PterodactylUser{}, false
 	}
-	type decoder struct {
+	dec := struct {
 		Object     string          `json:"object"`
 		Attributes PterodactylUser `json:"attributes"`
-	}
-	var dec decoder
+	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 
 		beego.Info(dec.Attributes)
@@ -208,11 +204,10 @@ func PterodactylGetExternalUser(params ParamsData, externalID int) (PterodactylU
 	if status == 404 || status == 400 {
 		return PterodactylUser{}, false
 	}
-	type decoder struct {
+	dec := struct {
 		Object     string          `json:"object"`
 		Attributes PterodactylUser `json:"attributes"`
-	}
-	var dec decoder
+	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 
 		beego.Info(dec.Attributes)
@@ -224,37 +219,89 @@ func PterodactylGetExternalUser(params ParamsData, externalID int) (PterodactylU
 func PterodactylGetAllUsers(params ParamsData) []PterodactylUser {
 	body, status := pterodactylApi(params, "", "users/", "GET")
 	if status != 200 {
+		beego.Error("cant get all users: " + strconv.Itoa(status))
 		return []PterodactylUser{}
 	}
-	type userDecoder struct {
-		Attributes PterodactylUser `json:"attributes"`
-	}
-	type decoder struct {
-		Data []userDecoder `json:"data"`
-	}
-	var dec decoder
+	dec := struct {
+		data []struct {
+			attributes PterodactylUser
+		}
+	}{}
 	var users []PterodactylUser
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		for _, v := range dec.Data {
-			users = append(users, v.Attributes)
+		for _, v := range dec.data {
+			users = append(users, v.attributes)
 		}
 	}
 	return users
 }
-
+func PterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
+	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID), "GET")
+	if status != 200 {
+		beego.Error("cant get nest: " + strconv.Itoa(nestID) + " with status code: " + strconv.Itoa(status))
+		return PterodactylNest{}
+	}
+	dec := struct {
+		attributes PterodactylNest
+	}{}
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		return dec.attributes
+	}
+	return PterodactylNest{}
+}
+func PterodactylGetAllNests(data ParamsData) []PterodactylNest {
+	body, status := pterodactylApi(data, "", "nests/", "GET")
+	if status != 200 {
+		beego.Error("cant get all nests: " + strconv.Itoa(status))
+		return []PterodactylNest{}
+	}
+	var ret []PterodactylNest
+	dec := struct {
+		data []struct {
+			attributes PterodactylNest
+		}
+	}{}
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		for _, v := range dec.data {
+			ret = append(ret, v.attributes)
+		}
+		return ret
+	}
+	return []PterodactylNest{}
+}
 func PterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg {
 	body, status := pterodactylApi(params, "", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID), "GET")
 	if status != 200 {
 		return PterodactylEgg{}
 	}
-	type decoder struct {
+	dec := struct {
 		Attributes PterodactylEgg `json:"attributes"`
-	}
-	var dec decoder
+	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		return dec.Attributes
 	}
 	return PterodactylEgg{}
+}
+
+func PterodactylGetAllEggs(data ParamsData) []PterodactylEgg {
+	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/", "GET")
+	if status != 200 {
+		beego.Error("cant get all eggs: " + strconv.Itoa(status))
+		return []PterodactylEgg{}
+	}
+	var ret []PterodactylEgg
+	dec := struct {
+		data []struct {
+			attributes PterodactylEgg
+		}
+	}{}
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		for _, v := range dec.data {
+			ret = append(ret, v.attributes)
+		}
+		return ret
+	}
+	return []PterodactylEgg{}
 }
 
 func PterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
@@ -262,10 +309,9 @@ func PterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
 	if status != 200 {
 		return PterodactylNode{}
 	}
-	type decoder struct {
+	dec := struct {
 		Attributes PterodactylNode `json:"attributes"`
-	}
-	var dec decoder
+	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		return dec.Attributes
 	}
@@ -283,12 +329,11 @@ func PterodactylGetServer(data ParamsData, ID interface{}, isExternal bool) Pter
 	if status != 200 {
 		return PterodactylServer{}
 	}
-	type decoder struct {
-		Attributes PterodactylServer
-	}
-	var dec decoder
+	dec := struct {
+		attributes PterodactylServer
+	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		return dec.Attributes
+		return dec.attributes
 	} else {
 		beego.Error(err.Error())
 	}
@@ -300,17 +345,15 @@ func PterodactylGetAllServers(data ParamsData) []PterodactylServer {
 	if status != 200 {
 		return []PterodactylServer{}
 	}
-	type sDecoder struct {
-		Attributes PterodactylServer `json:"attributes"`
-	}
-	type decoder struct {
-		Data []sDecoder `json:"data"`
-	}
-	var dec decoder
+	dec := struct {
+		data []struct {
+			attributes PterodactylServer
+		}
+	}{}
 	var servers []PterodactylServer
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		for _, v := range dec.Data {
-			servers = append(servers, v.Attributes)
+		for _, v := range dec.data {
+			servers = append(servers, v.attributes)
 		}
 	}
 	return servers
@@ -372,7 +415,7 @@ func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 	if status != 200 {
 		return map[string]string{}
 	}
-	type decoder struct {
+	dec := struct {
 		Attributes struct {
 			Relationships struct {
 				Variables struct {
@@ -380,8 +423,7 @@ func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 				} `json:"variables"`
 			} `json:"relationships"`
 		} `json:"attributes"`
-	}
-	var dec decoder
+	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		beego.Info(dec.Attributes.Relationships.Variables.Data)
 		for _, v := range dec.Attributes.Relationships.Variables.Data {

@@ -11,15 +11,5 @@ type IndexController struct {
 
 func (this *IndexController) Get() {
 	this.TplName = "Index.html"
-	params := models.ParamsData{
-		Serverhostname: "pte.nightgod.xyz",
-		Serversecure:   false,
-		Serverpassword: "4byjDYceumT4ylszaCWENzEQWBZCPgEZMh1AtNRonZsnnljp",
-	}
 	models.Test()
-	if user, exist := models.PterodactylGetUser(params, 1, false); exist {
-		beego.Info(user)
-	} else {
-		beego.Info("user not found")
-	}
 }
