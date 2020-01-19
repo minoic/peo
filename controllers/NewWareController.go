@@ -10,73 +10,90 @@ type NewWareController struct {
 	beego.Controller
 }
 type InfoDetail struct {
-	Name         string
-	FriendlyName string
-	Description  string
-	Type         string
+	Name           string
+	FriendlyName   string
+	Description    string
+	Type           string
+	AdditionalTags string
 }
 
 func init() {
 	WareInfo = []InfoDetail{
 		{
-			Name:         "cpu",
-			FriendlyName: "CPU 限制 (%)",
-			Description:  "每100个CPU限制数值表示可以占用一个CPU线程(Thread)",
-			Type:         "number",
+			Name:           "server_name",
+			FriendlyName:   "服务器名字",
+			Description:    "面板上显示的服务器名称",
+			Type:           "text",
+			AdditionalTags: "required",
 		},
 		{
-			Name:         "disk",
-			FriendlyName: "磁盘限制 (MB)",
-			Description:  "服务器的磁盘限制",
-			Type:         "number",
+			Name:           "cpu",
+			FriendlyName:   "CPU 限制 (%)",
+			Description:    "每100个CPU限制数值表示可以占用一个CPU线程(Thread)",
+			Type:           "number",
+			AdditionalTags: "required",
 		},
 		{
-			Name:         "memory",
-			FriendlyName: "内存限制 (MB)",
-			Description:  "服务器的内存限制",
-			Type:         "number",
+			Name:           "disk",
+			FriendlyName:   "磁盘限制 (MB)",
+			Description:    "服务器的磁盘限制",
+			Type:           "number",
+			AdditionalTags: "required",
 		},
 		{
-			Name:         "swap",
-			FriendlyName: "SWAP内存限制 (MB)",
-			Description:  "SWAP内存，即虚拟内存，映射到磁盘中",
-			Type:         "number",
+			Name:           "memory",
+			FriendlyName:   "内存限制 (MB)",
+			Description:    "服务器的内存限制",
+			Type:           "number",
+			AdditionalTags: "required",
 		},
 		{
-			Name:         "location_id",
-			FriendlyName: "地区ID",
-			Description:  "翼龙面板中的地区(Location)的ID",
-			Type:         "number",
+			Name:           "swap",
+			FriendlyName:   "SWAP内存限制 (MB)",
+			Description:    "SWAP内存，即虚拟内存，映射到磁盘中",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "io",
+			FriendlyName:   "Block IO 大小",
+			Description:    "Block IO 大小 (10-1000) (默认500)",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "nest_id",
+			FriendlyName:   "Nest ID",
+			Description:    "服务器使用的Nest的ID",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "egg_id",
+			FriendlyName:   "Egg ID",
+			Description:    "服务器使用的Egg的ID",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "pack_id",
+			FriendlyName:   "Pack ID",
+			Description:    "服务器使用的Pack的ID",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "location_id",
+			FriendlyName:   "地区ID",
+			Description:    "翼龙面板中的地区(Location)的ID",
+			Type:           "number",
+			AdditionalTags: "required",
 		},
 		{
 			Name:         "dedicated_ip",
 			FriendlyName: "专用IP",
 			Description:  "为服务器设置专用IP (可选)",
 			Type:         "checkbox",
-		},
-		{
-			Name:         "nest_id",
-			FriendlyName: "Nest ID",
-			Description:  "服务器使用的Nest的ID",
-			Type:         "number",
-		},
-		{
-			Name:         "io",
-			FriendlyName: "Block IO 大小",
-			Description:  "Block IO 大小 (10-1000) (默认500)",
-			Type:         "number",
-		},
-		{
-			Name:         "egg_id",
-			FriendlyName: "Egg ID",
-			Description:  "服务器使用的Egg的ID",
-			Type:         "number",
-		},
-		{
-			Name:         "pack_id",
-			FriendlyName: "Pack ID",
-			Description:  "服务器使用的Pack的ID",
-			Type:         "number",
 		},
 		{
 			Name:         "port_range",
@@ -103,12 +120,6 @@ func init() {
 			Type:         "int",
 		},
 		{
-			Name:         "server_name",
-			FriendlyName: "服务器名字",
-			Description:  "面板上显示的服务器名称",
-			Type:         "text",
-		},
-		{
 			Name:         "oom_disabled",
 			FriendlyName: "关闭 OOM Killer",
 			Description:  "是否应禁用“内存不足杀手”（可选）",
@@ -119,6 +130,7 @@ func init() {
 func (this *NewWareController) Get() {
 	this.TplName = "NewWare.html"
 	this.Data["options"] = WareInfo
+	beego.Info(WareInfo)
 }
 
 func (this *NewWareController) Post() {

@@ -9,10 +9,21 @@
 
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
     <link href="../static/css/style.css" rel="stylesheet">
+	  <link href="../static/css/square/pink.css" rel="stylesheet">
+	  <script src="../static/js/icheck.js"></script>
+	  <script src="../static/js/jquery.min.js"></script>
 
   </head>
   <body>
-
+  <script>
+	  $(document).ready(function(){
+		  $('input').iCheck({
+			  checkboxClass: 'icheckbox_square',
+			  radioClass: 'iradio_square',
+			  increaseArea: '20%' // optional
+		  });
+	  });
+  </script>
     <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-12">
