@@ -19,7 +19,7 @@ type ParamsData struct {
 
 type PterodactylUser struct {
 	Uid        int       `json:"id"`
-	ExternalId int       `json:"external_id"`
+	ExternalId string    `json:"external_id"`
 	Uuid       string    `json:"uuid"`
 	UserName   string    `json:"username"`
 	Email      string    `json:"email"`
@@ -76,7 +76,7 @@ type PterodactylServerLimit struct {
 }
 type PterodactylServer struct {
 	Id          int                    `json:"id"`
-	ExternalId  int                    `json:"external_id"`
+	ExternalId  string                 `json:"external_id"`
 	Uuid        string                 `json:"uuid"`
 	Identifier  string                 `json:"identifier"`
 	Name        string                 `json:"name"`
@@ -177,8 +177,14 @@ func Test() {
 	pterodactylGetEnv(params, 1, 17)
 }
 
-func PterodactylGetUser(params ParamsData, externalID int) (PterodactylUser, bool) {
-	body, status := pterodactylApi(params, "", "users/"+strconv.Itoa(externalID), "GET")
+func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
+	var endPoint string
+	if isExternal {
+		endPoint = "users/external" + ID.(string)
+	} else {
+		endPoint = "users/" + strconv.Itoa(ID.(int))
+	}
+	body, status := pterodactylApi(params, "", endPoint, "GET")
 	beego.Info(body, status)
 	if status == 404 || status == 400 {
 		return PterodactylUser{}, false
@@ -266,12 +272,12 @@ func PterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
 	return PterodactylNode{}
 }
 
-func PterodactylGetServer(data ParamsData, ID int, isExternal bool) PterodactylServer {
+func PterodactylGetServer(data ParamsData, ID interface{}, isExternal bool) PterodactylServer {
 	var endPoint string
 	if isExternal {
-		endPoint = "servers/external/" + strconv.Itoa(ID)
+		endPoint = "servers/external/" + ID.(string)
 	} else {
-		endPoint = "servers/" + strconv.Itoa(ID)
+		endPoint = "servers/" + strconv.Itoa(ID.(int))
 	}
 	body, status := pterodactylApi(data, "", endPoint, "GET")
 	if status != 200 {
@@ -283,6 +289,8 @@ func PterodactylGetServer(data ParamsData, ID int, isExternal bool) PterodactylS
 	var dec decoder
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		return dec.Attributes
+	} else {
+		beego.Error(err.Error())
 	}
 	return PterodactylServer{}
 }
@@ -308,14 +316,14 @@ func PterodactylGetAllServers(data ParamsData) []PterodactylServer {
 	return servers
 }
 
-func pterodactylGetServerID(data ParamsData, serverExternalID int) int {
+func pterodactylGetServerID(data ParamsData, serverExternalID string) int {
 	server := PterodactylGetServer(data, serverExternalID, true)
 	if server == (PterodactylServer{}) {
 		return 0
 	}
 	return server.Id
 }
-func PterodactylSuspendServer(data ParamsData, serverExternalID int) error {
+func PterodactylSuspendServer(data ParamsData, serverExternalID string) error {
 	serverID := pterodactylGetServerID(data, serverExternalID)
 	if serverID == 0 {
 		return errors.New("suspend failed because server not found: " + strconv.Itoa(serverID))
@@ -327,7 +335,7 @@ func PterodactylSuspendServer(data ParamsData, serverExternalID int) error {
 	return nil
 }
 
-func PterodactylUnsuspendServer(data ParamsData, serverExternalID int) error {
+func PterodactylUnsuspendServer(data ParamsData, serverExternalID string) error {
 	serverID := pterodactylGetServerID(data, serverExternalID)
 	if serverID == 0 {
 		return errors.New("unsuspend failed because server not found: " + strconv.Itoa(serverID))
@@ -339,7 +347,7 @@ func PterodactylUnsuspendServer(data ParamsData, serverExternalID int) error {
 	return nil
 }
 
-func PterodactylDeleteServer(data ParamsData, serverExternalID int) error {
+func PterodactylDeleteServer(data ParamsData, serverExternalID string) error {
 	serverID := pterodactylGetServerID(data, serverExternalID)
 	if serverID == 0 {
 		return errors.New("delete failed because server not found: " + strconv.Itoa(serverID))

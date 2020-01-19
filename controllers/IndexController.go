@@ -14,13 +14,15 @@ func (this *IndexController) Get() {
 	params := models.ParamsData{
 		Serverhostname: "pte.nightgod.xyz",
 		Serversecure:   false,
-		Serverpassword: "1qdsZGuaObjB9CkRtpqZLB6Q8SfH1txRsRJSEgRkMVZCEIHw",
+		Serverpassword: "4byjDYceumT4ylszaCWENzEQWBZCPgEZMh1AtNRonZsnnljp",
 	}
 	models.Test()
-	if user, exist := models.PterodactylGetUser(params, 1); exist {
+	if user, exist := models.PterodactylGetUser(params, 1, false); exist {
 		beego.Info(user)
 	} else {
 		beego.Info("user not found")
 	}
-
+	if err := models.PterodactylUnsuspendServer(params, "test"); err != nil {
+		beego.Error(err.Error())
+	}
 }
