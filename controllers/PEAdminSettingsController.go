@@ -32,7 +32,7 @@ func init() {
 func (this *PEAdminSettingsController) Get() {
 	this.TplName = "PEAdminSettings.html"
 	sess := this.StartSession()
-	if !models.Islogged(sess) {
+	if !models.SessionIslogged(sess) {
 		this.Redirect("/login", 302)
 	}
 	userName := sess.Get("UN").(string)
@@ -73,5 +73,5 @@ func (this *PEAdminSettingsController) Post() {
 		Key:   "websiteHost",
 		Value: websiteHost,
 	})
-	this.Redirect("/pe-admin-settings", 302)
+	this.Redirect("/pe-admin-settings.yml", 302)
 }

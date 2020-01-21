@@ -1,8 +1,10 @@
 package models
 
 import (
+	"errors"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/session"
+	"strconv"
 )
 
 func init() {
@@ -11,7 +13,7 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionProviderConfig = "./tmp"
 }
 
-func Islogged(sess session.Store) bool {
+func SessionIslogged(sess session.Store) bool {
 	cookie1 := sess.Get("LST")
 	cookie2 := sess.Get("UN")
 	if cookie1 == nil || cookie2 == nil {
@@ -31,13 +33,12 @@ func Islogged(sess session.Store) bool {
 	}
 }
 
-func IsAdmin(sess session.Store) bool {
-	userName := sess.Get("UN").(string)
+func SessionGetUser(sess session.Store) (User, error) {
+	userID := sess.Get("ID").(int)
 	DB := GetDatabase()
 	var user User
-	if DB.Where("Name = ?", userName).First(&user).RecordNotFound() {
-		beego.Error("cant find user: " + userName)
-		return false
+	if DB.Where("ID = ?", userID).First(&user).RecordNotFound() {
+		return User{}, errors.New("cant find user: " + strconv.Itoa(userID))
 	}
-	return user.IsAdmin
+	return user, nil
 }

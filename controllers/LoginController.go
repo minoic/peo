@@ -24,7 +24,7 @@ func (this *LoginController) Post() {
 		if loginPass == user.Password {
 			this.Data["loginReturnData"] = "logged in!"
 			this.SetSession("LST", models.GeneToken(user.Name))
-			this.SetSession("UN", user.Name)
+			this.SetSession("ID", user.ID)
 		} else {
 			this.Data["loginReturnData"] = "login failed!!"
 		}

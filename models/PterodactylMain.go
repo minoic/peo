@@ -33,11 +33,11 @@ type PterodactylUser struct {
 }
 
 type PterodactylNest struct {
-	id          int
-	uuid        string
-	author      string
-	name        string
-	description string
+	Id          int
+	Uuid        string
+	Author      string
+	Name        string
+	Description string
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -48,7 +48,7 @@ type PterodactylEgg struct {
 	Name        string    `json:"name"`
 	Nest        int       `json:"nest"`
 	Author      string    `json:"author"`
-	Description string    `json:"description"`
+	Description string    `json:"Description"`
 	DockerImage string    `json:"docker_image"`
 	StartUp     string    `json:"startup"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -59,7 +59,7 @@ type PterodactylNode struct {
 	Id                 int       `json:"id"`
 	Public             bool      `json:"public"`
 	Name               string    `json:"name"`
-	Description        string    `json:"description"`
+	Description        string    `json:"Description"`
 	LocationId         int       `json:"location_id"`
 	FQDN               string    `json:"fqdn"`
 	Scheme             string    `json:"scheme"`
@@ -90,7 +90,7 @@ type PterodactylServer struct {
 	Uuid        string                 `json:"uuid"`
 	Identifier  string                 `json:"identifier"`
 	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
+	Description string                 `json:"Description"`
 	Suspended   bool                   `json:"suspended"`
 	Limits      PterodactylServerLimit `json:"limits"`
 	UserId      int                    `json:"user"`
@@ -165,11 +165,7 @@ func PterodactylTestConnection(params ParamsData) {
 }
 
 func Test() {
-	params := ParamsData{
-		Serverhostname: "pte.nightgod.xyz",
-		Serversecure:   false,
-		Serverpassword: "4byjDYceumT4ylszaCWENzEQWBZCPgEZMh1AtNRonZsnnljp",
-	}
+	params := confGetParams()
 	PterodactylTestConnection(params)
 	PterodactylGetEnv(params, 1, 17)
 }
