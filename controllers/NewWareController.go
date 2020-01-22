@@ -115,16 +115,16 @@ func init() {
 			Type:         "int",
 		},
 		{
+			Name:         "start_on_completion",
+			FriendlyName: "立即启动",
+			Description:  "是否在安装完成后立即启动服务器",
+			Type:         "checkbox",
+		},
+		{
 			Name:         "oom_disabled",
 			FriendlyName: "开启 OOM Killer",
 			Description:  "是否应开启“内存不足杀手”（推荐关闭）",
 			Type:         "checkbox",
-		},
-		{
-			Name:         "start_on_completion",
-			FriendlyName: "立即启动",
-			Description: "是否在安装完成后立即启动服务器	",
-			Type: "checkbox",
 		},
 		{
 			Name:           "exp",

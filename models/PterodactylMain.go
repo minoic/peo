@@ -138,9 +138,7 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		beego.Info("Pterodactyl Post status:" + resp.Status)
-		beego.Info(string(body))
-
+		beego.Info("Pterodactyl Post status:" + resp.Status + " body: " + string(body))
 	} else {
 		req, _ := http.NewRequest(method, url, nil)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
@@ -167,13 +165,24 @@ func PterodactylTestConnection(params ParamsData) {
 func Test() {
 	params := confGetParams()
 	PterodactylTestConnection(params)
-	PterodactylGetEnv(params, 1, 17)
+	_ = PterodactylCreateUser(params, map[string]interface{}{
+		"external_id": "112",
+		"username":    "testUs1er",
+		"email":       "44e4@qq.com",
+		"language":    "zh",
+		"root_admin":  false,
+		"password":    "testPass",
+		"first_name":  "s",
+		"last_name":   "sd",
+	})
+	_ = PterodactylDeleteUser(params, "112")
+
 }
 
 func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
 	var endPoint string
 	if isExternal {
-		endPoint = "users/external" + ID.(string)
+		endPoint = "users/external/" + ID.(string)
 	} else {
 		endPoint = "users/" + strconv.Itoa(ID.(int))
 	}
@@ -399,11 +408,23 @@ func PterodactylDeleteServer(data ParamsData, serverExternalID string) error {
 }
 
 func PterodactylCreateUser(data ParamsData, userInfo interface{}) error {
-	_, status := pterodactylApi(data, userInfo, "users/", "POST")
+	_, status := pterodactylApi(data, userInfo, "users", "POST")
 	if status != 201 {
 		return errors.New("cant create user with status code: " + strconv.Itoa(status))
 	}
 	return nil
+}
+
+func PterodactylDeleteUser(data ParamsData, externalID string) error {
+	if user, ok := PterodactylGetUser(data, externalID, true); ok {
+		_, status := pterodactylApi(data, "", "users/"+strconv.Itoa(user.Uid), "DELETE")
+		if status != 204 {
+			return errors.New("cant delete user: " + user.UserName + " with status code: " + strconv.Itoa(status))
+		}
+		return nil
+	} else {
+		return errors.New("cant get user")
+	}
 }
 func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string {
 	ret := map[string]string{}
