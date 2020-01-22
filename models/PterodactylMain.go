@@ -101,6 +101,17 @@ type PterodactylServer struct {
 	PackId      int                    `json:"pack"`
 }
 
+type PostPteUser struct {
+	ExternalId string `json:"external_id"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+	Language   string `json:"language"`
+	RootAdmin  bool   `json:"root_admin"`
+	Password   string `json:"password"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+}
+
 func pterodactylGethostname(params ParamsData) string {
 	var hostname string
 	if params.Serversecure {
@@ -165,17 +176,17 @@ func PterodactylTestConnection(params ParamsData) {
 func Test() {
 	params := confGetParams()
 	PterodactylTestConnection(params)
-	_ = PterodactylCreateUser(params, map[string]interface{}{
-		"external_id": "112",
-		"username":    "testUs1er",
-		"email":       "44e4@qq.com",
-		"language":    "zh",
-		"root_admin":  false,
-		"password":    "testPass",
-		"first_name":  "s",
-		"last_name":   "sd",
+	_ = PterodactylCreateUser(params, PostPteUser{
+		ExternalId: "1212",
+		Username:   "1212",
+		Email:      "222@qq.com",
+		Language:   "zh",
+		RootAdmin:  false,
+		Password:   "22233",
+		FirstName:  "s",
+		LastName:   "ds",
 	})
-	_ = PterodactylDeleteUser(params, "112")
+	_ = PterodactylDeleteUser(params, "1212")
 
 }
 
@@ -456,7 +467,9 @@ func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 	}
 	return ret
 }
+
 func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) error {
+	//todo: test and update
 	eggInfo := PterodactylGetEgg(data, serverInfo.NestId, serverInfo.EggId)
 	envInfo := PterodactylGetEnv(data, serverInfo.NestId, serverInfo.EggId)
 	postData := map[string]interface{}{

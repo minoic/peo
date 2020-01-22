@@ -147,6 +147,7 @@ func (this *NewWareController) Get() {
 	this.Data["options"] = WareInfo
 }
 
+//todo: add nest/egg select instead of input ID
 func (this *NewWareController) Post() {
 	this.TplName = "NewWare.html"
 	//formText,_:=template.ParseFiles("tpls/forms/text.html")

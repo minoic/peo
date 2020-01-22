@@ -18,3 +18,8 @@ func main() {
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Run()
 }
+
+//todo: add 404 page
+//todo: add delay page
+//todo: add WareSale page
+//todo: add alipay/wxpay or more payment method

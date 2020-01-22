@@ -16,6 +16,8 @@ type User struct {
 	UUID     uuid.UUID `gorm:"not null;unique"`
 }
 
+//todo: encrypt user`s password
+
 type WareKey struct {
 	gorm.Model
 	WareID int
@@ -64,3 +66,5 @@ func GetDatabase() *gorm.DB {
 	}
 	return DB
 }
+
+//todo: add MYSQL and other SQLs

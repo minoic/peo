@@ -43,4 +43,6 @@ func (this *RegController) Post() {
 	var tmp models.User
 	DB.Last(&tmp)
 	beego.Info("last user in sql:", tmp)
+	//todo: add Verification Code
+	//todo: create Pterodactyl user at the same time
 }

@@ -2,6 +2,7 @@
   <dictionary name="cytus">
     <words>
       <w>algo</w>
+      <w>alipay</w>
       <w>beego</w>
       <w>fqdn</w>
       <w>gethostname</w>
@@ -21,6 +22,7 @@
       <w>ucurl</w>
       <w>ujson</w>
       <w>utoken</w>
+      <w>wxpay</w>
     </words>
   </dictionary>
 </component>
