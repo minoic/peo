@@ -6,9 +6,9 @@ import (
 )
 
 func getConf() config.Configer {
-	conf, err := config.NewConfig("yaml", "settings.yml")
+	conf, err := config.NewConfig("ini", "conf/settings.conf")
 	if err != nil {
-		panic("cant get settings.yml: " + err.Error())
+		panic("cant get settings.conf: " + err.Error())
 		return nil
 	}
 	return conf

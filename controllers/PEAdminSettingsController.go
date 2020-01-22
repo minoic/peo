@@ -73,5 +73,5 @@ func (this *PEAdminSettingsController) Post() {
 		Key:   "websiteHost",
 		Value: websiteHost,
 	})
-	this.Redirect("/pe-admin-settings.yml", 302)
+	this.Redirect("/pe-admin-settings.conf", 302)
 }

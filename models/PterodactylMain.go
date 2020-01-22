@@ -279,7 +279,7 @@ func PterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg 
 	return PterodactylEgg{}
 }
 
-func PterodactylGetAllEggs(data ParamsData) []PterodactylEgg {
+func PterodactylGetAllEggs(data ParamsData, nestID int) []PterodactylEgg {
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/", "GET")
 	if status != 200 {
 		beego.Error("cant get all eggs: " + strconv.Itoa(status))
