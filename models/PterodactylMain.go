@@ -33,11 +33,11 @@ type PterodactylUser struct {
 }
 
 type PterodactylNest struct {
-	Id          int
-	Uuid        string
-	Author      string
-	Name        string
-	Description string
+	Id          int       `json:"id"`
+	Uuid        string    `json:"uuid"`
+	Author      string    `json:"author"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -119,7 +119,8 @@ func pterodactylGethostname(params ParamsData) string {
 	} else {
 		hostname = "http://" + params.Serverhostname
 	}
-	//todo: rtrim($hostname, '/')
+	for stringLen := len(hostname); hostname[stringLen-1] == '/'; stringLen -= 1 {
+	}
 	return hostname
 }
 
@@ -173,23 +174,6 @@ func PterodactylTestConnection(params ParamsData) {
 	beego.Info("PterodactylAPI returns: ", test)
 }
 
-func Test() {
-	params := confGetParams()
-	PterodactylTestConnection(params)
-	_ = PterodactylCreateUser(params, PostPteUser{
-		ExternalId: "1212",
-		Username:   "1212",
-		Email:      "222@qq.com",
-		Language:   "zh",
-		RootAdmin:  false,
-		Password:   "22233",
-		FirstName:  "s",
-		LastName:   "ds",
-	})
-	_ = PterodactylDeleteUser(params, "1212")
-
-}
-
 func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
 	var endPoint string
 	if isExternal {
@@ -240,13 +224,13 @@ func PterodactylGetAllUsers(params ParamsData) []PterodactylUser {
 	}
 	dec := struct {
 		data []struct {
-			attributes PterodactylUser
+			Attributes PterodactylUser `json:"attributes"`
 		}
 	}{}
 	var users []PterodactylUser
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		for _, v := range dec.data {
-			users = append(users, v.attributes)
+			users = append(users, v.Attributes)
 		}
 	}
 	return users
@@ -258,10 +242,10 @@ func PterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
 		return PterodactylNest{}
 	}
 	dec := struct {
-		attributes PterodactylNest
+		Attributes PterodactylNest `json:"attributes"`
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		return dec.attributes
+		return dec.Attributes
 	}
 	return PterodactylNest{}
 }
@@ -274,12 +258,12 @@ func PterodactylGetAllNests(data ParamsData) []PterodactylNest {
 	var ret []PterodactylNest
 	dec := struct {
 		data []struct {
-			attributes PterodactylNest
+			Attributes PterodactylNest `json:"attributes"`
 		}
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		for _, v := range dec.data {
-			ret = append(ret, v.attributes)
+			ret = append(ret, v.Attributes)
 		}
 		return ret
 	}
@@ -308,12 +292,12 @@ func PterodactylGetAllEggs(data ParamsData, nestID int) []PterodactylEgg {
 	var ret []PterodactylEgg
 	dec := struct {
 		data []struct {
-			attributes PterodactylEgg
+			Attributes PterodactylEgg `json:"attributes"`
 		}
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		for _, v := range dec.data {
-			ret = append(ret, v.attributes)
+			ret = append(ret, v.Attributes)
 		}
 		return ret
 	}
@@ -346,10 +330,10 @@ func PterodactylGetServer(data ParamsData, ID interface{}, isExternal bool) Pter
 		return PterodactylServer{}
 	}
 	dec := struct {
-		attributes PterodactylServer
+		Attributes PterodactylServer `json:"attributes"`
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		return dec.attributes
+		return dec.Attributes
 	} else {
 		beego.Error(err.Error())
 	}
@@ -363,13 +347,13 @@ func PterodactylGetAllServers(data ParamsData) []PterodactylServer {
 	}
 	dec := struct {
 		data []struct {
-			attributes PterodactylServer
+			Attributes PterodactylServer `json:"attributes"`
 		}
 	}{}
 	var servers []PterodactylServer
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		for _, v := range dec.data {
-			servers = append(servers, v.attributes)
+			servers = append(servers, v.Attributes)
 		}
 	}
 	return servers
@@ -468,8 +452,38 @@ func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 	return ret
 }
 
+func Test() {
+	params := confGetParams()
+	PterodactylTestConnection(params)
+	_ = PterodactylCreateServer(params, PterodactylServer{
+		Id:          111,
+		ExternalId:  "12121",
+		Uuid:        "",
+		Identifier:  "",
+		Name:        "12121",
+		Description: "12121",
+		Suspended:   false,
+		Limits: PterodactylServerLimit{
+			Memory: 1212,
+			Swap:   1212,
+			Disk:   1212,
+			IO:     500,
+			CPU:    100,
+		},
+		UserId:     1,
+		NodeId:     5,
+		Allocation: 517,
+		NestId:     1,
+		EggId:      17,
+		PackId:     0,
+	})
+	err := PterodactylDeleteServer(params, "12121")
+	if err != nil {
+		beego.Error(err.Error())
+	}
+}
+
 func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) error {
-	//todo: test and update
 	eggInfo := PterodactylGetEgg(data, serverInfo.NestId, serverInfo.EggId)
 	envInfo := PterodactylGetEnv(data, serverInfo.NestId, serverInfo.EggId)
 	postData := map[string]interface{}{
@@ -487,18 +501,16 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 			"cpu":    serverInfo.Limits.CPU,
 			"disk":   serverInfo.Limits.Disk,
 		},
-		"feature_limits": map[string]int{
-			"database":    0,
-			"allocations": 0,
-		},
-		"deploy": map[string]interface{}{
-			"locations":    nil,
-			"dedicated_ip": nil,
-			"port_range":   nil,
+		"feature_limits": map[string]interface{}{
+			"databases":   nil,
+			"allocations": 1,
 		},
 		"environment":         envInfo,
-		"start_on_completion": true,
+		"start_on_completion": false,
 		"external_id":         serverInfo.ExternalId,
+		"allocation": map[string]interface{}{
+			"default": serverInfo.Allocation,
+		},
 	}
 	body, status := pterodactylApi(data, postData, "servers", "POST")
 	if status == 400 {
@@ -507,9 +519,11 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 	if status != 201 {
 		return errors.New("failed to create the server, received the error code: " + strconv.Itoa(status))
 	}
-	var server PterodactylServer
-	if err := json.Unmarshal([]byte(body), &server); err == nil {
-		beego.Info("New server created: ", server)
+	var dec struct {
+		Server PterodactylServer `json:"attributes"`
+	}
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		beego.Info("New server created: ", dec.Server)
 	} else {
 		beego.Error(err.Error())
 	}
