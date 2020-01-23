@@ -77,6 +77,14 @@ type PterodactylNode struct {
 	UpdatedAt          time.Time `json:"updated_at"`
 }
 
+type PterodactylAllocation struct {
+	ID       int    `json:"id"`
+	IP       string `json:"ip"`
+	Alias    string `json:"alias"`
+	Port     int    `json:"port"`
+	Assigned bool   `json:"assigned"`
+}
+
 type PterodactylServerLimit struct {
 	Memory int `json:"memory"`
 	Swap   int `json:"swap"`
@@ -318,6 +326,28 @@ func PterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
 	return PterodactylNode{}
 }
 
+func PterodactylGetAllocations(data ParamsData, nodeID int) []PterodactylAllocation {
+	body, status := pterodactylApi(data, "", "nodes/"+strconv.Itoa(nodeID)+"/allocations", "GET")
+	if status != 200 {
+		beego.Error("cant get allocations with status code: " + strconv.Itoa(status))
+		return []PterodactylAllocation{}
+	}
+	dec := struct {
+		Data []struct {
+			Attributes PterodactylAllocation `json:"attributes"`
+		} `json:"data"`
+	}{}
+	var ret []PterodactylAllocation
+	if err := json.Unmarshal([]byte(body), &dec); err == nil {
+		for _, v := range dec.Data {
+			if !v.Attributes.Assigned {
+				ret = append(ret, v.Attributes)
+			}
+		}
+	}
+	return ret
+}
+
 func PterodactylGetServer(data ParamsData, ID interface{}, isExternal bool) PterodactylServer {
 	var endPoint string
 	if isExternal {
@@ -366,6 +396,7 @@ func pterodactylGetServerID(data ParamsData, serverExternalID string) int {
 	}
 	return server.Id
 }
+
 func PterodactylSuspendServer(data ParamsData, serverExternalID string) error {
 	serverID := pterodactylGetServerID(data, serverExternalID)
 	if serverID == 0 {
@@ -421,6 +452,7 @@ func PterodactylDeleteUser(data ParamsData, externalID string) error {
 		return errors.New("cant get user")
 	}
 }
+
 func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string {
 	ret := map[string]string{}
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID)+"?include=variables", "GET")
@@ -455,31 +487,9 @@ func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 func Test() {
 	params := confGetParams()
 	PterodactylTestConnection(params)
-	_ = PterodactylCreateServer(params, PterodactylServer{
-		Id:          111,
-		ExternalId:  "12121",
-		Uuid:        "",
-		Identifier:  "",
-		Name:        "12121",
-		Description: "12121",
-		Suspended:   false,
-		Limits: PterodactylServerLimit{
-			Memory: 1212,
-			Swap:   1212,
-			Disk:   1212,
-			IO:     500,
-			CPU:    100,
-		},
-		UserId:     1,
-		NodeId:     5,
-		Allocation: 517,
-		NestId:     1,
-		EggId:      17,
-		PackId:     0,
-	})
-	err := PterodactylDeleteServer(params, "12121")
-	if err != nil {
-		beego.Error(err.Error())
+	ret := PterodactylGetAllocations(params, 6)
+	for k, v := range ret {
+		beego.Info(k, v)
 	}
 }
 
