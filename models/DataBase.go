@@ -50,21 +50,38 @@ type WareSpec struct {
 }
 
 func init() {
-	DB, err := gorm.Open("sqlite3", "sqlite3.db")
-	if err != nil {
-		panic(err.Error())
-	}
+	DB := GetDatabase()
 	defer DB.Close()
 	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{})
 	return
 }
 
 func GetDatabase() *gorm.DB {
-	DB, err := gorm.Open("sqlite3", "sqlite3.db")
-	if err != nil {
-		panic(err.Error())
+	conf := getConf()
+	dialect := conf.String("sql::Database")
+	switch dialect {
+	case "SQLITE":
+		DB, err := gorm.Open("sqlite3", "sqlite3.db")
+		if err != nil {
+			panic(err.Error())
+			return nil
+		}
+		return DB
+	case "MYSQL":
+		DSN := conf.String("sql::MYSQLUsername") + ":" +
+			conf.String("sql::MYSQLUserPassword") + "@" +
+			conf.String("sql::MYSQLHost") + "/" +
+			conf.String("sql::MYSQLDatabaseName") +
+			"?charset=utf8&parseTime=True&loc=Local"
+		DB, err := gorm.Open("mysql", DSN)
+		if err != nil {
+			panic(err.Error())
+			return nil
+		}
+		return DB
 	}
-	return DB
+	panic("CONF ERR: WRONG SQL DIALECT!!!")
+	return nil
 }
 
-//todo: add MYSQL and other SQLs
+//todo: test MYSQL
