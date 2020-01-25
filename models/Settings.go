@@ -16,14 +16,14 @@ func getConf() config.Configer {
 
 func confGetParams() ParamsData {
 	conf := getConf()
-	sec, err := conf.Bool("conn::Serversecure")
+	sec, err := conf.Bool("Serversecure")
 	if err != nil {
 		beego.Error(err.Error())
 	}
 	data := ParamsData{
-		Serverhostname: conf.String("conn::Serverhostname"),
+		Serverhostname: conf.String("Serverhostname"),
 		Serversecure:   sec,
-		Serverpassword: conf.String("conn::Serverpassword"),
+		Serverpassword: conf.String("Serverpassword"),
 	}
 	return data
 }

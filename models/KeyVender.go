@@ -7,7 +7,7 @@ import (
 )
 
 func randKey(keyLength int) string {
-	str := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	str := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := []byte(str)
 	var ret []byte
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
