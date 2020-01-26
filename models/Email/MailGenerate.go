@@ -2,7 +2,6 @@ package Email
 
 import (
 	"github.com/matcornic/v2"
-	"io/ioutil"
 )
 
 func getProd() hermes.Hermes {
@@ -46,12 +45,6 @@ func GenRegConfirmMail(userName string) (string, string) {
 	}
 	mailText, err := h.GeneratePlainText(email)
 	if err != nil {
-		panic(err)
-	}
-	if err = ioutil.WriteFile("preview.html", []byte(mailBody), 0644); err != nil {
-		panic(err)
-	}
-	if err = ioutil.WriteFile("preview.txt", []byte(mailText), 0644); err != nil {
 		panic(err)
 	}
 	return mailBody, mailText

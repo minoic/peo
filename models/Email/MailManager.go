@@ -13,7 +13,7 @@ func TestMail() {
 	}
 	mailHtml, _ := GenRegConfirmMail("haha")
 	email := mail.NewMSG()
-	email.SetFrom("From Example <admin@mail.nightgod.xyz>").
+	email.SetFrom("MinoAdmin <admin@mail.nightgod.xyz>").
 		AddTo("781482205@qq.com").
 		SetSubject("New Go Email").
 		SetBody(mail.TextHTML, mailHtml)

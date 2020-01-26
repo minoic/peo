@@ -12,6 +12,8 @@ type RegController struct {
 
 func (this *RegController) Get() {
 	this.TplName = "Register.html"
+	this.Data["webHostName"] = models.ConfGetHostName()
+	this.Data["webApplicationName"] = models.ConfGetWebName()
 }
 
 func (this *RegController) Post() {

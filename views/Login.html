@@ -1,59 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Bootstrap 4, from LayoutIt!</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/css/Login.css">
+    <title>{{.webApplicationName}} Login</title>
+</head>
 
-    <meta name="description" content="Source code generated using layoutit.com">
-    <meta name="author" content="LayoutIt!">
+<body>
+    <div class="login-box">
+        <div class="logo">
+            <a href="{{.webHostName}}">Nightgod Login</a>
+        </div>
+        <div class="box">
+            <div class="header">
+                <span>Welcome to Nightgod SKIN</span>
+            </div>
+            <div class="body">
+                <form role="form" method="post" id="login">
+                    <div class="username">
+                        <div>
+                            <i></i>
+                        </div>
+                        <input autocomplete="on" spellcheck="false" type="text" placeholder="Username" name="loginEOU">
+                    </div>
+                    <div class="password">
+                        <div>
+                            <i></i>
+                        </div>
+                        <input autocomplete="on" spellcheck="false" type="password" placeholder="Password" name="loginPass">
+                    </div>
+                </form>
+            </div>
+            <div class="footer">
+                <button type="submit" form="login">
+                    <span>Login</span>
+                </button>
+                <a href="/reg">No account? Register now!</a>
+                <a href="" style="float: right;">Forget Password</a>
+            </div>
+        </div>
+    </div>
+    <script src="../static/js/Login.js"></script>
+</body>
 
-    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../static/css/style.css" rel="stylesheet">
-
-  </head>
-  <body>
-
-    <div class="container-fluid">
-	<div class="row">
-		<div class="col-md-12">
-			<div class="row">
-				<div class="col-md-8">
-					<form role="form" method="post">
-						<div class="form-group">
-							 
-							<label for="loginEOU">
-								Email address Or Username
-							</label>
-							<input type="text" class="form-control" name="loginEOU">
-						</div>
-						<div class="form-group">
-							 
-							<label for="loginPass">
-								Password
-							</label>
-							<input type="password" class="form-control" name="loginPass">
-
-						</div>
-						<button type="submit" class="btn btn-primary">
-							Submit
-						</button>
-					</form>
-					<h3>
-						{{.loginReturnData}}
-					</h3>
-				</div>
-				<div class="col-md-4">
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-    <script src="../static/js/jquery.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/scripts.js"></script>
-  </body>
 </html>

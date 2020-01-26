@@ -27,3 +27,13 @@ func confGetParams() ParamsData {
 	}
 	return data
 }
+
+func ConfGetHostName() string {
+	conf := getConf()
+	return conf.String("WebHostName")
+}
+
+func ConfGetWebName() string {
+	conf := getConf()
+	return conf.String("WebApplicationName")
+}

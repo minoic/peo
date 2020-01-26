@@ -11,6 +11,8 @@ type LoginController struct {
 
 func (this *LoginController) Get() {
 	this.TplName = "Login.html"
+	this.Data["webHostName"] = models.ConfGetHostName()
+	this.Data["webApplicationName"] = models.ConfGetWebName()
 }
 
 func (this *LoginController) Post() {
