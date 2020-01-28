@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"NTPE/models/Email"
+	"NTPE/models"
 	"github.com/astaxie/beego"
 )
 
@@ -11,5 +11,6 @@ type IndexController struct {
 
 func (this *IndexController) Get() {
 	this.TplName = "Index.html"
-	Email.TestMail()
+	this.Data["webHostName"] = models.ConfGetHostName()
+	this.Data["webApplicationName"] = models.ConfGetWebName()
 }
