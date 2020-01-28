@@ -1,19 +1,21 @@
 package Email
 
 import (
+	"NTPE/models"
 	"github.com/astaxie/beego"
 	"github.com/xhit/go-simple-mail"
 )
 
 func TestMail() {
+	conf := models.GetConf()
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
 	if err != nil {
 		panic(err)
 	}
-	mailHtml, _ := GenRegConfirmMail("haha")
+	mailHtml, _ := genRegConfirmMail("haha")
 	email := mail.NewMSG()
-	email.SetFrom("MinoAdmin <admin@mail.nightgod.xyz>").
+	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo("781482205@qq.com").
 		SetSubject("New Go Email").
 		SetBody(mail.TextHTML, mailHtml)

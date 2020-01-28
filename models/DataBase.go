@@ -65,7 +65,7 @@ func init() {
 }
 
 func GetDatabase() *gorm.DB {
-	conf := getConf()
+	conf := GetConf()
 	dialect := conf.String("Database")
 	switch dialect {
 	case "SQLITE":

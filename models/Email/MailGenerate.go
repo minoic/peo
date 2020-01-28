@@ -17,7 +17,7 @@ func getProd() hermes.Hermes {
 	}
 }
 
-func GenRegConfirmMail(userName string) (string, string) {
+func genRegConfirmMail(userName string) (string, string) {
 	h := getProd()
 	email := hermes.Email{
 		Body: hermes.Body{

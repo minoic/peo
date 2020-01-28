@@ -5,7 +5,7 @@ import (
 	"github.com/astaxie/beego/config"
 )
 
-func getConf() config.Configer {
+func GetConf() config.Configer {
 	conf, err := config.NewConfig("ini", "conf/settings.conf")
 	if err != nil {
 		panic("cant get settings.conf: " + err.Error())
@@ -15,7 +15,7 @@ func getConf() config.Configer {
 }
 
 func confGetParams() ParamsData {
-	conf := getConf()
+	conf := GetConf()
 	sec, err := conf.Bool("Serversecure")
 	if err != nil {
 		beego.Error(err.Error())
@@ -29,11 +29,11 @@ func confGetParams() ParamsData {
 }
 
 func ConfGetHostName() string {
-	conf := getConf()
+	conf := GetConf()
 	return conf.String("WebHostName")
 }
 
 func ConfGetWebName() string {
-	conf := getConf()
+	conf := GetConf()
 	return conf.String("WebApplicationName")
 }
