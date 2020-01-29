@@ -12,7 +12,7 @@ func main() {
 	beego.Router("/pe-admin-settings", &controllers.PEAdminSettingsController{})
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Router("/confirm/:key", &controllers.ConfirmController{})
-	beego.Router("/delay/:URL/:title/:detail", &controllers.DelayController{})
+	beego.Router("/delay", &controllers.DelayController{})
 	beego.ErrorController(&controllers.ErrorController{})
 	beego.Run()
 }

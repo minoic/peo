@@ -1,42 +1,43 @@
 package MinoEmail
 
 import (
-	"github.com/matcornic/v2"
+	"NTPE/models"
+	"github.com/matcornic/hermes"
 )
 
 func getProd() hermes.Hermes {
 	return hermes.Hermes{
 		Theme: new(hermes.Flat),
 		Product: hermes.Product{
-			Name:        "NTPE mail",
-			Link:        "http://localhost",
+			Name:        models.ConfGetWebName() + " Mail",
+			Link:        models.ConfGetHostName(),
 			Logo:        "https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png",
 			Copyright:   "Copyright © 2020 Mino. All rights reserved.",
-			TroubleText: "TroubleText?????",
+			TroubleText: "如果点击链接无效，请复制下列链接并在浏览器中打开：",
 		},
 	}
 }
 
-func genRegConfirmMail(userName string) (string, string) {
+func genRegConfirmMail(userName string, key string) (string, string) {
 	h := getProd()
 	email := hermes.Email{
 		Body: hermes.Body{
 			Name: userName,
 			Intros: []string{
-				"Welcome to NTPE! ",
+				"欢迎来到 " + models.ConfGetWebName(),
 			},
 			Actions: []hermes.Action{
 				{
-					Instructions: "click to confirm your register:",
+					Instructions: "确认您的注册：",
 					Button: hermes.Button{
 						Color: "#22BC66",
-						Text:  "Confirm your register",
-						Link:  "",
+						Text:  "点击确认注册",
+						Link:  models.ConfGetHostName() + "/confirm/" + key,
 					},
 				},
 			},
 			Outros: []string{
-				"Need help, or have questions? Just reply to this email, we'd love to help.",
+				"需要帮助请发邮件至 cytusd@outlook.com",
 			},
 		}}
 	mailBody, err := h.GenerateHTML(email)
@@ -47,5 +48,6 @@ func genRegConfirmMail(userName string) (string, string) {
 	if err != nil {
 		panic(err)
 	}
+	//beego.Info(mailBody,mailText)
 	return mailBody, mailText
 }

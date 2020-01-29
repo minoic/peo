@@ -16,12 +16,11 @@ type DelayInfo struct {
 
 func (this *DelayController) Get() {
 	this.TplName = "Delay.html"
-	this.Data["detail"] = this.Ctx.Input.Param(":detail")
-	this.Data["URL"] = this.Ctx.Input.Param(":URL")
-	this.Data["title"] = this.Ctx.Input.Param("title")
-	this.Data["time"] = this.Ctx.Input.Param("time")
+	this.Data["detail"] = this.GetString("detail")
+	this.Data["URL"] = this.GetString("URL")
+	this.Data["title"] = this.GetString("title")
 }
 
 func DelayRedirect(info DelayInfo, c *beego.Controller) {
-	c.Redirect("/delay/"+info.URL+"/"+info.Title+"/"+info.Detail, 302)
+	c.Redirect("/delay/?URL="+info.URL+"&title="+info.Title+"&detail="+info.Detail, 302)
 }

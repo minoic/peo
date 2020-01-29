@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"NTPE/models"
+	"NTPE/models/MinoEmail"
 	"github.com/astaxie/beego"
 	"github.com/satori/go.uuid"
 )
@@ -34,10 +35,12 @@ func (this *RegController) Post() {
 	this.Data["textData"] = "Register Success!"
 	newUuid := uuid.NewV4()
 	newUser := models.User{
-		Name:     registerName,
-		Email:    registerEmail,
-		Password: registerPassword,
-		UUID:     newUuid,
+		Name:           registerName,
+		Email:          registerEmail,
+		Password:       registerPassword,
+		UUID:           newUuid,
+		IsAdmin:        false,
+		EmailConfirmed: false,
 	}
 	DB := models.GetDatabase()
 	defer DB.Close()
@@ -45,6 +48,16 @@ func (this *RegController) Post() {
 	var tmp models.User
 	DB.Last(&tmp)
 	beego.Info("last user in sql:", tmp)
+	if err := MinoEmail.GenerateKey(newUser); err != nil {
+		beego.Error(err)
+	} else {
+		DelayRedirect(DelayInfo{
+			URL:    models.ConfGetHostName() + "/login",
+			Detail: "即将跳转到登陆页面",
+			Title:  "请前往您的邮箱进行验证！",
+		}, &this.Controller)
+	}
+
 	//todo: add Verification Code
 	//todo: create Pterodactyl user at the same time
 }

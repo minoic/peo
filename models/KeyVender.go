@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func randKey(keyLength int) string {
+func RandKey(keyLength int) string {
 	str := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := []byte(str)
 	var ret []byte
@@ -17,14 +17,14 @@ func randKey(keyLength int) string {
 	return string(ret)
 }
 
-func GeneKeys(keyAmount int, wareID int, validityTermInDay int, keyLength int) {
+func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) {
 	DB := GetDatabase()
 	defer DB.Close()
 	for i := 1; i <= keyAmount; i++ {
 		newKey := WareKey{
 			Model:  gorm.Model{},
 			WareID: wareID,
-			Key:    randKey(keyLength),
+			Key:    RandKey(keyLength),
 			Exp:    time.Now().AddDate(0, 0, validityTermInDay),
 		}
 		DB.Create(&newKey)

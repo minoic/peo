@@ -9,18 +9,19 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string
-	Email    string
-	Password string
-	IsAdmin  bool
-	UUID     uuid.UUID `gorm:"not null;unique"`
+	Name           string
+	Email          string
+	Password       string
+	IsAdmin        bool
+	EmailConfirmed bool
+	UUID           uuid.UUID `gorm:"not null;unique"`
 }
 
 //todo: encrypt user`s password
 
 type WareKey struct {
 	gorm.Model
-	WareID int
+	WareID uint
 	Key    string
 	Exp    time.Time
 }
@@ -51,16 +52,25 @@ type WareSpec struct {
 
 type WareEntity struct {
 	gorm.Model
-	UserID           int
+	UserID           uint
 	ServerExternalID string
 	UserExternalID   string
 	ValidDate        time.Time
 }
 
+type RegConfirmKey struct {
+	gorm.Model
+	Key       string
+	UserName  string
+	UserID    uint
+	UserEmail string
+	ValidTime time.Time
+}
+
 func init() {
 	DB := GetDatabase()
 	defer DB.Close()
-	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{})
+	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{}, &RegConfirmKey{})
 	return
 }
 

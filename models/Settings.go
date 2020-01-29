@@ -30,7 +30,14 @@ func confGetParams() ParamsData {
 
 func ConfGetHostName() string {
 	conf := GetConf()
-	return conf.String("WebHostName")
+	secure, err := conf.Bool("WebSecure")
+	if err != nil {
+		panic(err)
+	}
+	if secure {
+		return "https://" + conf.String("WebHostName")
+	}
+	return "http://" + conf.String("WebHostName")
 }
 
 func ConfGetWebName() string {

@@ -6,22 +6,22 @@ import (
 	"github.com/xhit/go-simple-mail"
 )
 
-func TestMail() {
+func SendConfirmMail(key models.RegConfirmKey) {
 	conf := models.GetConf()
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
 	if err != nil {
 		panic(err)
 	}
-	mailHtml, _ := genRegConfirmMail("haha")
+	mailHtml, _ := genRegConfirmMail(key.UserName, key.Key)
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
-		AddTo("781482205@qq.com").
-		SetSubject("New Go MinoEmail").
+		AddTo(key.UserEmail).
+		SetSubject(models.ConfGetWebName()+" 注册验证邮件").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		beego.Error(err)
 	} else {
-		beego.Info("mail sent successfully")
+		beego.Info("mail sent successfully to: " + key.UserEmail)
 	}
 }
