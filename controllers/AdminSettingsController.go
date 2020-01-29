@@ -39,12 +39,18 @@ func (this *PEAdminSettingsController) Get() {
 	DB := models.GetDatabase()
 	var user models.User
 	if DB.Where("Name = ?", userName).First(&user).RecordNotFound() {
-		beego.Info(userName + " user not found")
-		this.Redirect("/", 302)
+		DelayRedirect(DelayInfo{
+			URL:    models.ConfGetWebName(),
+			Detail: "正在跳转到主页",
+			Title:  "用户名未找到",
+		}, &this.Controller)
 	}
 	if !user.IsAdmin {
-		beego.Warn(userName + " cant visit the PEAdminSettings")
-		this.Redirect("/", 302)
+		DelayRedirect(DelayInfo{
+			URL:    models.ConfGetWebName(),
+			Detail: "正在跳转到主页",
+			Title:  "用户没有访问权限",
+		}, &this.Controller)
 	}
 	var s models.PEAdminSetting
 	if !DB.Where("Key = ?", "websiteName").First(&s).RecordNotFound() {
@@ -73,5 +79,9 @@ func (this *PEAdminSettingsController) Post() {
 		Key:   "websiteHost",
 		Value: websiteHost,
 	})
-	this.Redirect("/pe-admin-settings.conf", 302)
+	DelayRedirect(DelayInfo{
+		URL:    models.ConfGetWebName() + "/pe-admin-settings",
+		Detail: "正在跳转回设置页",
+		Title:  "更新设置成功",
+	}, &this.Controller)
 }
