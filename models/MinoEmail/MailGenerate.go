@@ -1,4 +1,4 @@
-package Email
+package MinoEmail
 
 import (
 	"github.com/matcornic/v2"

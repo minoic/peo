@@ -1,4 +1,4 @@
-package Email
+package MinoEmail
 
 import (
 	"NTPE/models"
@@ -17,7 +17,7 @@ func TestMail() {
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo("781482205@qq.com").
-		SetSubject("New Go Email").
+		SetSubject("New Go MinoEmail").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		beego.Error(err)

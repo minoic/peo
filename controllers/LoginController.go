@@ -22,7 +22,7 @@ func (this *LoginController) Post() {
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
 	var user models.User
-	if !DB.Where("Email = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
+	if !DB.Where("MinoEmail = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
 		if loginPass == user.Password {
 			this.Data["loginReturnData"] = "logged in!"
 			this.SetSession("LST", models.GeneToken(user.Name))

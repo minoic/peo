@@ -9,5 +9,9 @@ type ConfirmController struct {
 }
 
 func (this *ConfirmController) Get() {
-	DelayRedirect("www.baidu.com", "hahaha", &this.Controller)
+	DelayRedirect(DelayInfo{
+		URL:    "www.baidu.com",
+		Detail: "hahahahha",
+		Title:  "delay",
+	}, &this.Controller)
 }

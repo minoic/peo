@@ -1,4 +1,4 @@
-package Email
+package MinoEmail
 
 import (
 	"NTPE/models"
