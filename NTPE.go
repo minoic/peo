@@ -2,6 +2,7 @@ package main
 
 import (
 	"NTPE/controllers"
+	"NTPE/models"
 	"github.com/astaxie/beego"
 )
 
@@ -14,6 +15,7 @@ func main() {
 	beego.Router("/confirm/:key", &controllers.ConfirmController{})
 	beego.Router("/delay", &controllers.DelayController{})
 	beego.ErrorController(&controllers.ErrorController{})
+	models.LoopManager()
 	beego.Run()
 }
 

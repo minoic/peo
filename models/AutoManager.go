@@ -2,12 +2,19 @@ package models
 
 import (
 	"github.com/astaxie/beego"
-	_ "github.com/jordan-wright/email"
 	"time"
 )
 
 func LoopManager() {
-
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		for {
+			select {
+			case <-ticker.C:
+				go checkServers()
+			}
+		}
+	}()
 }
 
 func checkServers() {

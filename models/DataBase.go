@@ -72,7 +72,7 @@ type RegConfirmKey struct {
 func init() {
 	DB := GetDatabase()
 	defer DB.Close()
-	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{}, &RegConfirmKey{})
+	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{}, &RegConfirmKey{}, &WareEntity{})
 	return
 }
 
