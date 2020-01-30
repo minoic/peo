@@ -4,8 +4,21 @@ import (
 	"NTPE/models"
 	"NTPE/models/MinoEmail"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/cache"
+	"github.com/astaxie/beego/utils/captcha"
 	"github.com/satori/go.uuid"
 )
+
+var cpt *captcha.Captcha
+
+func init() {
+	// use beego cache system store the captcha data
+	store := cache.NewMemoryCache()
+	cpt = captcha.NewWithFilter("/captcha/", store)
+	cpt.StdHeight = 48
+	cpt.StdWidth = 100
+	cpt.ChallengeNums = 5
+}
 
 type RegController struct {
 	beego.Controller
@@ -24,7 +37,8 @@ func (this *RegController) Post() {
 	registerPassword := this.GetString("registerPassword")
 	registerPasswordConfirm := this.GetString("registerPasswordConfirm")
 	registerName := this.GetString("registerName")
-	if registerPassword != registerPasswordConfirm {
+	cptSuccess := cpt.VerifyReq(this.Ctx.Request)
+	if registerPassword != registerPasswordConfirm && cptSuccess {
 		beego.Info("user invalid post!")
 		this.Data["textType"] = "warning"
 		this.Data["textData"] = "Register Failed:Password invalid!"
@@ -57,7 +71,5 @@ func (this *RegController) Post() {
 			Title:  "请前往您的邮箱进行验证！",
 		}, &this.Controller)
 	}
-
-	//todo: add Verification Code
 	//todo: create Pterodactyl user at the same time
 }
