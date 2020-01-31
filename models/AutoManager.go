@@ -24,9 +24,9 @@ func checkServers() {
 	for _, entity := range entities {
 		if entity.ValidDate.Before(time.Now()) &&
 			entity.ValidDate.AddDate(0, 0, 7).After(time.Now()) {
-			server := PterodactylGetServer(confGetParams(), entity.ServerExternalID, true)
+			server := PterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true)
 			if server != (PterodactylServer{}) && !server.Suspended {
-				err := PterodactylSuspendServer(confGetParams(), server.ExternalId)
+				err := PterodactylSuspendServer(ConfGetParams(), server.ExternalId)
 				if err != nil {
 					beego.Error(err)
 				}
@@ -39,7 +39,7 @@ func checkServers() {
 				confirmDeleteServer(entity)
 				entity.DeleteStatus = 1
 			} else if entity.DeleteStatus == 2 {
-				err := PterodactylDeleteServer(confGetParams(), entity.ServerExternalID)
+				err := PterodactylDeleteServer(ConfGetParams(), entity.ServerExternalID)
 				if err != nil {
 					beego.Error(err)
 				}

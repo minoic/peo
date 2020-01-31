@@ -34,6 +34,7 @@ type PEAdminSetting struct {
 
 type WareSpec struct {
 	gorm.Model
+	PricePerMonth     float32
 	WareName          string
 	WareDescription   string
 	Memory            int

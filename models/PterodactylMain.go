@@ -485,7 +485,7 @@ func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 }
 
 func Test() {
-	params := confGetParams()
+	params := ConfGetParams()
 	PterodactylTestConnection(params)
 	ret := PterodactylGetAllocations(params, 6)
 	for k, v := range ret {

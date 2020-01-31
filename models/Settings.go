@@ -14,7 +14,7 @@ func GetConf() config.Configer {
 	return conf
 }
 
-func confGetParams() ParamsData {
+func ConfGetParams() ParamsData {
 	conf := GetConf()
 	sec, err := conf.Bool("Serversecure")
 	if err != nil {

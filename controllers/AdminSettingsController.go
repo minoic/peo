@@ -33,7 +33,11 @@ func (this *PEAdminSettingsController) Get() {
 	this.TplName = "PEAdminSettings.html"
 	sess := this.StartSession()
 	if !models.SessionIslogged(sess) {
-		this.Redirect("/login", 302)
+		DelayRedirect(DelayInfo{
+			URL:    models.ConfGetHostName() + "/login",
+			Detail: "正在跳转到登录",
+			Title:  "您还没有登录",
+		}, &this.Controller)
 	}
 	userName := sess.Get("UN").(string)
 	DB := models.GetDatabase()
