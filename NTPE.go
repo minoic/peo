@@ -14,10 +14,10 @@ func main() {
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Router("/confirm/:key", &controllers.ConfirmController{})
 	beego.Router("/delay", &controllers.DelayController{})
+	beego.Router("/ware", &controllers.WareSellerController{})
 	beego.ErrorController(&controllers.ErrorController{})
 	models.LoopManager()
 	beego.Run()
 }
 
-//todo: add WareSale page
 //todo: add alipay/wxpay or more payment method
