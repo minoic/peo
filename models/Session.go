@@ -42,3 +42,5 @@ func SessionGetUser(sess session.Store) (User, error) {
 	}
 	return user, nil
 }
+
+//todo: add support for redis/memcache

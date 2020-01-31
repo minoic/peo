@@ -539,3 +539,5 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 	}
 	return nil
 }
+
+//todo: check the Unified interface

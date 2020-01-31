@@ -50,5 +50,5 @@ func checkServers() {
 }
 
 func confirmDeleteServer(entity WareEntity) {
-
+	//todo: add a page to manage the deletion
 }

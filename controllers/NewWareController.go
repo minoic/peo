@@ -157,6 +157,7 @@ func (this *NewWareController) Post() {
 		WareDescription: this.GetString("ware_description"),
 		DockerImage:     this.GetString("image"),
 	}
+	//todo: handle errors
 	ware.Cpu, _ = this.GetInt("cpu")
 	ware.Disk, _ = this.GetInt("disk")
 	ware.Memory, _ = this.GetInt("memory")
@@ -166,6 +167,7 @@ func (this *NewWareController) Post() {
 	ware.Egg, _ = this.GetInt("egg_id")
 	ware.OomDisabled, _ = this.GetBool("oom_disabled")
 	ware.StartOnCompletion, _ = this.GetBool("start_on_completion")
+	//todo: handle database number
 	e, _ := this.GetInt("exp")
 	ware.ValidDuration = time.Duration(e*24) * time.Hour
 	e, _ = this.GetInt("delete_time")

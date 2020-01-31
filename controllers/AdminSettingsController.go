@@ -85,3 +85,5 @@ func (this *PEAdminSettingsController) Post() {
 		Title:  "更新设置成功",
 	}, &this.Controller)
 }
+
+//todo: use settings.conf instead of database
