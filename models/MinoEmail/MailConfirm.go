@@ -26,7 +26,7 @@ func ConfirmKey(key string) bool {
 	return false
 }
 
-func GenerateKey(user models.User) error {
+func ConfirmRegister(user models.User) error {
 	if user.EmailConfirmed {
 		return errors.New("User Already confirmed! ")
 	}

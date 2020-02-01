@@ -62,13 +62,26 @@ func (this *RegController) Post() {
 	var tmp models.User
 	DB.Last(&tmp)
 	beego.Info("last user in sql:", tmp)
-	if err := MinoEmail.GenerateKey(newUser); err != nil {
-		beego.Error(err)
+	if models.ConfGetSMTPEnabled() {
+		if err := MinoEmail.ConfirmRegister(newUser); err != nil {
+			beego.Error(err)
+			DelayRedirect(DelayInfo{
+				URL:    models.ConfGetHostName() + "/reg",
+				Detail: "即将跳转到注册页面",
+				Title:  "邮件发送失败，请联系网站管理员！",
+			}, &this.Controller)
+		} else {
+			DelayRedirect(DelayInfo{
+				URL:    models.ConfGetHostName() + "/login",
+				Detail: "即将跳转到登陆页面",
+				Title:  "请前往您的邮箱进行验证！",
+			}, &this.Controller)
+		}
 	} else {
 		DelayRedirect(DelayInfo{
 			URL:    models.ConfGetHostName() + "/login",
 			Detail: "即将跳转到登陆页面",
-			Title:  "请前往您的邮箱进行验证！",
+			Title:  "注册成功！",
 		}, &this.Controller)
 	}
 	//todo: create Pterodactyl user at the same time
