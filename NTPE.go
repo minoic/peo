@@ -2,7 +2,7 @@ package main
 
 import (
 	"NTPE/controllers"
-	"NTPE/models"
+	"NTPE/models/AutoManager"
 	"github.com/astaxie/beego"
 )
 
@@ -17,7 +17,7 @@ func main() {
 	beego.Router("/ware", &controllers.WareSellerController{})
 	beego.Router("/user-settings", &controllers.UserSettingsController{})
 	beego.ErrorController(&controllers.ErrorController{})
-	models.LoopManager()
+	AutoManager.LoopManager()
 	beego.Run()
 }
 

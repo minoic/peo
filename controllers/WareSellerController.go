@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"NTPE/models"
+	"NTPE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"strconv"
 )
@@ -22,9 +23,8 @@ type intro struct {
 	Second string
 }
 
-var wares []ware
-
 func (this *WareSellerController) Get() {
+	var wares []ware
 	this.TplName = "WareSeller.html"
 	this.Data["wareTitle"] = "Title"
 	this.Data["wareDetail"] = "Detail"
@@ -47,7 +47,7 @@ func (this *WareSellerController) Get() {
 	}
 	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
 		for _, w := range waresInDB {
-			egg := models.PterodactylGetEgg(models.ConfGetParams(), w.Nest, w.Egg)
+			egg := PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), w.Nest, w.Egg)
 			wares = append(wares, ware{
 				WareName:          w.WareName,
 				WarePricePerMonth: strconv.FormatFloat(float64(w.PricePerMonth), 'f', 2, 64),
@@ -96,7 +96,8 @@ func (this *WareSellerController) Get() {
 			},
 		})
 	}
-	//beego.Info(wares)
+	beego.Info(len(wares))
+	beego.Info(wares)
 	this.Data["wares"] = wares
 }
 

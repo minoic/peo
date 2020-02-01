@@ -14,20 +14,6 @@ func GetConf() config.Configer {
 	return conf
 }
 
-func ConfGetParams() ParamsData {
-	conf := GetConf()
-	sec, err := conf.Bool("Serversecure")
-	if err != nil {
-		beego.Error(err.Error())
-	}
-	data := ParamsData{
-		Serverhostname: conf.String("Serverhostname"),
-		Serversecure:   sec,
-		Serverpassword: conf.String("Serverpassword"),
-	}
-	return data
-}
-
 func ConfGetHostName() string {
 	conf := GetConf()
 	secure, err := conf.Bool("WebSecure")

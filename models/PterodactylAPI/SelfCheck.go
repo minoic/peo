@@ -1,25 +1,14 @@
-package models
+package PterodactylAPI
 
 import (
+	"NTPE/models"
 	"github.com/astaxie/beego"
 	"time"
 )
 
-func LoopManager() {
-	go func() {
-		ticker := time.NewTicker(10 * time.Second)
-		for {
-			select {
-			case <-ticker.C:
-				go checkServers()
-			}
-		}
-	}()
-}
-
-func checkServers() {
-	var entities []WareEntity
-	DB := GetDatabase()
+func CheckServers() {
+	var entities []models.WareEntity
+	DB := models.GetDatabase()
 	DB.Find(&entities)
 	for _, entity := range entities {
 		if entity.ValidDate.Before(time.Now()) &&
@@ -49,6 +38,6 @@ func checkServers() {
 	}
 }
 
-func confirmDeleteServer(entity WareEntity) {
+func confirmDeleteServer(entity models.WareEntity) {
 	//todo: add a page to manage the deletion
 }
