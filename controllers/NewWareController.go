@@ -183,4 +183,9 @@ func (this *NewWareController) Post() {
 	ware.DeleteDuration = time.Duration(e*24) * time.Hour
 	DB := models.GetDatabase()
 	DB.Create(&ware)
+	DelayRedirect(DelayInfo{
+		URL:    "/new-ware",
+		Detail: "正在跳转回添加页面",
+		Title:  "添加商品成功！",
+	}, &this.Controller)
 }

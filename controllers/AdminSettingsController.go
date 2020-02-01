@@ -29,6 +29,7 @@ func init() {
 		})
 	}
 }
+
 func (this *PEAdminSettingsController) Get() {
 	this.TplName = "PEAdminSettings.html"
 	sess := this.StartSession()
@@ -67,6 +68,7 @@ func (this *PEAdminSettingsController) Get() {
 		beego.Info("value:" + s.Value)
 	}
 }
+
 func (this *PEAdminSettingsController) Post() {
 	this.TplName = "PEAdminSettings.html"
 	websiteName := this.GetString("websiteName")

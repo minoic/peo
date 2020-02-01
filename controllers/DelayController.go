@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"NTPE/models"
 	"github.com/astaxie/beego"
 )
 
@@ -23,4 +24,8 @@ func (this *DelayController) Get() {
 
 func DelayRedirect(info DelayInfo, c *beego.Controller) {
 	c.Redirect("/delay/?URL="+info.URL+"&title="+info.Title+"&detail="+info.Detail, 302)
+}
+
+func DelayRedirectGetURL(info DelayInfo) string {
+	return models.ConfGetHostName() + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
 }
