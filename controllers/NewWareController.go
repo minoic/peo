@@ -140,6 +140,13 @@ func init() {
 			Type:           "number",
 			AdditionalTags: "required",
 		},
+		{
+			Name:           "price",
+			FriendlyName:   "价格（每三十天/人民币）",
+			Description:    "",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
 	}
 }
 func (this *NewWareController) Get() {
@@ -165,6 +172,8 @@ func (this *NewWareController) Post() {
 	ware.Swap, _ = this.GetInt("swap")
 	ware.Nest, _ = this.GetInt("nest_id")
 	ware.Egg, _ = this.GetInt("egg_id")
+	price, _ := this.GetFloat("price", 999)
+	ware.PricePerMonth = float32(price)
 	ware.OomDisabled, _ = this.GetBool("oom_disabled")
 	ware.StartOnCompletion, _ = this.GetBool("start_on_completion")
 	//todo: handle database number

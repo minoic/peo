@@ -39,14 +39,24 @@ func (this *WareSellerController) Get() {
 	}
 	var waresInDB []models.WareSpec
 	DB := models.GetDatabase()
+	var emailText string
+	if models.ConfGetSMTPEnabled() {
+		emailText = "邮件提醒！"
+	} else {
+		emailText = ""
+	}
 	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
 		for _, w := range waresInDB {
 			egg := models.PterodactylGetEgg(models.ConfGetParams(), w.Nest, w.Egg)
 			wares = append(wares, ware{
 				WareName:          w.WareName,
-				WarePricePerMonth: strconv.FormatFloat(float64(w.PricePerMonth), 'f', 6, 64),
-				WarePricePerHour:  strconv.FormatFloat(float64(w.PricePerMonth)/30/24, 'f', 6, 64),
+				WarePricePerMonth: strconv.FormatFloat(float64(w.PricePerMonth), 'f', 2, 64),
+				WarePricePerHour:  strconv.FormatFloat(float64(w.PricePerMonth)/30/24, 'f', 2, 64),
 				Intros: []intro{
+					{
+						First:  "",
+						Second: w.WareDescription,
+					},
 					{
 						First:  strconv.Itoa(w.Cpu / 100),
 						Second: "个CPU核心",
@@ -61,11 +71,15 @@ func (this *WareSellerController) Get() {
 					},
 					{
 						First:  egg.DockerImage,
-						Second: "<br>Docker虚拟化隔离",
+						Second: "虚拟化隔离",
 					},
 					{
 						First:  egg.Description,
 						Second: "",
+					},
+					{
+						First:  "到期后帮您保留" + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + "天",
+						Second: emailText,
 					},
 				},
 			})

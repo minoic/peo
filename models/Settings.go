@@ -44,3 +44,13 @@ func ConfGetWebName() string {
 	conf := GetConf()
 	return conf.String("WebApplicationName")
 }
+
+func ConfGetSMTPEnabled() bool {
+	conf := GetConf()
+	enabled, err := conf.Bool("SMTPEnabled")
+	if err != nil {
+		beego.Error(err)
+		return false
+	}
+	return enabled
+}
