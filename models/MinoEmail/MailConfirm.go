@@ -1,8 +1,8 @@
 package MinoEmail
 
 import (
-	"NTPE/models"
 	"errors"
+	"git.ntmc.tech/root/MinoIC-PE/models"
 	"github.com/jinzhu/gorm"
 	"time"
 )

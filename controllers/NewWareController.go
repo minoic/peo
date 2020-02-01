@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"NTPE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"time"

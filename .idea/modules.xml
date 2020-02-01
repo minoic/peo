@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/NTPE.iml" filepath="$PROJECT_DIR$/.idea/NTPE.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/MinoIC-PE.iml" filepath="$PROJECT_DIR$/.idea/MinoIC-PE.iml" />
     </modules>
   </component>
 </project>

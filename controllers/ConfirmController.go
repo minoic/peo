@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"NTPE/models"
-	"NTPE/models/MinoEmail"
+	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
 	"github.com/astaxie/beego"
 )
 

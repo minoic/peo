@@ -1,7 +1,7 @@
 package PterodactylAPI
 
 import (
-	"NTPE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models"
 	"github.com/astaxie/beego"
 	"time"
 )

@@ -1,7 +1,7 @@
 package AutoManager
 
 import (
-	"NTPE/models/PterodactylAPI"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"time"
 )
 

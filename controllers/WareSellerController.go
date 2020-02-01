@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"NTPE/models"
-	"NTPE/models/PterodactylAPI"
+	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"strconv"
 )

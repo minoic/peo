@@ -1,8 +1,8 @@
 package main
 
 import (
-	"NTPE/controllers"
-	"NTPE/models/AutoManager"
+	"git.ntmc.tech/root/MinoIC-PE/controllers"
+	"git.ntmc.tech/root/MinoIC-PE/models/AutoManager"
 	"github.com/astaxie/beego"
 )
 
