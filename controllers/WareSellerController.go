@@ -96,8 +96,6 @@ func (this *WareSellerController) Get() {
 			},
 		})
 	}
-	beego.Info(len(wares))
-	beego.Info(wares)
 	this.Data["wares"] = wares
 }
 

@@ -24,7 +24,7 @@ func pterodactylGethostname(params ParamsData) string {
 
 func pterodactylApi(params ParamsData, data interface{}, endPoint string, method string) (string, int) {
 	url := pterodactylGethostname(params) + "/api/application/" + endPoint
-	beego.Info(url)
+	//beego.Info(url)
 	var res string
 	var status int
 	if method == "POST" || method == "PATCH" {
@@ -32,7 +32,7 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		if err != nil {
 			beego.Error("cant marshal data:" + err.Error())
 		}
-		beego.Info("ujson: ", string(ujson))
+		//beego.Info("ujson: ", string(ujson))
 		ubody := bytes.NewReader(ujson)
 		req, _ := http.NewRequest(method, url, ubody)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
@@ -48,7 +48,7 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		beego.Info("Pterodactyl Post status:" + resp.Status + " body: " + string(body))
+		//beego.Info("Pterodactyl Post status:" + resp.Status + " body: " + string(body))
 	} else {
 		req, _ := http.NewRequest(method, url, nil)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
@@ -62,7 +62,7 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		beego.Info("status: " + resp.Status)
+		//beego.Info("status: " + resp.Status)
 	}
 	return res, status
 }
@@ -80,7 +80,6 @@ func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (Pte
 		endPoint = "users/" + strconv.Itoa(ID.(int))
 	}
 	body, status := pterodactylApi(params, "", endPoint, "GET")
-	beego.Info(body, status)
 	if status == 404 || status == 400 {
 		return PterodactylUser{}, false
 	}
@@ -89,8 +88,6 @@ func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (Pte
 		Attributes PterodactylUser `json:"attributes"`
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-
-		beego.Info(dec.Attributes)
 		return dec.Attributes, true
 	}
 	return PterodactylUser{}, false
