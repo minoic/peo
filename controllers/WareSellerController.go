@@ -3,7 +3,6 @@ package controllers
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"strconv"
@@ -16,7 +15,6 @@ type WareSellerController struct {
 type ware struct {
 	WareName          string
 	WarePricePerMonth string
-	WarePricePerHour  string
 	Intros            []intro
 }
 
@@ -31,14 +29,6 @@ func (this *WareSellerController) Get() {
 	this.Data["wareTitle"] = "Title"
 	this.Data["wareDetail"] = "Detail"
 	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
-	sess := this.StartSession()
-	if !MinoSession.SessionIslogged(sess) {
-		this.Data["bottomLink"] = "/reg"
-		this.Data["bottomText"] = "注册账号"
-	} else {
-		this.Data["bottomLink"] = "/user-settings"
-		this.Data["bottomText"] = "控制台"
-	}
 	var waresInDB []MinoDatabase.WareSpec
 	DB := MinoDatabase.GetDatabase()
 	var emailText string
@@ -53,7 +43,6 @@ func (this *WareSellerController) Get() {
 			wares = append(wares, ware{
 				WareName:          w.WareName,
 				WarePricePerMonth: strconv.FormatFloat(float64(w.PricePerMonth), 'f', 2, 64),
-				WarePricePerHour:  strconv.FormatFloat(float64(w.PricePerMonth)/30/24, 'f', 2, 64),
 				Intros: []intro{
 					{
 						First:  "",
@@ -89,8 +78,7 @@ func (this *WareSellerController) Get() {
 	} else {
 		wares = append(wares, ware{
 			WareName:          "没有商品",
-			WarePricePerMonth: "0",
-			WarePricePerHour:  "0",
+			WarePricePerMonth: "9999",
 			Intros: []intro{{
 				First:  "去添加一些商品",
 				Second: "这里就会显示",

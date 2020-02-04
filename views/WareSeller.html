@@ -1,241 +1,54 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="translated-ltr">
-<script src="../static/WareSeller/bat.js" async=""></script>
-<script async="" src="../static/WareSeller/fbevents.js"></script>
-<script async="" src="../static/WareSeller/analytics.js"></script>
-<script src="chrome-extension://ljdobmomdgdljniojadhoplhkpialdid/page/prompt.js"></script>
-<script src="chrome-extension://ljdobmomdgdljniojadhoplhkpialdid/page/runScript.js"></script>
+<html lang="zh">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta charset="utf-8">
     <title>{{.webApplicationName}} {{.wareTitle}}</title>
-    <meta http-equiv="Content-Language" content="zh">
-
-    <!-- Favicons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png">
-    <meta name="msapplication-config" content="/browserconfig.xml">
-    <link rel="mask-icon" href="https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png" color="#5bbad5">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="theme-color" content="#ffffff">
-
-    <!-- Styles -->
-    <link href="../static/WareSeller/style.css" rel="stylesheet">
-    <link href="../static/WareSeller/custom.css" rel="stylesheet">
-
-    <noscript>
-        <link href="../static/WareSeller/no-script.css" rel="stylesheet">
-    </noscript>
-    <script async="async" type="text/javascript" src="../static/WareSeller/roundtrip.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    {{template "tpls/perfectCSS.html" .}}
 </head>
-<body class="vsc-initialized scrolled-top">
 
-<div class="menu__overlay"></div>
-
-<div class="site">
-
-    <section class="section section--borderless-md" id="pricing">
-        <div class="container ">
-            <h2 class="section__title "><font style="vertical-align: inherit;"><font
-                            style="vertical-align: inherit;">{{.wareTitle}}</font></font>
-            </h2>
-
-            <p class="section__desc"><font style="vertical-align: inherit;"><font
-                            style="vertical-align: inherit;">{{.wareDetail}}</font></font>
-            </p>
-
-            <div class="section__content">
-                <div class="section__packages">
-                    <div class="row row--eq-height packages">
-                        {{range .wares}}
-                            {{template "tpls/ware.html" .}}
-                        {{end}}
-                    </div>
-                </div>
-            </div>
-            <div class="section__actions text-center  ">
-                <a class="btn btn--primary btn--lg" href="{{.bottomLink}}">
-                    <span class="btn__text"><font style="vertical-align: inherit;"><font
-                                    style="vertical-align: inherit;">{{.bottomText}}</font></font></span>
-                    <span class="btn-hover-effect"></span></a>
-
-            </div>
+<body class="overflow-hidden">
+{{template "tpls/navbar.html" .}}
+<!-- Overlay Div -->
+<div id="overlay" class="transparent"></div>
+<div id="wrapper" class="preload">
+    <div class="padding-md">
+        <div class="section-header">
+            <hr class="left visible-lg">
+            <br>
+            <span>
+						{{.wareTitle}}
+					</span>
+            <hr class="right visible-lg">
+            {{.wareDetail}}
         </div>
-    </section>
-    <defs>
-        <style type="text/css">
-            .direct-access-st0 {
-                fill: none;
-                stroke: #0C70DE;
-            }
+    </div><!-- /.padding -->
+    <div class="container">
+        <div class="row row-merge">
+            {{range .wares}}
+                {{template "tpls/ware.html" .}}
+            {{end}}
+        </div><!-- /.row -->
+    </div><!-- /.padding-md -->
+</div><!-- /main-container -->
+</div><!-- /wrapper -->
 
-            .direct-access-st1 {
-                opacity: 0.16;
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: url(#direct-access-gradient_4);
-            }
+<a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
 
-            .direct-access-st2 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #F0F1F5;
-            }
+<!-- Logout confirmation -->
+<div class="custom-popup width-100" id="logoutConfirm">
+    <div class="padding-md">
+        <h4 class="m-top-none"> Do you want to logout?</h4>
+    </div>
 
-            .direct-access-st3 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #007BFC;
-            }
-
-            .direct-access-st4 {
-                opacity: 0.1;
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                enable-background: new;
-            }
-
-            .direct-access-st5 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #FFFFFF;
-            }
-
-            .direct-access-st6 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: url(#direct-access-gradient_3);
-            }
-
-            .direct-access-st7 {
-                fill: url(#direct-access-gradient_2);
-            }
-
-            .direct-access-st8 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: url(#direct-access-gradient_5);
-            }
-
-            .direct-access-st9 {
-                opacity: 0.18;
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #7F859D;
-                enable-background: new;
-            }
-
-            .direct-access-st10 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #7A8099;
-            }
-
-            .direct-access-st11 {
-                opacity: 0.64;
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #E8EBF2;
-                stroke: #333C5E;
-                stroke-width: 4;
-                stroke-linecap: round;
-                stroke-linejoin: round;
-                enable-background: new;
-            }
-
-            .direct-access-st12 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #E8EBF2;
-                stroke: #007BFC;
-                stroke-width: 4;
-                stroke-linecap: round;
-                stroke-linejoin: round;
-            }
-
-            .direct-access-st13 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #FFFFFF;
-                stroke: #FFFFFF;
-                stroke-width: 2;
-                stroke-linecap: round;
-                stroke-linejoin: round;
-            }
-
-            .direct-access-st14 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: url(#direct-access-gradient_1);
-            }
-
-            .direct-access-st15 {
-                opacity: 0.18;
-                clip-rule: evenodd;
-                enable-background: new;
-            }
-
-            .direct-access-st16 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #FFFFFF;
-                stroke: #6D758F;
-                stroke-width: 3;
-                stroke-linecap: round;
-                stroke-dasharray: 1.000000e-03, 6;
-            }
-
-            .direct-access-st17 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #01AEFC;
-                stroke: #01AEFC;
-                stroke-width: 2;
-                stroke-linecap: round;
-                stroke-linejoin: round;
-            }
-
-            .direct-access-st18 {
-                fill-rule: evenodd;
-                clip-rule: evenodd;
-                fill: #FFFFFF;
-                stroke: #6D758F;
-                stroke-width: 2;
-                stroke-linecap: round;
-                stroke-linejoin: round;
-            }
-        </style>
-        <lineargradient id="direct-access-gradient_1" gradientUnits="userSpaceOnUse" x1="-7.019043e-03" y1="148.9978"
-                        x2="178" y2="148.9978">
-            <stop offset="0" style="stop-color:#3F4B75"></stop>
-            <stop offset="1" style="stop-color:#636F99"></stop>
-        </lineargradient>
-        <lineargradient id="direct-access-gradient_2" gradientUnits="userSpaceOnUse" x1="230.1963" y1="294.5854"
-                        x2="303.9937" y2="166.7646">
-            <stop offset="0" style="stop-color:#BDC3D5"></stop>
-            <stop offset="1" style="stop-color:#E4E8EF"></stop>
-        </lineargradient>
-        <lineargradient id="direct-access-gradient_3" gradientUnits="userSpaceOnUse" x1="225.6735" y1="430.1552"
-                        x2="325.0244" y2="258.0744">
-            <stop offset="0" style="stop-color:#353D6C"></stop>
-            <stop offset="1" style="stop-color:#636F99"></stop>
-        </lineargradient>
-        <lineargradient id="direct-access-gradient_4" gradientUnits="userSpaceOnUse" x1="265.8298" y1="370.3984"
-                        x2="265.8298" y2="487.6016">
-            <stop offset="0" style="stop-color:#353D6C"></stop>
-            <stop offset="0.64" style="stop-color:#636F99;stop-opacity: 0"></stop>
-        </lineargradient>
-        <lineargradient id="direct-access-gradient_5" gradientUnits="userSpaceOnUse" x1="526.1868" y1="283.6894"
-                        x2="371.8135" y2="16.307">
-            <stop offset="0" style="stop-color:#D4D8E5"></stop>
-            <stop offset="1" style="stop-color:#E4E8EF"></stop>
-        </lineargradient>
-    </defs>
-    </svg>
+    <div class="text-center">
+        <a class="btn btn-success m-right-sm" href="login.html">Logout</a>
+        <a class="btn btn-danger logoutConfirm_close">Cancel</a>
+    </div>
 </div>
+{{template "tpls/perfectJS.html" .}}
+
 </body>
 </html>

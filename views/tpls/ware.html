@@ -1,26 +1,20 @@
-<div class="col-lg-4">
-    <a class="package package--boxed package--shadow" href="https://www.vultr.com/register/">
-        <div class="package__header has-divider">
-            <h3 class="package__title h6"><font style="vertical-align: inherit;"><font
-                            style="vertical-align: inherit;">{{.WareName}}</font></font></h3>
-            <div class="package__price price price--lg price--centered text-primary">
-                                        <span class="price__value"><b><font style="vertical-align: inherit;"><font
-                                                            style="vertical-align: inherit;">￥{{.WarePricePerMonth}} </font></font></b><sub
-                                                    class="price__suffix"><font style="vertical-align: inherit;"><font
-                                                            style="vertical-align: inherit;">/月</font></font></sub></span>
-                <div class="price__desc text-default"><font style="vertical-align: inherit;"><font
-                                style="vertical-align: inherit;">￥ {{.WarePricePerHour}} /小时</font></font></div>
-            </div>
+<div class="col-md-3 col-sm-6">
+    <div class="pricing-widget">
+        <div class="pricing-head">
+            {{.WareName}}
         </div>
-        <div class="package__body">
-            <ul class="package__list text-default">
+        <div class="pricing-body">
+            <div class="pricing-cost">
+                <strong class="block">￥{{.WarePricePerMonth}}</strong>
+                <small>每月</small>
+            </div>
+            <ul class="pricing-list text-center">
+                <li><a class="btn btn-sm btn-default">开始您的一元2天试用！</a></li>
                 {{range .Intros}}
-                    <li class="package__list-item"><b><font style="vertical-align: inherit;"><font
-                                        style="vertical-align: inherit;">{{.First}}</font></font></b><font
-                                style="vertical-align: inherit;"><font
-                                    style="vertical-align: inherit;"> {{.Second}}</font></font></li>
+                    <li>{{.First}} <strong>{{.Second}}</strong></li>
                 {{end}}
+                <li class="text-center"><a href="#" class="btn btn-default btn-success">购买</a></li>
             </ul>
         </div>
-    </a>
-</div>
+    </div><!-- /pricing-widget -->
+</div><!-- /.col -->
