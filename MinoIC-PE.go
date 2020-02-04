@@ -16,6 +16,7 @@ func main() {
 	beego.Router("/delay", &controllers.DelayController{})
 	beego.Router("/ware", &controllers.WareSellerController{})
 	beego.Router("/user-settings", &controllers.UserSettingsController{})
+	beego.Router("/user-console", &controllers.UserConsoleController{})
 	beego.ErrorController(&controllers.ErrorController{})
 	AutoManager.LoopManager()
 	beego.Run()

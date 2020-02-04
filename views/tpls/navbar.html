@@ -1,0 +1,29 @@
+<header class="navbar navbar-fixed-top bg-white">
+    <div class="container">
+        <div class="navbar-header">
+            <a href="{{.webHostName}}" class="navbar-brand"><span class="text-danger">{{.webApplicationName}}</span> 账户控制</a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/ware">商品列表</a>
+                </li>
+                <li>
+                    <a href="/user-settings">账户设置</a>
+                </li>
+                <li>
+                    <a href="/user-console">控制台</a>
+                </li>
+                <li>
+                    <a href="https://help.ntmc.tech">腐竹帮助页面</a>
+                </li>
+                {{if .notLoggedIn}}
+                    <li>
+                        <a href="/log">登录/注册</a>
+                    </li>
+                {{end}}
+            </ul>
+        </nav>
+
+    </div>
+</header>
