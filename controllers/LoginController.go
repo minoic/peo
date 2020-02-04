@@ -23,10 +23,7 @@ func (this *LoginController) Post() {
 	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
-	loginRemember, err := this.GetBool("loginRemember")
-	if err != nil {
-		beego.Error(err)
-	}
+	loginRemember, _ := this.GetBool("loginRemember", false)
 	var user MinoDatabase.User
 	if !DB.Where("Email = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
 		if loginPass == user.Password {
@@ -34,8 +31,13 @@ func (this *LoginController) Post() {
 			this.SetSession("LST", MinoSession.GeneToken(user.Name, loginRemember))
 			this.SetSession("ID", user.ID)
 		} else {
-			this.Data["loginReturnData"] = "login failed!!"
+			this.Data["hasError"] = true
+			this.Data["hasErrorText"] = "密码错误！"
 		}
+	} else {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "用户不存在！"
 	}
-	return
+	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
+	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
 }

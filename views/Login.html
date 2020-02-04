@@ -48,12 +48,17 @@
                     </div>
                     <div class="form-group">
                         <label class="label-checkbox inline">
-                            <input type="checkbox" class="regular-checkbox chk-delete" name="loginRemember"/>
+                            <input type="checkbox" class="regular-checkbox chk-delete" name="loginRemember" value="true"/>
                             <span class="custom-checkbox info bounceIn animation-delay4"></span>
                         </label>
                         记住我的登录
                     </div>
                     <hr/>
+                    {{if .hasError}}
+                        <div class="alert alert-danger">
+                            <strong>登录失败！</strong> {{.hasErrorText}}
+                        </div>
+                    {{end}}
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="form-group">
