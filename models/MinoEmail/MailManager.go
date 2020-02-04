@@ -1,13 +1,14 @@
 package MinoEmail
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
 	"github.com/xhit/go-simple-mail"
 )
 
-func SendConfirmMail(key models.RegConfirmKey) {
-	conf := models.GetConf()
+func SendConfirmMail(key MinoDatabase.RegConfirmKey) {
+	conf := MinoConfigure.GetConf()
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
 	if err != nil {
@@ -17,7 +18,7 @@ func SendConfirmMail(key models.RegConfirmKey) {
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo(key.UserEmail).
-		SetSubject(models.ConfGetWebName()+" 注册验证邮件").
+		SetSubject(MinoConfigure.ConfGetWebName()+" 注册验证邮件").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		beego.Error(err)

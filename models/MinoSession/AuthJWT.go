@@ -1,4 +1,4 @@
-package models
+package MinoSession
 
 import (
 	"github.com/astaxie/beego"

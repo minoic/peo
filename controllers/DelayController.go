@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego"
 )
 
@@ -27,5 +27,5 @@ func DelayRedirect(info DelayInfo, c *beego.Controller) {
 }
 
 func DelayRedirectGetURL(info DelayInfo) string {
-	return models.ConfGetHostName() + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
+	return MinoConfigure.ConfGetHostName() + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
 }

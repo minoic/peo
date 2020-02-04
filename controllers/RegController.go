@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
@@ -26,8 +27,8 @@ type RegController struct {
 
 func (this *RegController) Get() {
 	this.TplName = "Register.html"
-	this.Data["webHostName"] = models.ConfGetHostName()
-	this.Data["webApplicationName"] = models.ConfGetWebName()
+	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
+	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
 }
 
 func (this *RegController) Post() {
@@ -48,7 +49,7 @@ func (this *RegController) Post() {
 	this.Data["textType"] = "success"
 	this.Data["textData"] = "Register Success!"
 	newUuid := uuid.NewV4()
-	newUser := models.User{
+	newUser := MinoDatabase.User{
 		Name:           registerName,
 		Email:          registerEmail,
 		Password:       registerPassword,
@@ -56,30 +57,30 @@ func (this *RegController) Post() {
 		IsAdmin:        false,
 		EmailConfirmed: false,
 	}
-	DB := models.GetDatabase()
+	DB := MinoDatabase.GetDatabase()
 	defer DB.Close()
 	DB.Create(&newUser)
-	var tmp models.User
+	var tmp MinoDatabase.User
 	DB.Last(&tmp)
 	beego.Info("last user in sql:", tmp)
-	if models.ConfGetSMTPEnabled() {
+	if MinoConfigure.ConfGetSMTPEnabled() {
 		if err := MinoEmail.ConfirmRegister(newUser); err != nil {
 			beego.Error(err)
 			DelayRedirect(DelayInfo{
-				URL:    models.ConfGetHostName() + "/reg",
+				URL:    MinoConfigure.ConfGetHostName() + "/reg",
 				Detail: "即将跳转到注册页面",
 				Title:  "邮件发送失败，请联系网站管理员！",
 			}, &this.Controller)
 		} else {
 			DelayRedirect(DelayInfo{
-				URL:    models.ConfGetHostName() + "/login",
+				URL:    MinoConfigure.ConfGetHostName() + "/login",
 				Detail: "即将跳转到登陆页面",
 				Title:  "请前往您的邮箱进行验证！",
 			}, &this.Controller)
 		}
 	} else {
 		DelayRedirect(DelayInfo{
-			URL:    models.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.ConfGetHostName() + "/login",
 			Detail: "即将跳转到登陆页面",
 			Title:  "注册成功！",
 		}, &this.Controller)

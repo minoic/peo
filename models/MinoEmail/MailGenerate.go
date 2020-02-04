@@ -1,7 +1,7 @@
 package MinoEmail
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/matcornic/hermes"
 )
 
@@ -9,8 +9,8 @@ func getProd() hermes.Hermes {
 	return hermes.Hermes{
 		Theme: new(hermes.Flat),
 		Product: hermes.Product{
-			Name:        models.ConfGetWebName() + " Mail",
-			Link:        models.ConfGetHostName(),
+			Name:        MinoConfigure.ConfGetWebName() + " Mail",
+			Link:        MinoConfigure.ConfGetHostName(),
 			Logo:        "https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png",
 			Copyright:   "Copyright © 2020 Mino. All rights reserved.",
 			TroubleText: "如果点击链接无效，请复制下列链接并在浏览器中打开：",
@@ -24,7 +24,7 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 		Body: hermes.Body{
 			Name: userName,
 			Intros: []string{
-				"欢迎来到 " + models.ConfGetWebName(),
+				"欢迎来到 " + MinoConfigure.ConfGetWebName(),
 			},
 			Actions: []hermes.Action{
 				{
@@ -32,7 +32,7 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "点击确认注册",
-						Link:  models.ConfGetHostName() + "/confirm/" + key,
+						Link:  MinoConfigure.ConfGetHostName() + "/confirm/" + key,
 					},
 				},
 			},

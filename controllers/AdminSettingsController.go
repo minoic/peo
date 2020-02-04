@@ -1,7 +1,9 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 )
@@ -11,18 +13,18 @@ type PEAdminSettingsController struct {
 }
 
 func init() {
-	DB := models.GetDatabase()
-	var temp models.PEAdminSetting
+	DB := MinoDatabase.GetDatabase()
+	var temp MinoDatabase.PEAdminSetting
 	if DB.Where("Key = ?", "websiteName").First(&temp).RecordNotFound() {
-		DB.Create(&models.PEAdminSetting{
+		DB.Create(&MinoDatabase.PEAdminSetting{
 			Model: gorm.Model{},
 			Key:   "websiteName",
 			Value: "DefaultName",
 		})
 	}
-	temp = models.PEAdminSetting{}
+	temp = MinoDatabase.PEAdminSetting{}
 	if DB.Where("Key = ?", "websiteHost").First(&temp).RecordNotFound() {
-		DB.Create(&models.PEAdminSetting{
+		DB.Create(&MinoDatabase.PEAdminSetting{
 			Model: gorm.Model{},
 			Key:   "websiteHost",
 			Value: "localhost",
@@ -33,36 +35,36 @@ func init() {
 func (this *PEAdminSettingsController) Get() {
 	this.TplName = "PEAdminSettings.html"
 	sess := this.StartSession()
-	if !models.SessionIslogged(sess) {
+	if !MinoSession.SessionIslogged(sess) {
 		DelayRedirect(DelayInfo{
-			URL:    models.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.ConfGetHostName() + "/login",
 			Detail: "正在跳转到登录",
 			Title:  "您还没有登录",
 		}, &this.Controller)
 	}
 	userName := sess.Get("UN").(string)
-	DB := models.GetDatabase()
-	var user models.User
+	DB := MinoDatabase.GetDatabase()
+	var user MinoDatabase.User
 	if DB.Where("Name = ?", userName).First(&user).RecordNotFound() {
 		DelayRedirect(DelayInfo{
-			URL:    models.ConfGetWebName(),
+			URL:    MinoConfigure.ConfGetWebName(),
 			Detail: "正在跳转到主页",
 			Title:  "用户名未找到",
 		}, &this.Controller)
 	}
 	if !user.IsAdmin {
 		DelayRedirect(DelayInfo{
-			URL:    models.ConfGetWebName(),
+			URL:    MinoConfigure.ConfGetWebName(),
 			Detail: "正在跳转到主页",
 			Title:  "用户没有访问权限",
 		}, &this.Controller)
 	}
-	var s models.PEAdminSetting
+	var s MinoDatabase.PEAdminSetting
 	if !DB.Where("Key = ?", "websiteName").First(&s).RecordNotFound() {
 		this.Data["websiteNameDef"] = s.Value
 		beego.Info("value:" + s.Value)
 	}
-	s = models.PEAdminSetting{}
+	s = MinoDatabase.PEAdminSetting{}
 	if !DB.Where("Key = ?", "websiteHost").First(&s).RecordNotFound() {
 		this.Data["websiteHostDef"] = s.Value
 		beego.Info("value:" + s.Value)
@@ -74,19 +76,19 @@ func (this *PEAdminSettingsController) Post() {
 	websiteName := this.GetString("websiteName")
 	websiteHost := this.GetString("websiteHost")
 	beego.Info(websiteHost)
-	DB := models.GetDatabase()
-	DB.Model(&models.PEAdminSetting{}).Where("Key = ?", "websiteName").Update(&models.PEAdminSetting{
+	DB := MinoDatabase.GetDatabase()
+	DB.Model(&MinoDatabase.PEAdminSetting{}).Where("Key = ?", "websiteName").Update(&MinoDatabase.PEAdminSetting{
 		Model: gorm.Model{},
 		Key:   "websiteName",
 		Value: websiteName,
 	})
-	DB.Model(&models.PEAdminSetting{}).Where("Key = ?", "websiteHost").Update(&models.PEAdminSetting{
+	DB.Model(&MinoDatabase.PEAdminSetting{}).Where("Key = ?", "websiteHost").Update(&MinoDatabase.PEAdminSetting{
 		Model: gorm.Model{},
 		Key:   "websiteHost",
 		Value: websiteHost,
 	})
 	DelayRedirect(DelayInfo{
-		URL:    models.ConfGetWebName() + "/pe-admin-settings",
+		URL:    MinoConfigure.ConfGetWebName() + "/pe-admin-settings",
 		Detail: "正在跳转回设置页",
 		Title:  "更新设置成功",
 	}, &this.Controller)

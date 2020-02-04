@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego"
 )
 
@@ -11,6 +11,6 @@ type IndexController struct {
 
 func (this *IndexController) Get() {
 	this.TplName = "Index.html"
-	this.Data["webHostName"] = models.ConfGetHostName()
-	this.Data["webApplicationName"] = models.ConfGetWebName()
+	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
+	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
 }

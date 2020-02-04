@@ -1,14 +1,14 @@
 package PterodactylAPI
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
 	"time"
 )
 
 func CheckServers() {
-	var entities []models.WareEntity
-	DB := models.GetDatabase()
+	var entities []MinoDatabase.WareEntity
+	DB := MinoDatabase.GetDatabase()
 	DB.Find(&entities)
 	for _, entity := range entities {
 		if entity.ValidDate.Before(time.Now()) &&
@@ -38,6 +38,6 @@ func CheckServers() {
 	}
 }
 
-func confirmDeleteServer(entity models.WareEntity) {
+func confirmDeleteServer(entity MinoDatabase.WareEntity) {
 	//todo: add a page to manage the deletion
 }

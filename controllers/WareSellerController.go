@@ -1,7 +1,9 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"strconv"
@@ -28,19 +30,19 @@ func (this *WareSellerController) Get() {
 	this.TplName = "WareSeller.html"
 	this.Data["wareTitle"] = "Title"
 	this.Data["wareDetail"] = "Detail"
-	this.Data["webApplicationName"] = models.ConfGetWebName()
+	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
 	sess := this.StartSession()
-	if !models.SessionIslogged(sess) {
+	if !MinoSession.SessionIslogged(sess) {
 		this.Data["bottomLink"] = "/reg"
 		this.Data["bottomText"] = "注册账号"
 	} else {
 		this.Data["bottomLink"] = "/user-settings"
 		this.Data["bottomText"] = "控制台"
 	}
-	var waresInDB []models.WareSpec
-	DB := models.GetDatabase()
+	var waresInDB []MinoDatabase.WareSpec
+	DB := MinoDatabase.GetDatabase()
 	var emailText string
-	if models.ConfGetSMTPEnabled() {
+	if MinoConfigure.ConfGetSMTPEnabled() {
 		emailText = "邮件提醒！"
 	} else {
 		emailText = ""

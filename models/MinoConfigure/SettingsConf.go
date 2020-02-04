@@ -1,4 +1,4 @@
-package models
+package MinoConfigure
 
 import (
 	"github.com/astaxie/beego"

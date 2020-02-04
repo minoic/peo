@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
 	"github.com/astaxie/beego"
 )
@@ -15,13 +15,13 @@ func (this *ConfirmController) Get() {
 	ok := MinoEmail.ConfirmKey(key)
 	if ok {
 		DelayRedirect(DelayInfo{
-			URL:    models.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.ConfGetHostName() + "/login",
 			Detail: "即将跳转到登陆页面",
 			Title:  "注册验证成功！",
 		}, &this.Controller)
 	} else {
 		DelayRedirect(DelayInfo{
-			URL:    models.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.ConfGetHostName() + "/login",
 			Detail: "即将跳转到登陆页面",
 			Title:  "注册验证失败！请重新验证！",
 		}, &this.Controller)

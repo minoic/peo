@@ -1,7 +1,8 @@
-package models
+package MinoSession
 
 import (
 	"errors"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/session"
 	"strconv"
@@ -33,12 +34,12 @@ func SessionIslogged(sess session.Store) bool {
 	}
 }
 
-func SessionGetUser(sess session.Store) (User, error) {
+func SessionGetUser(sess session.Store) (MinoDatabase.User, error) {
 	userID := sess.Get("ID").(int)
-	DB := GetDatabase()
-	var user User
+	DB := MinoDatabase.GetDatabase()
+	var user MinoDatabase.User
 	if DB.Where("ID = ?", userID).First(&user).RecordNotFound() {
-		return User{}, errors.New("cant find user: " + strconv.Itoa(userID))
+		return MinoDatabase.User{}, errors.New("cant find user: " + strconv.Itoa(userID))
 	}
 	return user, nil
 }

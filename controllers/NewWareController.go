@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"time"
@@ -158,7 +158,7 @@ func (this *NewWareController) Get() {
 func (this *NewWareController) Post() {
 	this.TplName = "NewWare.html"
 	//formText,_:=template.ParseFiles("tpls/forms/text.html")
-	ware := models.WareSpec{
+	ware := MinoDatabase.WareSpec{
 		Model:           gorm.Model{},
 		WareName:        this.GetString("ware_name"),
 		WareDescription: this.GetString("ware_description"),
@@ -181,7 +181,7 @@ func (this *NewWareController) Post() {
 	ware.ValidDuration = time.Duration(e*24) * time.Hour
 	e, _ = this.GetInt("delete_time")
 	ware.DeleteDuration = time.Duration(e*24) * time.Hour
-	DB := models.GetDatabase()
+	DB := MinoDatabase.GetDatabase()
 	DB.Create(&ware)
 	DelayRedirect(DelayInfo{
 		URL:    "/new-ware",

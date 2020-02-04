@@ -1,6 +1,7 @@
 package models
 
 import (
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/jinzhu/gorm"
 	"math/rand"
 	"time"
@@ -18,10 +19,10 @@ func RandKey(keyLength int) string {
 }
 
 func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) {
-	DB := GetDatabase()
+	DB := MinoDatabase.GetDatabase()
 	defer DB.Close()
 	for i := 1; i <= keyAmount; i++ {
-		newKey := WareKey{
+		newKey := MinoDatabase.WareKey{
 			Model:  gorm.Model{},
 			WareID: wareID,
 			Key:    RandKey(keyLength),

@@ -1,7 +1,7 @@
 package PterodactylAPI
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 	"strconv"
@@ -20,7 +20,7 @@ func ClearCache() {
 }
 
 func ConfGetParams() ParamsData {
-	conf := models.GetConf()
+	conf := MinoConfigure.GetConf()
 	sec, err := conf.Bool("Serversecure")
 	if err != nil {
 		beego.Error(err.Error())

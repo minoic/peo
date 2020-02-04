@@ -1,14 +1,14 @@
 package MinoEmail
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego"
 	"github.com/xhit/go-simple-mail"
 	"time"
 )
 
 func getSTMPClient() *mail.SMTPServer {
-	conf := models.GetConf()
+	conf := MinoConfigure.GetConf()
 	temp := conf.String("SMTPEncryption")
 	encryption := mail.EncryptionTLS
 	if temp == "SSL" {

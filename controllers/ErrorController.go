@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego"
 )
 
@@ -20,7 +20,7 @@ func (this *ErrorController) Error400() {
 
 func (this *ErrorController) Error401() {
 	DelayRedirect(DelayInfo{
-		URL:    models.ConfGetHostName(),
+		URL:    MinoConfigure.ConfGetHostName(),
 		Detail: "未经授权，请求要求验证身份",
 		Title:  "401 Unauthorized",
 	}, &this.Controller)
@@ -29,7 +29,7 @@ func (this *ErrorController) Error401() {
 
 func (this *ErrorController) Error403() {
 	DelayRedirect(DelayInfo{
-		URL:    models.ConfGetHostName(),
+		URL:    MinoConfigure.ConfGetHostName(),
 		Detail: "服务器拒绝请求",
 		Title:  "403 Forbidden",
 	}, &this.Controller)
@@ -38,7 +38,7 @@ func (this *ErrorController) Error403() {
 
 func (this *ErrorController) Error404() {
 	DelayRedirect(DelayInfo{
-		URL:    models.ConfGetHostName(),
+		URL:    MinoConfigure.ConfGetHostName(),
 		Detail: "找不到指定页面",
 		Title:  "404 Not Found",
 	}, &this.Controller)
