@@ -39,10 +39,12 @@ func (this *RegController) Post() {
 	registerPasswordConfirm := this.GetString("registerPasswordConfirm")
 	registerName := this.GetString("registerName")
 	cptSuccess := cpt.VerifyReq(this.Ctx.Request)
-	agreement, _ := this.GetBool("agreement", false)
+	agreement, err := this.GetBool("agreement", false)
+	if err != nil {
+		beego.Error(err)
+	}
 	DB := MinoDatabase.GetDatabase()
 	defer DB.Close()
-	beego.Info(registerName + " " + registerEmail + " " + registerPassword + " " + registerPasswordConfirm)
 	if !cptSuccess {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "验证码输入错误，请重试！"
@@ -91,7 +93,8 @@ func (this *RegController) Post() {
 				Title:  "注册成功！",
 			}, &this.Controller)
 		}
-
 	}
+	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
+	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
 	//todo: create Pterodactyl user at the same time
 }

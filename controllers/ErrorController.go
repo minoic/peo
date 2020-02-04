@@ -45,6 +45,15 @@ func (this *ErrorController) Error404() {
 	this.TplName = "Delay.html"
 }
 
+func (this *ErrorController) Error405() {
+	DelayRedirect(DelayInfo{
+		URL:    MinoConfigure.ConfGetHostName(),
+		Detail: "不被允许的方法: " + this.Ctx.Request.Method,
+		Title:  "405 Method not Allowed",
+	}, &this.Controller)
+	this.TplName = "Delay.html"
+}
+
 func (this *ErrorController) Error500() {
 	DelayRedirect(DelayInfo{
 		URL:    this.Ctx.Request.Referer(),

@@ -12,6 +12,8 @@ func LoopManager() {
 			select {
 			case <-ticker.C:
 				go PterodactylAPI.CheckServers()
+			case <-ticker.C:
+				go PterodactylAPI.CacheNeededEggs()
 			}
 		}
 	}()

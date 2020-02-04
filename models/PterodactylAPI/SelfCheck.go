@@ -38,6 +38,16 @@ func CheckServers() {
 	}
 }
 
+func CacheNeededEggs() {
+	var wareSpecs []MinoDatabase.WareSpec
+	DB := MinoDatabase.GetDatabase()
+	if !DB.Find(&wareSpecs).RecordNotFound() {
+		for _, spec := range wareSpecs {
+			PterodactylGetEgg(ConfGetParams(), spec.Nest, spec.Egg)
+		}
+	}
+}
+
 func confirmDeleteServer(entity MinoDatabase.WareEntity) {
 	//todo: add a page to manage the deletion
 }
