@@ -13,10 +13,14 @@ func init() {
 	AuthAlgo = jwt.HmacSha512(key)
 }
 
-func GeneToken(username string) string {
+func GeneToken(username string, remember bool) string {
 	claims := jwt.NewClaim()
 	claims.Set("username", username)
-	claims.SetTime("end", time.Now().Add(30*24*time.Hour))
+	if remember {
+		claims.SetTime("end", time.Now().AddDate(0, 1, 0))
+	} else {
+		claims.SetTime("end", time.Now().AddDate(0, 0, 1))
+	}
 	if token, err := AuthAlgo.Encode(claims); err != nil {
 		beego.Info("cant GeneToken for " + username)
 		return ""

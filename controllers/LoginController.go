@@ -23,15 +23,15 @@ func (this *LoginController) Post() {
 	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
-	loginRemember, _ := this.GetBool("loginRemember")
-	if loginRemember {
-
+	loginRemember, err := this.GetBool("loginRemember")
+	if err != nil {
+		beego.Error(err)
 	}
 	var user MinoDatabase.User
 	if !DB.Where("Email = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
 		if loginPass == user.Password {
 			this.Data["loginReturnData"] = "logged in!"
-			this.SetSession("LST", MinoSession.GeneToken(user.Name))
+			this.SetSession("LST", MinoSession.GeneToken(user.Name, loginRemember))
 			this.SetSession("ID", user.ID)
 		} else {
 			this.Data["loginReturnData"] = "login failed!!"
