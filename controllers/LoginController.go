@@ -23,6 +23,10 @@ func (this *LoginController) Post() {
 	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
+	loginRemember, _ := this.GetBool("loginRemember")
+	if loginRemember {
+
+	}
 	var user MinoDatabase.User
 	if !DB.Where("Email = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
 		if loginPass == user.Password {

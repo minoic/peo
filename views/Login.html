@@ -1,49 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>{{.webApplicationName}} 登录</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="../static/css/Login.css">
-    <title>{{.webApplicationName}} Login</title>
-</head>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Bootstrap core CSS -->
+    <link href="../static/perfect/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link href="../static/perfect/css/font-awesome.min.css" rel="stylesheet">
+	<!-- Perfect -->
+	<link href="../static/perfect/css/app.min.css" rel="stylesheet">
 
-<body>
-    <div class="login-box">
-        <div class="logo">
-            <a href="{{.webHostName}}">{{.webApplicationName}} Login</a>
-        </div>
-        <div class="box">
-            <div class="header">
-                <span>Welcome to {{.webApplicationName}}</span>
-            </div>
-            <div class="body">
-                <form role="form" method="post" id="login">
-                    <div class="username">
-                        <div>
-                            <i></i>
-                        </div>
-                        <input autocomplete="on" spellcheck="false" type="text" placeholder="Username" name="loginEOU">
-                    </div>
-                    <div class="password">
-                        <div>
-                            <i></i>
-                        </div>
-                        <input autocomplete="on" spellcheck="false" type="password" placeholder="Password" name="loginPass">
-                    </div>
-                </form>
-            </div>
-            <div class="footer">
-                <button type="submit" form="login">
-                    <span>Login</span>
-                </button>
-                <a href="/reg">No account? Register now!</a>
-                <a href="" style="float: right;">Forget Password</a>
-            </div>
-        </div>
-    </div>
-    <script src="../static/js/Login.js"></script>
-</body>
+  </head>
 
+  <body>
+	<div class="login-wrapper">
+		<div class="text-center">
+			<h2 class="fadeInUp animation-delay8" style="font-weight:bold">
+				<span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span>
+			</h2>
+		</div>
+		<div class="login-widget animation-delay1">	
+			<div class="panel panel-default">
+				<div class="panel-heading clearfix">
+					<div class="pull-left">
+						<i class="fa fa-lock fa-lg"></i> 登录
+					</div>
+
+					<div class="pull-right">
+						<span style="font-size:11px;">还没有账号？</span>
+						<a class="btn btn-default btn-xs login-link" href="/reg" style="margin-top:-2px;"><i class="fa fa-plus-circle"></i> 注册</a>
+					</div>
+				</div>
+				<div class="panel-body">
+					<form class="form-login" method="post">
+						<div class="form-group">
+							<label>用户名或邮箱</label>
+							<input type="text" placeholder="输入您注册时用的用户名或邮箱" class="form-control input-sm bounceIn animation-delay2" name="loginEOU">
+						</div>
+						<div class="form-group">
+							<label>密码</label>
+							<input type="password" placeholder="输入密码" class="form-control input-sm bounceIn animation-delay4" name="loginPass">
+						</div>
+						<div class="form-group">
+							<label class="label-checkbox inline">
+								<input type="checkbox" class="regular-checkbox chk-delete" name="loginRemember"/>
+								<span class="custom-checkbox info bounceIn animation-delay4"></span>
+							</label>
+							记住我的登录
+						</div>
+						<hr/>
+						<div class="row">
+							<div class="col-lg-8">
+								<div class="form-group">
+									<a href="#">忘记密码？</a>
+								</div>
+							</div>
+							<div class="col-lg-4">
+								<button class="btn btn-success btn-sm bounceIn animation-delay5 pull-right" type="submit"><i class="fa fa-sign-in"></i> 登录</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div><!-- /panel -->
+		</div><!-- /login-widget -->
+	</div><!-- /login-wrapper -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    
+    <!-- Jquery -->
+	<script src="../static/perfect/js/jquery-1.10.2.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <script src="../static/perfect/bootstrap/js/bootstrap.min.js"></script>
+   
+	<!-- Modernizr -->
+	<script src='../static/perfect/js/modernizr.min.js'></script>
+   
+    <!-- Pace -->
+	<script src='../static/perfect/js/pace.min.js'></script>
+   
+	<!-- Popup Overlay -->
+	<script src='../static/perfect/js/jquery.popupoverlay.min.js'></script>
+   
+    <!-- Slimscroll -->
+	<script src='../static/perfect/js/jquery.slimscroll.min.js'></script>
+   
+	<!-- Cookie -->
+	<script src='../static/perfect/js/jquery.cookie.min.js'></script>
+
+	<!-- Perfect -->
+	<script src="../static/perfect/js/app/app.js"></script>
+  </body>
 </html>

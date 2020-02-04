@@ -1,71 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="utf-8">
+    <title>Registration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="../static/css/Register.css">
-    <title>{{.webApplicationName}} Register</title>
-</head>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Bootstrap core CSS -->
+    <link href="../static/perfect/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link href="../static/perfect/css/font-awesome.min.css" rel="stylesheet">
+	<!-- Perfect -->
+	<link href="../static/perfect/css/app.min.css" rel="stylesheet">
+	
+  </head>
 
-<body>
-    <div class="login-box">
-        <div class="logo">
-            <a href="{{.webHostName}}">{{.webApplicationName}} Register</a>
-        </div>
-        <div class="box">
-            <div class="header">
-                <span>Welcome to {{.webApplicationName}}</span>
-            </div>
-            <div class="body">
-                <form id="register" method="post">
-                    <div class="username form-item">
-                        <div class="prepend">
-                            <i></i>
-                        </div>
-                        <input autocomplete="off" spellcheck="false" type="text" placeholder="Username" name="registerName">
-					</div>
-					<div class="email form-item">
-                        <div class="prepend">
-                            <i></i>
-                        </div>
-                        <input autocomplete="off" spellcheck="false" type="text" placeholder="Email Address" name="registerEmail">
-                    </div>
-                    <div class="password form-item">
-                        <div class="prepend">
-                            <i></i>
-                        </div>
-                        <input autocomplete="off" spellcheck="false" type="password" placeholder="Password" name="registerPassword">
-					</div>
-					<div class="password form-item">
-                        <div class="prepend">
-                            <i></i>
-                        </div>
-                        <input autocomplete="off" spellcheck="false" type="password" placeholder="Password Again" name="registerPasswordConfirm">
-					</div>
-                    <div class="captcha form-item">
-                        <div class="prepend">
-                            <i></i>
-                        </div>
-                        <div>
-                            <input autocomplete="off" spellcheck="false" type="text" placeholder="Captcha" name="registerCaptcha">
-                        </div>
-                        <div class="img">
-                            {{create_captcha}}
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="footer">
-                <button type="submit" form="register">
-                    <span>Register</span>
-                </button>
-                <a href="/login">Already have an account? Log in now!</a>
-            </div>
-        </div>
-    </div>
-    <script src="../static/js/Login.js"></script>
-</body>
+  <body>
+	<div class="login-wrapper">
+		<div class="text-center">
+			<h2 class="fadeInUp animation-delay8" style="font-weight:bold">
+				<span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span>
+			</h2>
+	    </div>
+		<div class="login-widget animation-delay1">	
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<i class="fa fa-plus-circle fa-lg"></i> 注册
+				</div>
+				<div class="panel-body">
+					<form class="form-login" method="post">
+						<div class="form-group">
+							<label>用户名</label>
+							<input type="text" placeholder="输入用户名，确认后将无法更改！" class="form-control input-sm bounceIn animation-delay2" name="registerName">
+						</div><!-- /form-group -->
+						<div class="form-group">
+							<label>登录密码</label>
+							<input type="password" placeholder="设置您的登录密码" class="form-control input-sm bounceIn animation-delay3" name="registerPasswordConfirm">
+						</div><!-- /form-group -->
+						<div class="form-group">
+							<label>确认登录密码</label>
+							<input type="password" placeholder="确认您的登录密码，应与上面的密码保持一致" class="form-control input-sm bounceIn animation-delay4" name="registerPassword">
+						</div><!-- /form-group -->
+						<div class="form-group">
+							<label>邮箱</label>
+							<input type="email" placeholder="输入您常用的邮箱地址" class="form-control input-sm bounceIn animation-delay5" name="registerEmail">
+						</div><!-- /form-group -->
+						<div class="row">
+							<div class="col-lg-8">
+								<div class="form-group">
+									<label>验证码</label>
+									<input type="text" placeholder="我们需要确认您不是机器人" class="form-control input-sm bounceIn animation-delay6" name="registerCaptcha">
+								</div><!-- /form-group -->
+							</div>
+							<div class="col-lg-4">
+								<div class="img bounceIn animation-delay6" title="看不清？点击刷新！">
+									{{create_captcha}}
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="label-checkbox">
+								<input type="checkbox"/>
+								<span class="custom-checkbox info bounceIn animation-delay7"></span>
+								我同意 <a href="#">用户协议</a>
+							</label>
+						</div><!-- /form-group -->
+						<div class="seperator"></div>
+						<div class="form-group">
+							<div class="controls">
+								已有账户？ <a href="/login" class="primary-font login-link">登录</a>
+							</div>
+						</div><!-- /form-group -->
+							
+						<hr/>
+						<div class="form-group">
+							<div class="controls text-right">
+								<button class="btn btn-success btn-sm bounceIn animation-delay7" type="submit"><i class="fa fa-plus-circle"></i> 确认注册</button>
+							</div>
+						</div><!-- /form-group -->
+					</form>
+				</div>
+			</div><!-- /panel -->
+		</div><!-- /login-widget -->
+	</div><!-- /login-wrapper -->
+	
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    
+    <!-- Jquery -->
+	<script src="../static/perfect/js/jquery-1.10.2.min.js"></script>
+    
+    <!--Bootstrap-->
+    <script src="../static/perfect/bootstrap/js/bootstrap.min.js"></script>
+   
+	<!-- Modernizr -->
+	<script src='../static/perfect/js/modernizr.min.js'></script>
+	
+	<!-- Pace -->
+	<script src='../static/perfect/js/pace.min.js'></script>
+	
+	<!-- Popup Overlay -->
+	<script src='../static/perfect/js/jquery.popupoverlay.min.js'></script>
+	
+	<!-- Slimscroll -->
+	<script src='../static/perfect/js/jquery.slimscroll.min.js'></script>
+	
+	<!--Cookie-->
+	<script src='../static/perfect/js/jquery.cookie.min.js'></script>
 
+	<!--Perfect-->
+	<script src="../static/perfect/js/app/app.js"></script>
+  </body>
 </html>
