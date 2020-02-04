@@ -164,16 +164,16 @@
             document.getElementById("js-alert-head").innerHTML = e;
         var t = document.getElementById("js-sec-text").innerHTML,
             n = document.getElementById("js-sec-circle");
-            setInterval(function () {
-                    if (0 === t) top.location.href = '{{.URL}}';
-                    else {
-                        t --;
-                        document.getElementById("js-sec-text").innerHTML = t;
-                        var e = Math.round(t / 3 * 735);
-                        n.style.strokeDashoffset = e - 735
-                    }
-                },
-                970);
+        setInterval(function () {
+                if (0 === t) top.location.href = '{{.URL}}';
+                else {
+                    t--;
+                    document.getElementById("js-sec-text").innerHTML = t;
+                    var e = Math.round(t / 3 * 735);
+                    n.style.strokeDashoffset = e - 735
+                }
+            },
+            970);
     }</script>
 
 

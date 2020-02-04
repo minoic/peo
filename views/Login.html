@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head>
+<head>
     <meta charset="utf-8">
     <title>{{.webApplicationName}} 登录</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,65 +8,70 @@
     <meta name="author" content="">
     <!-- Bootstrap core CSS -->
     <link href="../static/perfect/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<!-- Font Awesome -->
-	<link href="../static/perfect/css/font-awesome.min.css" rel="stylesheet">
-	<!-- Perfect -->
-	<link href="../static/perfect/css/app.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="../static/perfect/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Perfect -->
+    <link href="../static/perfect/css/app.min.css" rel="stylesheet">
 
-  </head>
+</head>
 
-  <body>
-	<div class="login-wrapper">
-		<div class="text-center">
-			<h2 class="fadeInUp animation-delay8" style="font-weight:bold">
-				<span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span>
-			</h2>
-		</div>
-		<div class="login-widget animation-delay1">	
-			<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-					<div class="pull-left">
-						<i class="fa fa-lock fa-lg"></i> 登录
-					</div>
+<body>
+<div class="login-wrapper">
+    <div class="text-center">
+        <h2 class="fadeInUp animation-delay8" style="font-weight:bold">
+            <span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span>
+        </h2>
+    </div>
+    <div class="login-widget animation-delay1">
+        <div class="panel panel-default">
+            <div class="panel-heading clearfix">
+                <div class="pull-left">
+                    <i class="fa fa-lock fa-lg"></i> 登录
+                </div>
 
-					<div class="pull-right">
-						<span style="font-size:11px;">还没有账号？</span>
-						<a class="btn btn-default btn-xs login-link" href="/reg" style="margin-top:-2px;"><i class="fa fa-plus-circle"></i> 注册</a>
-					</div>
-				</div>
-				<div class="panel-body">
-					<form class="form-login" method="post">
-						<div class="form-group">
-							<label>用户名或邮箱</label>
-							<input type="text" placeholder="输入您注册时用的用户名或邮箱" class="form-control input-sm bounceIn animation-delay2" name="loginEOU">
-						</div>
-						<div class="form-group">
-							<label>密码</label>
-							<input type="password" placeholder="输入密码" class="form-control input-sm bounceIn animation-delay4" name="loginPass">
-						</div>
-						<div class="form-group">
-							<label class="label-checkbox inline">
-								<input type="checkbox" class="regular-checkbox chk-delete" name="loginRemember"/>
-								<span class="custom-checkbox info bounceIn animation-delay4"></span>
-							</label>
-							记住我的登录
-						</div>
-						<hr/>
-						<div class="row">
-							<div class="col-lg-8">
-								<div class="form-group">
-									<a href="#">忘记密码？</a>
-								</div>
-							</div>
-							<div class="col-lg-4">
-								<button class="btn btn-success btn-sm bounceIn animation-delay5 pull-right" type="submit"><i class="fa fa-sign-in"></i> 登录</button>
-							</div>
-						</div>
-					</form>
-				</div>
-			</div><!-- /panel -->
-		</div><!-- /login-widget -->
-	</div><!-- /login-wrapper -->
-	{{template "tpls/perfectJS.html" .}}
-  </body>
+                <div class="pull-right">
+                    <span style="font-size:11px;">还没有账号？</span>
+                    <a class="btn btn-default btn-xs login-link" href="/reg" style="margin-top:-2px;"><i
+                                class="fa fa-plus-circle"></i> 注册</a>
+                </div>
+            </div>
+            <div class="panel-body">
+                <form class="form-login" method="post">
+                    <div class="form-group">
+                        <label>用户名或邮箱</label>
+                        <input type="text" placeholder="输入您注册时用的用户名或邮箱"
+                               class="form-control input-sm bounceIn animation-delay2" name="loginEOU">
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" placeholder="输入密码"
+                               class="form-control input-sm bounceIn animation-delay4" name="loginPass">
+                    </div>
+                    <div class="form-group">
+                        <label class="label-checkbox inline">
+                            <input type="checkbox" class="regular-checkbox chk-delete" name="loginRemember"/>
+                            <span class="custom-checkbox info bounceIn animation-delay4"></span>
+                        </label>
+                        记住我的登录
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="form-group">
+                                <a href="#">忘记密码？</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <button class="btn btn-success btn-sm bounceIn animation-delay5 pull-right" type="submit"><i
+                                        class="fa fa-sign-in"></i> 登录
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div><!-- /panel -->
+    </div><!-- /login-widget -->
+</div><!-- /login-wrapper -->
+{{template "tpls/perfectJS.html" .}}
+</body>
 </html>

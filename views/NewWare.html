@@ -1,48 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Bootstrap 4, from LayoutIt!</title>
 
-  </head>
-  <body>
-  <script>
-	  $(document).ready(function(){
-		  $('input').iCheck({
-			  checkboxClass: 'icheckbox_square',
-			  radioClass: 'iradio_square',
-			  increaseArea: '20%' // optional
-		  });
-	  });
-  </script>
-    <div class="container-fluid">
-	<div class="row">
-		<div class="col-md-12">
-			<h3>
-				创建新的商品
-			</h3>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-2">
-		</div>
-		<div class="col-md-8">
-			<form role="form" method="post">
-				{{range .options}}
-					{{template "tpls/forms/text.html" .}}
-				{{end}}
-				<button type="submit" class="btn btn-primary">
-					Submit
-				</button>
-			</form>
-		</div>
-		<div class="col-md-2">
-		</div>
-	</div>
+</head>
+<body>
+<script>
+    $(document).ready(function () {
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square',
+            radioClass: 'iradio_square',
+            increaseArea: '20%' // optional
+        });
+    });
+</script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h3>
+                创建新的商品
+            </h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-8">
+            <form role="form" method="post">
+                {{range .options}}
+                    {{template "tpls/forms/text.html" .}}
+                {{end}}
+                <button type="submit" class="btn btn-primary">
+                    Submit
+                </button>
+            </form>
+        </div>
+        <div class="col-md-2">
+        </div>
+    </div>
 </div>
-  {{template "tpls/perfectJS.html" .}}
-  </body>
+{{template "tpls/perfectJS.html" .}}
+</body>
 </html>

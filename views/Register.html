@@ -1,88 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <title>Registration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-{{template "tpls/perfectCSS.html" .}}
+    {{template "tpls/perfectCSS.html" .}}
 
-  </head>
+</head>
 
-  <body>
+<body>
 
-	<div class="login-wrapper">
-		<div class="text-center">
-			<h2 class="fadeInUp animation-delay8" style="font-weight:bold">
-				<span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span>
-			</h2>
-	    </div>
-		<div class="login-widget animation-delay1">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<i class="fa fa-plus-circle fa-lg"></i> 注册
-				</div>
-				<div class="panel-body">
-					<form class="form-login" method="post">
-						<div class="form-group">
-							<label>用户名</label>
-							<input type="text" placeholder="输入用户名，确认后将无法更改！" class="form-control input-sm bounceIn animation-delay2" name="registerName">
-						</div><!-- /form-group -->
-						<div class="form-group">
-							<label>登录密码</label>
-							<input type="password" placeholder="设置您的登录密码" class="form-control input-sm bounceIn animation-delay3" name="registerPasswordConfirm">
-						</div><!-- /form-group -->
-						<div class="form-group">
-							<label>确认登录密码</label>
-							<input type="password" placeholder="确认您的登录密码，应与上面的密码保持一致" class="form-control input-sm bounceIn animation-delay4" name="registerPassword">
-						</div><!-- /form-group -->
-						<div class="form-group">
-							<label>邮箱</label>
-							<input type="email" placeholder="输入您常用的邮箱地址" class="form-control input-sm bounceIn animation-delay5" name="registerEmail">
-						</div><!-- /form-group -->
-						<div class="row">
-							<div class="col-md-8">
-								<div class="form-group">
-									<label>验证码</label>
-									<input type="text" autocomplete="off" placeholder="我们需要确认您不是机器人" class="form-control input-sm bounceIn animation-delay6" name="captcha">
-								</div>
-							</div>
-							<div class="col-md-4">
-								<div class="img bounceIn animation-delay6" title="看不清？点击刷新！">
-									{{create_captcha}}
-								</div>
-							</div>
-						</div><!-- /form-group -->
-						<div class="form-group">
-							<label class="label-checkbox">
-								<input type="checkbox" name="agreement"/>
-								<span class="custom-checkbox info bounceIn animation-delay7"></span>
-								我同意 <a href="#">用户协议</a>
-							</label>
-						</div><!-- /form-group -->
-						<div class="seperator"></div>
-						<div class="form-group">
-							<div class="controls">
-								已有账户？ <a href="/login" class="primary-font login-link">登录</a>
-							</div>
-						</div><!-- /form-group -->
-						<hr/>
-						{{if .hasError}}
-							<div class="alert alert-danger">
-								<strong>注册失败！</strong> {{.hasErrorText}}
-							</div>
-						{{end}}
-						<div class="form-group">
-							<div class="controls text-right">
-								<button class="btn btn-success btn-sm bounceIn animation-delay7" type="submit"><i class="fa fa-plus-circle"></i> 确认注册</button>
-							</div>
-						</div><!-- /form-group -->
-					</form>
-				</div>
-			</div><!-- /panel -->
-		</div><!-- /login-widget -->
-	</div><!-- /login-wrapper -->
+<div class="login-wrapper">
+    <div class="text-center">
+        <h2 class="fadeInUp animation-delay8" style="font-weight:bold">
+            <span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span>
+        </h2>
+    </div>
+    <div class="login-widget animation-delay1">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <i class="fa fa-plus-circle fa-lg"></i> 注册
+            </div>
+            <div class="panel-body">
+                <form class="form-login" method="post">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" placeholder="输入用户名，确认后将无法更改！"
+                               class="form-control input-sm bounceIn animation-delay2" name="registerName">
+                    </div><!-- /form-group -->
+                    <div class="form-group">
+                        <label>登录密码</label>
+                        <input type="password" placeholder="设置您的登录密码"
+                               class="form-control input-sm bounceIn animation-delay3" name="registerPasswordConfirm">
+                    </div><!-- /form-group -->
+                    <div class="form-group">
+                        <label>确认登录密码</label>
+                        <input type="password" placeholder="确认您的登录密码，应与上面的密码保持一致"
+                               class="form-control input-sm bounceIn animation-delay4" name="registerPassword">
+                    </div><!-- /form-group -->
+                    <div class="form-group">
+                        <label>邮箱</label>
+                        <input type="email" placeholder="输入您常用的邮箱地址"
+                               class="form-control input-sm bounceIn animation-delay5" name="registerEmail">
+                    </div><!-- /form-group -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label>验证码</label>
+                                <input type="text" autocomplete="off" placeholder="我们需要确认您不是机器人"
+                                       class="form-control input-sm bounceIn animation-delay6" name="captcha">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="img bounceIn animation-delay6" title="看不清？点击刷新！">
+                                {{create_captcha}}
+                            </div>
+                        </div>
+                    </div><!-- /form-group -->
+                    <div class="form-group">
+                        <label class="label-checkbox">
+                            <input type="checkbox" name="agreement"/>
+                            <span class="custom-checkbox info bounceIn animation-delay7"></span>
+                            我同意 <a href="#">用户协议</a>
+                        </label>
+                    </div><!-- /form-group -->
+                    <div class="seperator"></div>
+                    <div class="form-group">
+                        <div class="controls">
+                            已有账户？ <a href="/login" class="primary-font login-link">登录</a>
+                        </div>
+                    </div><!-- /form-group -->
+                    <hr/>
+                    {{if .hasError}}
+                        <div class="alert alert-danger">
+                            <strong>注册失败！</strong> {{.hasErrorText}}
+                        </div>
+                    {{end}}
+                    <div class="form-group">
+                        <div class="controls text-right">
+                            <button class="btn btn-success btn-sm bounceIn animation-delay7" type="submit"><i
+                                        class="fa fa-plus-circle"></i> 确认注册
+                            </button>
+                        </div>
+                    </div><!-- /form-group -->
+                </form>
+            </div>
+        </div><!-- /panel -->
+    </div><!-- /login-widget -->
+</div><!-- /login-wrapper -->
 {{template "tpls/perfectJS.html" .}}
-  </body>
+</body>
 </html>
