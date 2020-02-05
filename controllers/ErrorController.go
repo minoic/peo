@@ -39,7 +39,7 @@ func (this *ErrorController) Error403() {
 func (this *ErrorController) Error404() {
 	DelayRedirect(DelayInfo{
 		URL:    MinoConfigure.ConfGetHostName(),
-		Detail: "找不到指定页面",
+		Detail: "找不到指定页面: " + MinoConfigure.ConfGetHostName() + this.Ctx.Request.URL.String(),
 		Title:  "404 Not Found",
 	}, &this.Controller)
 	this.TplName = "Delay.html"

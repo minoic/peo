@@ -7,24 +7,29 @@
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <a href="/">商品列表</a>
+
+                    <a href="/"><i class="fa fa-shopping-cart fa-lg"></i> 商品列表</a>
                 </li>
                 <li>
-                    <a href="/user-settings">账户设置</a>
+                    <a href="/user-settings"><i class="fa fa-user fa-lg"></i> 账户设置</a>
                 </li>
                 <li>
-                    <a href="/user-console">控制台</a>
+                    <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> 控制台</a>
                 </li>
                 <li>
-                    <a href="https://help.ntmc.tech">腐竹帮助页面</a>
+                    <a href="https://help.ntmc.tech"><i class="fa fa-info-circle fa-lg"></i> 腐竹帮助页面</a>
                 </li>
                 {{if .notLoggedIn}}
                     <li>
-                        <a href="/login"><strong>登录/注册</strong></a>
+                        <a href="/login"><i class="fa fa-check fa-lg"></i> <strong>登录/注册</strong></a>
+                    </li>
+                {{end}}
+                {{if .isAdmin}}
+                    <li>
+                        <a href="/pe-admin-console"><i class="fa fa-cogs fa-lg"></i> 管理员面板</a>
                     </li>
                 {{end}}
             </ul>
         </nav>
-
     </div>
 </header>

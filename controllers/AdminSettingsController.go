@@ -73,6 +73,7 @@ func (this *PEAdminSettingsController) Get() {
 
 func (this *PEAdminSettingsController) Post() {
 	this.TplName = "PEAdminSettings.html"
+	handleNavbar(&this.Controller)
 	websiteName := this.GetString("websiteName")
 	websiteHost := this.GetString("websiteHost")
 	beego.Info(websiteHost)

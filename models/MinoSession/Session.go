@@ -35,7 +35,7 @@ func SessionIslogged(sess session.Store) bool {
 }
 
 func SessionGetUser(sess session.Store) (MinoDatabase.User, error) {
-	userID := sess.Get("ID").(int)
+	userID := int(sess.Get("ID").(uint))
 	DB := MinoDatabase.GetDatabase()
 	var user MinoDatabase.User
 	if DB.Where("ID = ?", userID).First(&user).RecordNotFound() {

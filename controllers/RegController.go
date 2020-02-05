@@ -27,8 +27,7 @@ type RegController struct {
 
 func (this *RegController) Get() {
 	this.TplName = "Register.html"
-	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
-	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
+	handleNavbar(&this.Controller)
 }
 
 func (this *RegController) Post() {
@@ -94,7 +93,6 @@ func (this *RegController) Post() {
 			}, &this.Controller)
 		}
 	}
-	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
-	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
+	handleNavbar(&this.Controller)
 	//todo: create Pterodactyl user at the same time
 }

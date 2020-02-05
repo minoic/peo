@@ -12,5 +12,13 @@ func handleNavbar(this *beego.Controller) {
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
 		this.Data["notLoggedIn"] = true
+	} else {
+		user, err := MinoSession.SessionGetUser(this.StartSession())
+		if err != nil {
+			beego.Error(err)
+		}
+		if user.IsAdmin {
+			this.Data["isAdmin"] = true
+		}
 	}
 }
