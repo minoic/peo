@@ -27,7 +27,8 @@ func (this *WareSellerController) Get() {
 	this.TplName = "WareSeller.html"
 	this.Data["wareTitle"] = "Title"
 	this.Data["wareDetail"] = "Detail"
-	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
+	handleNavbar(&this.Controller)
+	this.Ctx.ResponseWriter.Flush()
 	wareChan := make(chan []ware)
 	go func() {
 		var wares []ware
