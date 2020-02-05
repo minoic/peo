@@ -17,9 +17,12 @@ func main() {
 	beego.Router("/", &controllers.WareSellerController{})
 	beego.Router("/user-settings", &controllers.UserSettingsController{})
 	beego.Router("/user-console", &controllers.UserConsoleController{})
+	beego.Router("/user-terms", &controllers.UserTermsController{})
+	beego.Router("/forget-password", &controllers.ForgetPasswordController{})
 	beego.ErrorController(&controllers.ErrorController{})
 	AutoManager.LoopManager()
 	beego.Run()
 }
 
 //todo: add alipay/wxpay or more payment method
+//todo: add code comments

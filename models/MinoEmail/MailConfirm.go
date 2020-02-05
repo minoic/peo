@@ -42,6 +42,6 @@ func ConfirmRegister(user MinoDatabase.User) error {
 	DB := MinoDatabase.GetDatabase()
 	defer DB.Close()
 	DB.Create(&key)
-	SendConfirmMail(key)
+	sendConfirmMail(key)
 	return nil
 }

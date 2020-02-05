@@ -7,7 +7,7 @@ import (
 	"github.com/xhit/go-simple-mail"
 )
 
-func SendConfirmMail(key MinoDatabase.RegConfirmKey) {
+func sendConfirmMail(key MinoDatabase.RegConfirmKey) {
 	conf := MinoConfigure.GetConf()
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
@@ -25,4 +25,8 @@ func SendConfirmMail(key MinoDatabase.RegConfirmKey) {
 	} else {
 		beego.Info("mail sent successfully to: " + key.UserEmail)
 	}
+}
+
+func SendCaptcha() (string, error) {
+	return "", nil
 }
