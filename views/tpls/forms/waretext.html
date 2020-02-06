@@ -1,0 +1,4 @@
+<div class="form-group">
+    <label for="{{.Name}}">{{.FriendlyName}} {{if .Required}}<span class="label label-danger">必填</span>{{end}}</label>
+    <input type="{{.Type}}" class="form-control input-sm" id="{{.Name}}" placeholder="{{.Description}}" {{.AdditionalTags}}>
+</div><!-- /form-group -->

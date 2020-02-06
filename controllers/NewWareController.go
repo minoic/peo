@@ -4,6 +4,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
+	"strings"
 	"time"
 )
 
@@ -12,12 +13,14 @@ var WareInfo []InfoDetail
 type NewWareController struct {
 	beego.Controller
 }
+
 type InfoDetail struct {
 	Name           string
 	FriendlyName   string
 	Description    string
 	Type           string
 	AdditionalTags string
+	Required       bool
 }
 
 func init() {
@@ -84,12 +87,12 @@ func init() {
 			Type:           "number",
 			AdditionalTags: "required",
 		},
-		{
-			Name:         "dedicated_ip",
-			FriendlyName: "专用IP",
-			Description:  "为服务器设置专用IP (可选)",
-			Type:         "checkbox",
-		},
+		/*		{
+				Name:         "dedicated_ip",
+				FriendlyName: "专用IP",
+				Description:  "为服务器设置专用IP (可选)",
+				Type:         "checkbox",
+			},*/
 		{
 			Name:         "port_range",
 			FriendlyName: "配备给服务器的端口范围",
@@ -114,22 +117,22 @@ func init() {
 			Description:  "客户端将能够为其服务器创建此数量的数据库（可选）",
 			Type:         "int",
 		},
-		{
-			Name:         "start_on_completion",
-			FriendlyName: "立即启动",
-			Description:  "是否在安装完成后立即启动服务器",
-			Type:         "checkbox",
-		},
-		{
-			Name:         "oom_disabled",
-			FriendlyName: "开启 OOM Killer",
-			Description:  "是否应开启“内存不足杀手”（推荐关闭）",
-			Type:         "checkbox",
-		},
+		/*		{
+					Name:         "start_on_completion",
+					FriendlyName: "立即启动",
+					Description:  "是否在安装完成后立即启动服务器",
+					Type:         "checkbox",
+				},
+				{
+					Name:         "oom_disabled",
+					FriendlyName: "开启 OOM Killer",
+					Description:  "是否应开启“内存不足杀手”（推荐关闭）",
+					Type:         "checkbox",
+				},*/
 		{
 			Name:           "exp",
 			FriendlyName:   "有效时间（天）",
-			Description:    "商品从订购启动到被暂停的时间",
+			Description:    "商品从订购启动到被暂停的时间（目前仅支持3/30/90即试用/月付/季付）",
 			Type:           "number",
 			AdditionalTags: "required",
 		},
@@ -143,21 +146,37 @@ func init() {
 		{
 			Name:           "price",
 			FriendlyName:   "价格（每三十天/人民币）",
-			Description:    "",
+			Description:    "打折前的原价（任意正整数）",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "off",
+			FriendlyName:   "折扣",
+			Description:    "付款时减去的百分比(0-100的整数)",
 			Type:           "number",
 			AdditionalTags: "required",
 		},
 	}
 }
+
 func (this *NewWareController) Get() {
 	this.TplName = "NewWare.html"
+	for i, w := range WareInfo {
+		if strings.Index(w.AdditionalTags, "required") != -1 {
+			WareInfo[i].Required = true
+		} else {
+			WareInfo[i].Required = false
+		}
+	}
+	beego.Info(WareInfo)
 	this.Data["options"] = WareInfo
 }
 
 //todo: add nest/egg select instead of input ID
 func (this *NewWareController) Post() {
 	this.TplName = "NewWare.html"
-	//formText,_:=template.ParseFiles("tpls/forms/text.html")
+	//formText,_:=template.ParseFiles("tpls/forms/waretext.html")
 	ware := MinoDatabase.WareSpec{
 		Model:           gorm.Model{},
 		WareName:        this.GetString("ware_name"),
@@ -174,9 +193,10 @@ func (this *NewWareController) Post() {
 	ware.Egg, _ = this.GetInt("egg_id")
 	price, _ := this.GetFloat("price", 999)
 	ware.PricePerMonth = float32(price)
-	ware.OomDisabled, _ = this.GetBool("oom_disabled")
-	ware.StartOnCompletion, _ = this.GetBool("start_on_completion")
+	ware.OomDisabled = true
+	ware.StartOnCompletion = true
 	//todo: handle database number
+	//todo: check if post data is valid
 	e, _ := this.GetInt("exp")
 	ware.ValidDuration = time.Duration(e*24) * time.Hour
 	e, _ = this.GetInt("delete_time")
