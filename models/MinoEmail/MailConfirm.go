@@ -2,8 +2,8 @@ package MinoEmail
 
 import (
 	"errors"
-	"git.ntmc.tech/root/MinoIC-PE/models"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoKey"
 	"github.com/jinzhu/gorm"
 	"time"
 )
@@ -35,7 +35,7 @@ func ConfirmRegister(user MinoDatabase.User) error {
 		UserName:  user.Name,
 		UserEmail: user.Email,
 		Model:     gorm.Model{},
-		Key:       models.RandKey(15),
+		Key:       MinoKey.RandKey(15),
 		UserID:    user.ID,
 		ValidTime: time.Now().Add(30 * time.Minute),
 	}

@@ -1,16 +1,16 @@
 package PterodactylAPI
 
 import (
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoCache"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/cache"
 	"strconv"
 	"time"
 )
 
-const checkInterval = 3 * time.Minute
+const timeout = 3 * time.Minute
 
-var bm, _ = cache.NewCache("memory", `{"interval":60}`)
+var bm = MinoCache.GetCache()
 
 func ClearCache() {
 	err := bm.ClearAll()
@@ -44,7 +44,7 @@ func GetUser(data ParamsData, ID interface{}, isExternal bool) (PterodactylUser,
 			return user.(PterodactylUser), ok
 		} else {
 			user, ok := PterodactylGetUser(data, ID, isExternal)
-			err := bm.Put("USERE"+ID.(string), user, checkInterval)
+			err := bm.Put("USERE"+ID.(string), user, timeout)
 			if err != nil {
 				panic(err)
 			}
@@ -60,7 +60,7 @@ func GetUser(data ParamsData, ID interface{}, isExternal bool) (PterodactylUser,
 			return user.(PterodactylUser), ok
 		} else {
 			user, ok := PterodactylGetUser(data, ID, isExternal)
-			err := bm.Put("USER"+strconv.Itoa(ID.(int)), user, checkInterval)
+			err := bm.Put("USER"+strconv.Itoa(ID.(int)), user, timeout)
 			if err != nil {
 				panic(err)
 			}
@@ -90,7 +90,7 @@ func get(data ParamsData, key string, mode string, id []int) interface{} {
 		case "ENV":
 			ret = PterodactylGetEnv(data, id[0], id[1])
 		}
-		err := bm.Put(key, ret, checkInterval)
+		err := bm.Put(key, ret, timeout)
 		if err != nil {
 			panic(err)
 		}
