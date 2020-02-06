@@ -51,3 +51,27 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 	//beego.Info(mailBody,mailText)
 	return mailBody, mailText
 }
+
+func genForgetPasswordEmail(key string) (string, string) {
+	h := getProd()
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				MinoConfigure.ConfGetWebName() + " 账户管理",
+				"您正在修改密码，验证码为：" + key,
+			},
+			Outros: []string{
+				"需要帮助请发邮件至 cytusd@outlook.com",
+			},
+		}}
+	mailBody, err := h.GenerateHTML(email)
+	if err != nil {
+		panic(err)
+	}
+	mailText, err := h.GeneratePlainText(email)
+	if err != nil {
+		panic(err)
+	}
+	//beego.Info(mailBody,mailText)
+	return mailBody, mailText
+}

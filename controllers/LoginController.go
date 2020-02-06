@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"MinoIC-PE/models"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"github.com/astaxie/beego"
@@ -32,7 +32,7 @@ func (this *LoginController) Post() {
 			this.SetSession("ID", user.ID)
 			this.SetSession("UN", user.Name)
 			DelayRedirect(DelayInfo{
-				URL:    models.ConfGetHostName(),
+				URL:    MinoConfigure.ConfGetHostName(),
 				Detail: "正在跳转到主页",
 				Title:  "您已成功登录！",
 			}, &this.Controller)

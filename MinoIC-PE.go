@@ -19,6 +19,7 @@ func main() {
 	beego.Router("/user-console", &controllers.UserConsoleController{})
 	beego.Router("/user-terms", &controllers.UserTermsController{})
 	beego.Router("/forget-password", &controllers.ForgetPasswordController{})
+	beego.Router("/forget-password-mail/:email", &controllers.ForgetPasswordMailController{})
 	beego.ErrorController(&controllers.ErrorController{})
 	AutoManager.LoopManager()
 	beego.Run()
