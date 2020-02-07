@@ -7,8 +7,11 @@ import (
 )
 
 func handleNavbar(this *beego.Controller) {
+	conf := MinoConfigure.GetConf()
 	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
 	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
+	this.Data["webApplicationAuthor"] = "CytusD <cytusd@outlook.com>"
+	this.Data["webDescription"] = conf.String("webDescription")
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
 		this.Data["notLoggedIn"] = true
