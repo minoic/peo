@@ -87,12 +87,12 @@ func init() {
 			Type:           "number",
 			AdditionalTags: "required",
 		},
-		/*		{
-				Name:         "dedicated_ip",
-				FriendlyName: "专用IP",
-				Description:  "为服务器设置专用IP (可选)",
-				Type:         "checkbox",
-			},*/
+		/*{
+			Name:         "dedicated_ip",
+			FriendlyName: "专用IP",
+			Description:  "为服务器设置专用IP (可选)",
+			Type:         "checkbox",
+		},*/
 		{
 			Name:         "port_range",
 			FriendlyName: "配备给服务器的端口范围",
@@ -158,10 +158,6 @@ func init() {
 			AdditionalTags: "required",
 		},
 	}
-}
-
-func (this *NewWareController) Get() {
-	this.TplName = "NewWare.html"
 	for i, w := range WareInfo {
 		if strings.Index(w.AdditionalTags, "required") != -1 {
 			WareInfo[i].Required = true
@@ -169,7 +165,12 @@ func (this *NewWareController) Get() {
 			WareInfo[i].Required = false
 		}
 	}
-	beego.Info(WareInfo)
+}
+
+func (this *NewWareController) Get() {
+	this.TplName = "NewWare.html"
+	handleNavbar(&this.Controller)
+	//beego.Info(WareInfo)
 	this.Data["options"] = WareInfo
 }
 
@@ -177,6 +178,7 @@ func (this *NewWareController) Get() {
 func (this *NewWareController) Post() {
 	this.TplName = "NewWare.html"
 	//formText,_:=template.ParseFiles("tpls/forms/waretext.html")
+	handleNavbar(&this.Controller)
 	ware := MinoDatabase.WareSpec{
 		Model:           gorm.Model{},
 		WareName:        this.GetString("ware_name"),
@@ -184,14 +186,81 @@ func (this *NewWareController) Post() {
 		DockerImage:     this.GetString("image"),
 	}
 	//todo: handle errors
-	ware.Cpu, _ = this.GetInt("cpu")
-	ware.Disk, _ = this.GetInt("disk")
-	ware.Memory, _ = this.GetInt("memory")
-	ware.Io, _ = this.GetInt("io")
-	ware.Swap, _ = this.GetInt("swap")
-	ware.Nest, _ = this.GetInt("nest_id")
-	ware.Egg, _ = this.GetInt("egg_id")
-	price, _ := this.GetFloat("price", 999)
+	var (
+		err          error
+		hasError     bool
+		hasErrorText string
+	)
+	ware.Cpu, err = this.GetInt("cpu")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	} else if ware.Cpu < 0 {
+		hasError = true
+		hasErrorText = "CPU 输入值不合法"
+	}
+	ware.Disk, err = this.GetInt("disk")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	} else if ware.Disk <= 0 {
+		hasError = true
+		hasErrorText = "DISK 输入值不合法"
+	}
+	ware.Memory, err = this.GetInt("memory")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	} else if ware.Memory <= 0 {
+		hasError = true
+		hasErrorText = "Memory 输入值不合法"
+	}
+	ware.Io, err = this.GetInt("io")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	} else if ware.Io < 100 || ware.Io > 1000 {
+		hasError = true
+		hasErrorText = "Block IO Weight 输入了不建议的值"
+	}
+	ware.Swap, err = this.GetInt("swap")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	} else if ware.Swap < (-1) {
+		hasError = true
+		hasErrorText = "Swap 输入值不合法"
+	}
+	ware.Nest, err = this.GetInt("nest_id")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	}
+	ware.Egg, err = this.GetInt("egg_id")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	}
+	price, err := this.GetFloat("price", 999)
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误"
+	} else if price < 0 {
+		hasError = true
+		hasErrorText = "价格不能设置为负"
+	}
+	if hasError {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = hasErrorText
+	}
 	ware.PricePerMonth = float32(price)
 	ware.OomDisabled = true
 	ware.StartOnCompletion = true
