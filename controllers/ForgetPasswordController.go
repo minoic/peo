@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
@@ -13,6 +15,10 @@ type ForgetPasswordController struct {
 func (this *ForgetPasswordController) Get() {
 	this.TplName = "ForgetPassword.html"
 	handleNavbar(&this.Controller)
+	if !MinoConfigure.ConfGetSMTPEnabled() {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "服务器没有开启SMTP服务，无法使用找回密码功能，请联系网站管理员找回密码！"
+	}
 }
 
 func (this *ForgetPasswordController) Post() {
@@ -27,7 +33,9 @@ func (this *ForgetPasswordController) Post() {
 	if !DB.Where("email = ?", userEmail).First(&user).RecordNotFound() {
 		if cpt == bm.Get("FORGET"+userEmail) {
 			if password == passwordConfirm {
-				DB.Model(&user).Update("Password", password)
+				conf := MinoConfigure.GetConf()
+				b := md5.Sum([]byte(password + conf.String("DatabaseSalt")))
+				DB.Model(&user).Update("Password", hex.EncodeToString(b[:]))
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.ConfGetHostName() + "/login",
 					Detail: "正在跳转到登录页面",

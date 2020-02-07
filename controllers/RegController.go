@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
@@ -61,14 +63,17 @@ func (this *RegController) Post() {
 		this.Data["hasErrorText"] = "您输入的邮箱已被占用！"
 	} else {
 		newUuid := uuid.NewV4()
+		conf := MinoConfigure.GetConf()
+		b := md5.Sum([]byte(registerPassword + conf.String("DatabaseSalt")))
 		newUser := MinoDatabase.User{
 			Name:           registerName,
 			Email:          registerEmail,
-			Password:       registerPassword,
+			Password:       hex.EncodeToString(b[:]),
 			UUID:           newUuid,
 			IsAdmin:        false,
 			EmailConfirmed: false,
 		}
+		beego.Info(newUser)
 		DB.Create(&newUser)
 		if MinoConfigure.ConfGetSMTPEnabled() {
 			if err := MinoEmail.ConfirmRegister(newUser); err != nil {
