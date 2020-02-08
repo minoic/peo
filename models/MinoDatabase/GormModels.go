@@ -66,3 +66,12 @@ type RegConfirmKey struct {
 	UserEmail string
 	ValidTime time.Time
 }
+
+type Message struct {
+	gorm.Model
+	SenderName string
+	ReceiverID string
+	Text       string
+	TimePassed string
+	SendTime   time.Time
+}

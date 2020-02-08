@@ -62,10 +62,10 @@ func (this *RegController) Post() {
 	} else if registerPassword != registerPasswordConfirm {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "两次密码输入不一致，请检查！"
-	} else if !DB.Where("Name = ?", registerName).First(&MinoDatabase.User{}).RecordNotFound() {
+	} else if !DB.Where("name = ?", registerName).First(&MinoDatabase.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "您输入的用户名已被占用！"
-	} else if !DB.Where("Email = ?", registerEmail).First(&MinoDatabase.User{}).RecordNotFound() {
+	} else if !DB.Where("email = ?", registerEmail).First(&MinoDatabase.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "您输入的邮箱已被占用！"
 	} else {

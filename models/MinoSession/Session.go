@@ -34,12 +34,24 @@ func SessionIslogged(sess session.Store) bool {
 	}
 }
 
+func SessionIsAdmin(sess session.Store) bool {
+	user, err := SessionGetUser(sess)
+	if err != nil {
+		beego.Error(err)
+		return false
+	}
+	return user.IsAdmin
+}
+
 func SessionGetUser(sess session.Store) (MinoDatabase.User, error) {
 	userID := int(sess.Get("ID").(uint))
 	DB := MinoDatabase.GetDatabase()
 	var user MinoDatabase.User
 	if DB.Where("ID = ?", userID).First(&user).RecordNotFound() {
 		return MinoDatabase.User{}, errors.New("cant find user: " + strconv.Itoa(userID))
+	}
+	if user == (MinoDatabase.User{}) {
+		return user, errors.New("user struct is empty: " + strconv.Itoa(userID))
 	}
 	return user, nil
 }

@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"strings"
@@ -169,6 +171,20 @@ func init() {
 
 func (this *NewWareController) Get() {
 	this.TplName = "NewWare.html"
+	sess := this.StartSession()
+	if !MinoSession.SessionIslogged(sess) {
+		DelayRedirect(DelayInfo{
+			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			Detail: "正在跳转至登录页面",
+			Title:  "您还没有登录！",
+		}, &this.Controller)
+	} else if !MinoSession.SessionIsAdmin(sess) {
+		DelayRedirect(DelayInfo{
+			URL:    MinoConfigure.ConfGetHostName(),
+			Detail: "正在跳转至主页",
+			Title:  "您不是管理员！",
+		}, &this.Controller)
+	}
 	handleNavbar(&this.Controller)
 	//beego.Info(WareInfo)
 	this.Data["options"] = WareInfo
@@ -182,6 +198,13 @@ func (this *NewWareController) Post() {
 	if !this.CheckXSRFCookie() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
+		return
+	} else if !MinoSession.SessionIsAdmin() {
+		DelayRedirect(DelayInfo{
+			URL:    MinoConfigure.ConfGetHostName(),
+			Detail: "正在跳转至主页",
+			Title:  "您不是管理员！",
+		}, &this.Controller)
 		return
 	}
 	//formText,_:=template.ParseFiles("tpls/forms/waretext.html")

@@ -36,7 +36,7 @@ func (this *LoginController) Post() {
 	}
 	var user MinoDatabase.User
 	conf := MinoConfigure.GetConf()
-	if !DB.Where("Email = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
+	if !DB.Where("email = ?", loginEOU).Or("name = ?", loginEOU).First(&user).RecordNotFound() {
 		b := md5.Sum([]byte(loginPass + conf.String("DatabaseSalt")))
 		if hex.EncodeToString(b[:]) == user.Password {
 			this.Data["loginReturnData"] = "logged in!"

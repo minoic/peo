@@ -10,7 +10,7 @@ import (
 func init() {
 	DB := GetDatabase()
 	defer DB.Close()
-	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{}, &RegConfirmKey{}, &WareEntity{})
+	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{}, &RegConfirmKey{}, &WareEntity{}, &Message{})
 	return
 }
 
