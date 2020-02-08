@@ -21,6 +21,11 @@ func (this *LoginController) Get() {
 func (this *LoginController) Post() {
 	this.TplName = "Login.html"
 	handleNavbar(&this.Controller)
+	if !this.CheckXSRFCookie() {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "XSRF 验证失败！"
+		return
+	}
 	DB := MinoDatabase.GetDatabase()
 	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")
@@ -48,4 +53,24 @@ func (this *LoginController) Post() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "用户不存在！"
 	}
+}
+
+func (this *LoginController) CheckXSRFCookie() bool {
+	if !this.EnableXSRF {
+		return true
+	}
+	token := this.Ctx.Input.Query("_xsrf")
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
+	}
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Csrftoken")
+	}
+	if token == "" {
+		return false
+	}
+	if this.XSRFToken() != token {
+		return false
+	}
+	return true
 }

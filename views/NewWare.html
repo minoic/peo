@@ -27,12 +27,19 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h4><strong>添加新商品</strong></h4></div>
                 <div class="panel-body">
-                    <form role="form" method="post">
+                    <form role="form" method="post" id="new-ware">
+                        {{.xsrfData}}
                         {{range .options}}
                             {{template "tpls/forms/waretext.html" .}}
                         {{end}}
-                        <button type="submit" class="btn btn-success btn-sm">确认添加</button>
                     </form>
+                    <hr/>
+                    {{if .hasError}}
+                        <div class="alert alert-danger">
+                            <strong>登录失败！</strong> {{.hasErrorText}}
+                        </div>
+                    {{end}}
+                    <button type="submit" form="new-ware" class="btn btn-success btn-sm">确认添加</button>
                 </div>
             </div>
         </div>

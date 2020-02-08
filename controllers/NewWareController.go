@@ -177,8 +177,14 @@ func (this *NewWareController) Get() {
 //todo: add nest/egg select instead of input ID
 func (this *NewWareController) Post() {
 	this.TplName = "NewWare.html"
-	//formText,_:=template.ParseFiles("tpls/forms/waretext.html")
+	this.Data["options"] = WareInfo
 	handleNavbar(&this.Controller)
+	if !this.CheckXSRFCookie() {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "XSRF 验证失败！"
+		return
+	}
+	//formText,_:=template.ParseFiles("tpls/forms/waretext.html")
 	ware := MinoDatabase.WareSpec{
 		Model:           gorm.Model{},
 		WareName:        this.GetString("ware_name"),
@@ -277,4 +283,24 @@ func (this *NewWareController) Post() {
 		Detail: "正在跳转回添加页面",
 		Title:  "添加商品成功！",
 	}, &this.Controller)
+}
+
+func (this *NewWareController) CheckXSRFCookie() bool {
+	if !this.EnableXSRF {
+		return true
+	}
+	token := this.Ctx.Input.Query("_xsrf")
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
+	}
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Csrftoken")
+	}
+	if token == "" {
+		return false
+	}
+	if this.XSRFToken() != token {
+		return false
+	}
+	return true
 }

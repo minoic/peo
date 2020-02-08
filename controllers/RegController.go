@@ -34,6 +34,12 @@ func (this *RegController) Get() {
 
 func (this *RegController) Post() {
 	this.TplName = "Register.html"
+	handleNavbar(&this.Controller)
+	if !this.CheckXSRFCookie() {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "XSRF 验证失败！"
+		return
+	}
 	//beego.Info("user posted!")
 	registerEmail := this.GetString("registerEmail")
 	registerPassword := this.GetString("registerPassword")
@@ -98,6 +104,24 @@ func (this *RegController) Post() {
 			}, &this.Controller)
 		}
 	}
-	handleNavbar(&this.Controller)
-	//todo: create Pterodactyl user at the same time
+}
+
+func (this *RegController) CheckXSRFCookie() bool {
+	if !this.EnableXSRF {
+		return true
+	}
+	token := this.Ctx.Input.Query("_xsrf")
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
+	}
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Csrftoken")
+	}
+	if token == "" {
+		return false
+	}
+	if this.XSRFToken() != token {
+		return false
+	}
+	return true
 }
