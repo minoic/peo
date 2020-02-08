@@ -113,7 +113,7 @@ func PterodactylGetAllUsers(params ParamsData) []PterodactylUser {
 	return users
 }
 
-func PterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
+func pterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID), "GET")
 	if status != 200 {
 		beego.Error("cant get nest: " + strconv.Itoa(nestID) + " with status code: " + strconv.Itoa(status))
@@ -128,7 +128,7 @@ func PterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
 	return PterodactylNest{}
 }
 
-func PterodactylGetAllNests(data ParamsData) []PterodactylNest {
+func pterodactylGetAllNests(data ParamsData) []PterodactylNest {
 	body, status := pterodactylApi(data, "", "nests/", "GET")
 	if status != 200 {
 		beego.Error("cant get all nests: " + strconv.Itoa(status))
@@ -149,7 +149,7 @@ func PterodactylGetAllNests(data ParamsData) []PterodactylNest {
 	return []PterodactylNest{}
 }
 
-func PterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg {
+func pterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg {
 	body, status := pterodactylApi(params, "", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID), "GET")
 	if status != 200 {
 		return PterodactylEgg{}
@@ -163,7 +163,7 @@ func PterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg 
 	return PterodactylEgg{}
 }
 
-func PterodactylGetAllEggs(data ParamsData, nestID int) []PterodactylEgg {
+func pterodactylGetAllEggs(data ParamsData, nestID int) []PterodactylEgg {
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/", "GET")
 	if status != 200 {
 		beego.Error("cant get all eggs: " + strconv.Itoa(status))
@@ -184,7 +184,7 @@ func PterodactylGetAllEggs(data ParamsData, nestID int) []PterodactylEgg {
 	return []PterodactylEgg{}
 }
 
-func PterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
+func pterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
 	body, status := pterodactylApi(data, "", "nodes/"+strconv.Itoa(nodeID), "GET")
 	if status != 200 {
 		return PterodactylNode{}
@@ -198,7 +198,7 @@ func PterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
 	return PterodactylNode{}
 }
 
-func PterodactylGetAllocations(data ParamsData, nodeID int) []PterodactylAllocation {
+func pterodactylGetAllocations(data ParamsData, nodeID int) []PterodactylAllocation {
 	body, status := pterodactylApi(data, "", "nodes/"+strconv.Itoa(nodeID)+"/allocations", "GET")
 	if status != 200 {
 		beego.Error("cant get allocations with status code: " + strconv.Itoa(status))
@@ -336,7 +336,7 @@ func PterodactylDeleteUser(data ParamsData, externalID string) error {
 	}
 }
 
-func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string {
+func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string {
 	ret := map[string]string{}
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID)+"?include=variables", "GET")
 	if status != 200 {
@@ -370,7 +370,7 @@ func PterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 func Test() {
 	params := ConfGetParams()
 	PterodactylTestConnection(params)
-	ret := PterodactylGetAllocations(params, 6)
+	ret := pterodactylGetAllocations(params, 6)
 	for k, v := range ret {
 		beego.Info(k, v)
 	}
@@ -400,8 +400,8 @@ PackId:     0,
 })*/
 
 func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) error {
-	eggInfo := PterodactylGetEgg(data, serverInfo.NestId, serverInfo.EggId)
-	envInfo := PterodactylGetEnv(data, serverInfo.NestId, serverInfo.EggId)
+	eggInfo := pterodactylGetEgg(data, serverInfo.NestId, serverInfo.EggId)
+	envInfo := pterodactylGetEnv(data, serverInfo.NestId, serverInfo.EggId)
 	postData := map[string]interface{}{
 		"name":         serverInfo.Name,
 		"user":         serverInfo.UserId,

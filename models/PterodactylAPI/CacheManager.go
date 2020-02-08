@@ -76,19 +76,19 @@ func get(data ParamsData, key string, mode string, id []int) interface{} {
 		var ret interface{}
 		switch mode {
 		case "NEST":
-			ret = PterodactylGetNest(data, id[0])
+			ret = pterodactylGetNest(data, id[0])
 		case "ALLNESTS":
-			ret = PterodactylGetAllNests(data)
+			ret = pterodactylGetAllNests(data)
 		case "EGG":
-			ret = PterodactylGetEgg(data, id[0], id[1])
+			ret = pterodactylGetEgg(data, id[0], id[1])
 		case "ALLEGGS":
-			ret = PterodactylGetAllEggs(data, id[0])
+			ret = pterodactylGetAllEggs(data, id[0])
 		case "NODE":
-			ret = PterodactylGetNode(data, id[0])
+			ret = pterodactylGetNode(data, id[0])
 		case "ALLOCATIONS":
-			ret = PterodactylGetAllocations(data, id[0])
+			ret = pterodactylGetAllocations(data, id[0])
 		case "ENV":
-			ret = PterodactylGetEnv(data, id[0], id[1])
+			ret = pterodactylGetEnv(data, id[0], id[1])
 		}
 		err := bm.Put(key, ret, timeout)
 		if err != nil {

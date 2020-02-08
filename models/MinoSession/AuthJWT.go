@@ -17,7 +17,7 @@ func GeneToken(username string, remember bool) string {
 	claims := jwt.NewClaim()
 	claims.Set("username", username)
 	if remember {
-		claims.SetTime("end", time.Now().AddDate(0, 1, 0))
+		claims.SetTime("end", time.Now().AddDate(0, 2, 0))
 	} else {
 		claims.SetTime("end", time.Now().AddDate(0, 0, 1))
 	}

@@ -16,7 +16,7 @@ func main() {
 	beego.Router("/confirm/:key", &controllers.ConfirmController{})
 	beego.Router("/delay", &controllers.DelayController{})
 	beego.Router("/", &controllers.WareSellerController{})
-	beego.Router("/user-settings", &controllers.UserSettingsController{})
+	beego.Router("/user-messages", &controllers.UserMessagesController{})
 	beego.Router("/user-console", &controllers.UserConsoleController{})
 	beego.Router("/user-terms", &controllers.UserTermsController{})
 	beego.Router("/forget-password", &controllers.ForgetPasswordController{})

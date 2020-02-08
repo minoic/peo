@@ -43,7 +43,7 @@ func CacheNeededEggs() {
 	DB := MinoDatabase.GetDatabase()
 	if !DB.Find(&wareSpecs).RecordNotFound() {
 		for _, spec := range wareSpecs {
-			PterodactylGetEgg(ConfGetParams(), spec.Nest, spec.Egg)
+			pterodactylGetEgg(ConfGetParams(), spec.Nest, spec.Egg)
 		}
 	}
 }

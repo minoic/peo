@@ -30,7 +30,10 @@ func (this *LoginController) Post() {
 	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
-	loginRemember, _ := this.GetBool("loginRemember", false)
+	loginRemember, err := this.GetBool("loginRemember", false)
+	if err != nil {
+		beego.Error(err)
+	}
 	var user MinoDatabase.User
 	conf := MinoConfigure.GetConf()
 	if !DB.Where("Email = ?", loginEOU).Or("Name = ?", loginEOU).First(&user).RecordNotFound() {
