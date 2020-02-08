@@ -6,6 +6,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/utils/captcha"
@@ -97,11 +98,31 @@ func (this *RegController) Post() {
 				}, &this.Controller)
 			}
 		} else {
-			DelayRedirect(DelayInfo{
-				URL:    MinoConfigure.ConfGetHostName() + "/login",
-				Detail: "即将跳转到登陆页面",
-				Title:  "注册成功！",
-			}, &this.Controller)
+			err := PterodactylAPI.PterodactylCreateUser(PterodactylAPI.ConfGetParams(), PterodactylAPI.PostPteUser{
+				ExternalId: newUser.Name,
+				Username:   newUser.Name,
+				Email:      newUser.Email,
+				Language:   "zh",
+				RootAdmin:  newUser.IsAdmin,
+				Password:   newUser.Name,
+				FirstName:  newUser.Name,
+				LastName:   "_",
+			})
+			if err != nil {
+				beego.Error("cant create pterodactyl user for " + newUser.Name)
+				DelayRedirect(DelayInfo{
+					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					Detail: "即将跳转到登陆页面",
+					Title:  "注册成功，但开户失败，请联系网站管理员！",
+				}, &this.Controller)
+				//todo:remind user to rebuild pterodactyl account
+			} else {
+				DelayRedirect(DelayInfo{
+					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					Detail: "即将跳转到登陆页面",
+					Title:  "注册成功！",
+				}, &this.Controller)
+			}
 		}
 	}
 }

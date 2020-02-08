@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func ConfirmKey(key string) bool {
+func ConfirmKey(key string) (MinoDatabase.User, bool) {
 	DB := MinoDatabase.GetDatabase()
 	defer DB.Close()
 	var keyInfo MinoDatabase.RegConfirmKey
@@ -20,11 +20,11 @@ func ConfirmKey(key string) bool {
 				DB.Model(&user).Update(MinoDatabase.User{
 					EmailConfirmed: true,
 				})
-				return true
+				return user, true
 			}
 		}
 	}
-	return false
+	return MinoDatabase.User{}, false
 }
 
 func ConfirmRegister(user MinoDatabase.User) error {

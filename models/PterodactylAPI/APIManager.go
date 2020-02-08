@@ -112,6 +112,7 @@ func PterodactylGetAllUsers(params ParamsData) []PterodactylUser {
 	}
 	return users
 }
+
 func PterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID), "GET")
 	if status != 200 {
@@ -126,6 +127,7 @@ func PterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
 	}
 	return PterodactylNest{}
 }
+
 func PterodactylGetAllNests(data ParamsData) []PterodactylNest {
 	body, status := pterodactylApi(data, "", "nests/", "GET")
 	if status != 200 {
@@ -146,6 +148,7 @@ func PterodactylGetAllNests(data ParamsData) []PterodactylNest {
 	}
 	return []PterodactylNest{}
 }
+
 func PterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg {
 	body, status := pterodactylApi(params, "", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID), "GET")
 	if status != 200 {
@@ -302,6 +305,17 @@ func PterodactylDeleteServer(data ParamsData, serverExternalID string) error {
 	return nil
 }
 
+/*_ = PterodactylCreateUser(params, PostPteUser{
+ExternalId: "1212",
+Username:   "1212",
+Email:      "222@qq.com",
+Language:   "zh",
+RootAdmin:  false,
+Password:   "22233",
+FirstName:  "s",
+LastName:   "ds",
+})*/
+
 func PterodactylCreateUser(data ParamsData, userInfo interface{}) error {
 	_, status := pterodactylApi(data, userInfo, "users", "POST")
 	if status != 201 {
@@ -361,6 +375,29 @@ func Test() {
 		beego.Info(k, v)
 	}
 }
+
+/*_ = PterodactylCreateServer(params, PterodactylServer{
+Id:          111,
+ExternalId:  "12121",
+Uuid:        "",
+Identifier:  "",
+Name:        "12121",
+Description: "12121",
+Suspended:   false,
+Limits: PterodactylServerLimit{
+Memory: 1212,
+Swap:   1212,
+Disk:   1212,
+IO:     500,
+CPU:    100,
+},
+UserId:     1,
+NodeId:     5,
+Allocation: 517,
+NestId:     1,
+EggId:      17,
+PackId:     0,
+})*/
 
 func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) error {
 	eggInfo := PterodactylGetEgg(data, serverInfo.NestId, serverInfo.EggId)
