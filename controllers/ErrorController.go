@@ -11,7 +11,7 @@ type ErrorController struct {
 
 func (this *ErrorController) Error400() {
 	DelayRedirect(DelayInfo{
-		URL:    "/",
+		URL:    MinoConfigure.ConfGetHostName(),
 		Detail: "请求参数有误",
 		Title:  "400 Bad Request",
 	}, &this.Controller)
@@ -71,6 +71,7 @@ func (this *ErrorController) Error502() {
 	}, &this.Controller)
 	this.TplName = "Delay.html"
 }
+
 func (this *ErrorController) Error503() {
 	DelayRedirect(DelayInfo{
 		URL:    this.Ctx.Request.Referer(),

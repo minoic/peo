@@ -11,7 +11,7 @@
 <div class="login-wrapper">
     <div class="text-center" title="点击返回首页">
         <h2 class="fadeInUp animation-delay6" style="font-weight:bold">
-            <a href="/"><i class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span></a>
+            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="点击返回主页" ><i class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span></a>
         </h2>
     </div>
     <div class="login-widget animation-delay1">
@@ -22,7 +22,7 @@
                 </div>
 
                 <div class="pull-right">
-                    <span style="font-size:11px;">还没有账号？</span>
+                    <span style="font-size:11px;">还没有账号？😐</span>
                     <a class="btn btn-default btn-xs login-link" href="/reg" style="margin-top:-2px;"><i
                                 class="fa fa-plus-circle"></i> 注册</a>
                 </div>
@@ -55,9 +55,7 @@
                     {{end}}
                     <div class="row">
                         <div class="col-lg-8">
-                            <div class="form-group">
-                                <a href="/forget-password">忘记密码？</a>
-                            </div>
+                                <a href="/forget-password"  class="tooltip-test" data-toggle="tooltip" data-placement="bottom" data-original-title="点击找回密码😀" >忘记密码？</a>
                         </div>
                         <div class="col-lg-4">
                             <button class="btn btn-success btn-sm bounceIn animation-delay5 pull-right" type="submit"><i

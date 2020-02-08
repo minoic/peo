@@ -10,12 +10,14 @@
 
                     <a href="/"><i class="fa fa-shopping-cart fa-lg"></i> 商品列表</a>
                 </li>
-                <li>
-                    <a href="/user-settings"><i class="fa fa-user fa-lg"></i> 账户设置</a>
-                </li>
-                <li>
-                    <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> 控制台</a>
-                </li>
+                {{if not .notLoggedIn}}
+                    <li>
+                        <a href="/user-messages"><i class="fa fa-envelope fa-lg"></i> 消息</a>
+                    </li>
+                    <li>
+                        <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> 控制台</a>
+                    </li>
+                {{end}}
                 <li>
                     <a href="https://help.ntmc.tech"><i class="fa fa-info-circle fa-lg"></i> 腐竹帮助页面</a>
                 </li>

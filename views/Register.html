@@ -13,7 +13,7 @@
 <div class="login-wrapper">
     <div class="text-center" title="点击返回主页">
         <h2 class="fadeInUp animation-delay8" style="font-weight:bold">
-            <a href="/"><i class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span></a>
+            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="点击返回主页"><i class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span></a>
         </h2>
     </div>
     <div class="login-widget animation-delay1">
@@ -53,7 +53,7 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="img fadeInDown animation-delay6" title="看不清？点击刷新！">
+                            <div class="img fadeInDown animation-delay6 tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="看不清？点击刷新:)">
                                 {{create_captcha}}
                             </div>
                         </div>
@@ -65,25 +65,28 @@
                             我同意 <a href="/user-terms">用户协议</a>
                         </label>
                     </div><!-- /form-group -->
-                    <div class="seperator"></div>
-                    <div class="form-group">
-                        <div class="controls fadeInDown animation-delay7">
-                            已有账户？ <a href="/login" class="primary-font login-link">登录</a>
-                        </div>
-                    </div><!-- /form-group -->
                     <hr/>
                     {{if .hasError}}
                         <div class="alert alert-danger">
                             <strong>注册失败！</strong> {{.hasErrorText}}
                         </div>
                     {{end}}
-                    <div class="form-group">
-                        <div class="controls text-right">
-                            <button class="btn btn-success btn-sm bounceIn animation-delay7" type="submit"><i
-                                        class="fa fa-plus-circle"></i> 确认注册
-                            </button>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="controls fadeInDown animation-delay7">
+                                已有账户？ <a href="/login" class="primary-font login-link">登录</a>
+                            </div>
                         </div>
-                    </div><!-- /form-group -->
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="controls text-right">
+                                    <button class="btn btn-success btn-sm bounceIn animation-delay7" type="submit"><i
+                                                class="fa fa-plus-circle"></i> 确认注册
+                                    </button>
+                                </div>
+                            </div><!-- /form-group -->
+                        </div>
+                    </div>
                 </form>
             </div>
         </div><!-- /panel -->
