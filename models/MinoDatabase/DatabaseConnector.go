@@ -10,12 +10,6 @@ import (
 
 var db *gorm.DB
 
-func init() {
-	DB := GetDatabase()
-	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{}, &RegConfirmKey{}, &WareEntity{}, &Message{})
-	return
-}
-
 func connect() {
 	conf := MinoConfigure.GetConf()
 	dialect := conf.String("Database")

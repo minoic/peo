@@ -10,7 +10,6 @@ import (
 
 func ConfirmKey(key string) (MinoDatabase.User, bool) {
 	DB := MinoDatabase.GetDatabase()
-	defer DB.Close()
 	var keyInfo MinoDatabase.RegConfirmKey
 	if !DB.Where("Key = ?", key).First(&keyInfo).RecordNotFound() {
 		if keyInfo.ValidTime.After(time.Now()) {
@@ -40,7 +39,6 @@ func ConfirmRegister(user MinoDatabase.User) error {
 		ValidTime: time.Now().Add(30 * time.Minute),
 	}
 	DB := MinoDatabase.GetDatabase()
-	defer DB.Close()
 	DB.Create(&key)
 	sendConfirmMail(key)
 	return nil

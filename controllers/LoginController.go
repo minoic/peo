@@ -27,7 +27,6 @@ func (this *LoginController) Post() {
 		return
 	}
 	DB := MinoDatabase.GetDatabase()
-	defer DB.Close()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
 	loginRemember, err := this.GetBool("loginRemember", false)

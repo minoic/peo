@@ -44,7 +44,11 @@ func SessionIsAdmin(sess session.Store) bool {
 }
 
 func SessionGetUser(sess session.Store) (MinoDatabase.User, error) {
-	userID := int(sess.Get("ID").(uint))
+	id := sess.Get("ID")
+	if id == nil {
+		return MinoDatabase.User{}, errors.New("user doesnt have session")
+	}
+	userID := int(id.(uint))
 	DB := MinoDatabase.GetDatabase()
 	var user MinoDatabase.User
 	if DB.Where("ID = ?", userID).First(&user).RecordNotFound() {

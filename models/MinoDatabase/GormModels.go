@@ -6,6 +6,20 @@ import (
 	"time"
 )
 
+func init() {
+	DB := GetDatabase()
+	DB.AutoMigrate(
+		&User{},
+		&WareKey{},
+		&PEAdminSetting{},
+		&WareSpec{},
+		&RegConfirmKey{},
+		&WareEntity{},
+		&Message{},
+	)
+	return
+}
+
 type User struct {
 	gorm.Model
 	Name           string
@@ -75,4 +89,9 @@ type Message struct {
 	TimeText   string
 	HaveRead   bool
 	SendTime   time.Time
+}
+
+type DeleteConfirm struct {
+	gorm.Model
+	WareID uint
 }

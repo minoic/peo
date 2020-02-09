@@ -16,18 +16,14 @@ func handleNavbar(this *beego.Controller) {
 	this.Data["webApplicationAuthor"] = "CytusD <cytusd@outlook.com>"
 	this.Data["webDescription"] = conf.String("webDescription")
 	sess := this.StartSession()
-	user, err := MinoSession.SessionGetUser(sess)
-	if err != nil {
-		beego.Error(err)
-	}
-	this.Data["unReadNum"] = MinoMessage.UnReadNum(user.ID)
 	if !MinoSession.SessionIslogged(sess) {
 		this.Data["notLoggedIn"] = true
 	} else {
-		user, err := MinoSession.SessionGetUser(this.StartSession())
+		user, err := MinoSession.SessionGetUser(sess)
 		if err != nil {
 			beego.Error(err)
 		}
+		this.Data["unReadNum"] = MinoMessage.UnReadNum(user.ID)
 		if user.IsAdmin {
 			this.Data["isAdmin"] = true
 		}

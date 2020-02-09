@@ -14,6 +14,7 @@ func main() {
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Router("/chart", &controllers.WareChartController{})
 	beego.Router("/confirm/:key", &controllers.ConfirmController{})
+	beego.Router("/delete-confirm/:wareID:int", &controllers.ConfirmDeleteController{})
 	beego.Router("/delay", &controllers.DelayController{})
 	beego.Router("/", &controllers.WareSellerController{})
 	beego.Router("/user-messages", &controllers.UserMessagesController{})

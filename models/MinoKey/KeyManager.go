@@ -8,7 +8,6 @@ import (
 
 func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) {
 	DB := MinoDatabase.GetDatabase()
-	defer DB.Close()
 	for i := 1; i <= keyAmount; i++ {
 		newKey := MinoDatabase.WareKey{
 			Model:  gorm.Model{},

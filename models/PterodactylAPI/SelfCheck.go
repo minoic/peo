@@ -3,6 +3,7 @@ package PterodactylAPI
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
+	"github.com/jinzhu/gorm"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func CheckServers() {
 		}
 		if entity.ValidDate.AddDate(0, 0, 7).Before(time.Now()) {
 			if entity.DeleteStatus == 0 {
-				confirmDeleteServer(entity)
+				addConfirmWareEntity(entity)
 				entity.DeleteStatus = 1
 			} else if entity.DeleteStatus == 2 {
 				err := PterodactylDeleteServer(ConfGetParams(), entity.ServerExternalID)
@@ -48,6 +49,28 @@ func CacheNeededEggs() {
 	}
 }
 
-func confirmDeleteServer(entity MinoDatabase.WareEntity) {
-	//todo: add a page to manage the deletion
+func ConfirmDelete(wareID uint) {
+	var entity MinoDatabase.WareEntity
+	DB := MinoDatabase.GetDatabase()
+	DB.Where("id = ?", wareID).First(&entity)
+	DB.Model(&entity).Update("delete_status", 2)
+	DB.Where("ware_id = ?", wareID).Delete(&MinoDatabase.DeleteConfirm{})
+}
+
+func GetConfirmWareEntities() []MinoDatabase.WareEntity {
+	DB := MinoDatabase.GetDatabase()
+	var entities []MinoDatabase.WareEntity
+	DB.Find(&entities)
+	beego.Debug(entities)
+	return entities
+}
+
+func addConfirmWareEntity(entity MinoDatabase.WareEntity) {
+	DB := MinoDatabase.GetDatabase()
+	if err := DB.Create(&MinoDatabase.DeleteConfirm{
+		Model:  gorm.Model{},
+		WareID: entity.ID,
+	}).Error; err != nil {
+		beego.Error(err)
+	}
 }

@@ -15,5 +15,5 @@ func (this *IndexController) Get() {
 	handleNavbar(&this.Controller)
 	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
 	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
-	MinoMessage.Send("haha", 1, "hahaha")
+	_ = MinoMessage.Send("haha", 1, "hahaha")
 }

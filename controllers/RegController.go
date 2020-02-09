@@ -53,7 +53,6 @@ func (this *RegController) Post() {
 		beego.Error(err)
 	}
 	DB := MinoDatabase.GetDatabase()
-	defer DB.Close()
 	if !cptSuccess {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "验证码输入错误，请重试！"

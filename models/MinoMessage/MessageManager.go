@@ -35,7 +35,7 @@ func GetMessages(receiverID uint) []MinoDatabase.Message {
 	DB.Where("receiver_id = ?", receiverID).Find(&messages)
 	for i, m := range messages {
 		messages[i].TimeText = m.SendTime.Format("2006-01-02 15:04:05")
-		//eego.Debug(m.TimeText)
+		//beego.Debug(m.TimeText)
 	}
 	return messages
 }
