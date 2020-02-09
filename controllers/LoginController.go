@@ -39,7 +39,6 @@ func (this *LoginController) Post() {
 	if !DB.Where("email = ?", loginEOU).Or("name = ?", loginEOU).First(&user).RecordNotFound() {
 		b := md5.Sum([]byte(loginPass + conf.String("DatabaseSalt")))
 		if hex.EncodeToString(b[:]) == user.Password {
-			this.Data["loginReturnData"] = "logged in!"
 			this.SetSession("LST", MinoSession.GeneToken(user.Name, loginRemember))
 			this.SetSession("ID", user.ID)
 			this.SetSession("UN", user.Name)

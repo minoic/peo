@@ -199,7 +199,7 @@ func (this *NewWareController) Post() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
 		return
-	} else if !MinoSession.SessionIsAdmin() {
+	} else if !MinoSession.SessionIsAdmin(this.StartSession()) {
 		DelayRedirect(DelayInfo{
 			URL:    MinoConfigure.ConfGetHostName(),
 			Detail: "正在跳转至主页",
