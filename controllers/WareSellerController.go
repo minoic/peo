@@ -91,7 +91,10 @@ func (this *WareSellerController) Get() {
 		}
 		wareChan <- wares
 	}()
-	this.Data["wares"] = <-wareChan
+	wares := <-wareChan
+	//beego.Debug(wares)
+	this.Data["wares"] = wares
+	close(wareChan)
 }
 
 /*

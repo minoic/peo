@@ -224,7 +224,7 @@ func (this *NewWareController) Post() {
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 cpu " + err.Error()
 	} else if ware.Cpu < 0 {
 		hasError = true
 		hasErrorText = "CPU 输入值不合法"
@@ -233,7 +233,7 @@ func (this *NewWareController) Post() {
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 disk " + err.Error()
 	} else if ware.Disk <= 0 {
 		hasError = true
 		hasErrorText = "DISK 输入值不合法"
@@ -242,7 +242,7 @@ func (this *NewWareController) Post() {
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 memory " + err.Error()
 	} else if ware.Memory <= 0 {
 		hasError = true
 		hasErrorText = "Memory 输入值不合法"
@@ -251,7 +251,7 @@ func (this *NewWareController) Post() {
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 io " + err.Error()
 	} else if ware.Io < 100 || ware.Io > 1000 {
 		hasError = true
 		hasErrorText = "Block IO Weight 输入了不建议的值"
@@ -260,7 +260,7 @@ func (this *NewWareController) Post() {
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 swap " + err.Error()
 	} else if ware.Swap < (-1) {
 		hasError = true
 		hasErrorText = "Swap 输入值不合法"
@@ -269,19 +269,19 @@ func (this *NewWareController) Post() {
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 nest_id " + err.Error()
 	}
 	ware.Egg, err = this.GetInt("egg_id")
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 egg_id " + err.Error()
 	}
 	price, err := this.GetFloat("price", 999)
 	if err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误"
+		hasErrorText = "POST 表单获取错误 price " + err.Error()
 	} else if price < 0 {
 		hasError = true
 		hasErrorText = "价格不能设置为负"
@@ -289,23 +289,24 @@ func (this *NewWareController) Post() {
 	if hasError {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = hasErrorText
+	} else {
+		ware.PricePerMonth = float32(price)
+		ware.OomDisabled = true
+		ware.StartOnCompletion = true
+		//todo: handle database number
+		//todo: check if post data is valid
+		e, _ := this.GetInt("exp")
+		ware.ValidDuration = time.Duration(e*24) * time.Hour
+		e, _ = this.GetInt("delete_time")
+		ware.DeleteDuration = time.Duration(e*24) * time.Hour
+		DB := MinoDatabase.GetDatabase()
+		DB.Create(&ware)
+		DelayRedirect(DelayInfo{
+			URL:    MinoConfigure.ConfGetHostName() + "/new-ware",
+			Detail: "正在跳转回添加页面",
+			Title:  "添加商品成功！",
+		}, &this.Controller)
 	}
-	ware.PricePerMonth = float32(price)
-	ware.OomDisabled = true
-	ware.StartOnCompletion = true
-	//todo: handle database number
-	//todo: check if post data is valid
-	e, _ := this.GetInt("exp")
-	ware.ValidDuration = time.Duration(e*24) * time.Hour
-	e, _ = this.GetInt("delete_time")
-	ware.DeleteDuration = time.Duration(e*24) * time.Hour
-	DB := MinoDatabase.GetDatabase()
-	DB.Create(&ware)
-	DelayRedirect(DelayInfo{
-		URL:    "/new-ware",
-		Detail: "正在跳转回添加页面",
-		Title:  "添加商品成功！",
-	}, &this.Controller)
 }
 
 func (this *NewWareController) CheckXSRFCookie() bool {

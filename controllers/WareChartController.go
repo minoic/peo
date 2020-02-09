@@ -11,7 +11,7 @@ type WareChartController struct {
 }
 
 func (this *WareChartController) Get() {
-	this.TplName = "Index.html"
+	this.TplName = "WareChart.html"
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
 			URL:    MinoConfigure.ConfGetHostName() + "/login",
@@ -20,4 +20,5 @@ func (this *WareChartController) Get() {
 		}, &this.Controller)
 	}
 	handleNavbar(&this.Controller)
+
 }
