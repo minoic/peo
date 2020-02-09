@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
-	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"github.com/astaxie/beego"
-	"github.com/jinzhu/gorm"
-	"time"
 )
 
 type UserMessagesController struct {
@@ -23,28 +21,12 @@ func (this *UserMessagesController) Get() {
 		}, &this.Controller)
 	}
 	handleNavbar(&this.Controller)
-	var messages []MinoDatabase.Message
-	DB := MinoDatabase.GetDatabase()
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
 		beego.Error(err)
 	}
-	DB.Where("receiver_id = ?", user.ID).Find(&messages)
-	if len(messages) == 0 {
-		//beego.Debug("none message found")
-		messages = append(messages, MinoDatabase.Message{
-			Model:      gorm.Model{},
-			SenderName: "nobody",
-			Text:       "您还没有消息",
-			TimePassed: time.Second.String(),
-			SendTime:   time.Time{},
-		})
-	} else {
-		//beego.Debug("message found")
-		for _, m := range messages {
-			m.TimePassed = time.Now().Sub(m.SendTime).String()
-		}
-	}
+	messages := MinoMessage.GetMessages(user.ID)
 	this.Data["messages"] = messages
 	beego.Info(messages)
+	MinoMessage.ReadAll(user.ID)
 }

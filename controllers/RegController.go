@@ -6,6 +6,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
@@ -82,6 +83,10 @@ func (this *RegController) Post() {
 		}
 		beego.Info(newUser)
 		DB.Create(&newUser)
+		err := MinoMessage.Send("ADMIN", newUser.ID, "这是您的第一条消息")
+		if err != nil {
+			beego.Error(err)
+		}
 		if MinoConfigure.ConfGetSMTPEnabled() {
 			if err := MinoEmail.ConfirmRegister(newUser); err != nil {
 				beego.Error(err)

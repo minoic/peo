@@ -12,7 +12,6 @@ var db *gorm.DB
 
 func init() {
 	DB := GetDatabase()
-	defer DB.Close()
 	DB.AutoMigrate(&User{}, &WareKey{}, &PEAdminSetting{}, &WareSpec{}, &RegConfirmKey{}, &WareEntity{}, &Message{})
 	return
 }
@@ -28,6 +27,7 @@ func connect() {
 			panic(err.Error())
 		}
 		db = DB
+		return
 	case "MYSQL":
 		DSN := conf.String("MYSQLUsername") + ":" +
 			conf.String("MYSQLUserPassword") + "@" +
@@ -41,6 +41,7 @@ func connect() {
 
 		}
 		db = DB
+		return
 	}
 	db = nil
 	panic("CONF ERR: WRONG SQL DIALECT!!! " + dialect)
@@ -49,7 +50,7 @@ func connect() {
 func GetDatabase() *gorm.DB {
 	for db == nil {
 		connect()
-		beego.Error("cant connect to database!")
+		beego.Warn("trying to connect to database!")
 	}
 	return db
 }

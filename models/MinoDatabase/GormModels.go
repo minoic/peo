@@ -70,8 +70,9 @@ type RegConfirmKey struct {
 type Message struct {
 	gorm.Model
 	SenderName string
-	ReceiverID string
+	ReceiverID uint
 	Text       string
-	TimePassed string
+	TimeText   string
+	HaveRead   bool
 	SendTime   time.Time
 }

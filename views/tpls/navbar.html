@@ -12,7 +12,11 @@
                 </li>
                 {{if not .notLoggedIn}}
                     <li>
-                        <a href="/user-messages"><i class="fa fa-envelope fa-lg"></i> 消息</a>
+                        <a href="/user-messages"><i class="fa fa-envelope fa-lg"></i> 消息
+                            {{if .unReadNum}}
+                                <span class="badge badge-danger">{{.unReadNum}}</span>
+                            {{end}}
+                        </a>
                     </li>
                     <li>
                         <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> 控制台</a>
