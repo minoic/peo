@@ -18,18 +18,18 @@ func SessionIslogged(sess session.Store) bool {
 	cookie1 := sess.Get("LST")
 	cookie2 := sess.Get("UN")
 	if cookie1 == nil || cookie2 == nil {
-		beego.Info("user doesnt have session")
+		//beego.Info("user doesnt have session")
 		return false
 	}
 	lsToken := cookie1.(string)
 	unToken := cookie2.(string)
 	if len(lsToken) == 0 || !ValidateToken(lsToken, unToken) {
 		//beego.Info(lsToken, unToken)
-		beego.Info(unToken + " is not logged in!")
+		beego.Warn(unToken + " is not logged in!")
 		return false
 	} else {
 		//beego.Info(lsToken, unToken)
-		beego.Info(unToken + " is logged in!")
+		//beego.Info(unToken + " is logged in!")
 		return true
 	}
 }
