@@ -102,15 +102,30 @@
                                 <small>您可以在淘宝店或发卡平台购买KEY，每个KEY只能使用一次。<br>如果KEY失效不能使用请联系网站管理员！</small>
                             </div>
                             <div class="modal-body">
-                                <form method="post" id="key">
+                                <form method="post" id="pay">
                                     <div class="form-group">
                                         <label>激活码</label>
-                                        <input type="text" class="form-control input-sm" placeholder="输入您购买到的激活码">
+                                        <input type="text" class="form-control input-sm" name="key" placeholder="输入您购买到的激活码">
                                     </div><!-- /form-group -->
                                 </form>
                             </div>
-                            <div class="modal-footer">
-                                <button type="submit" form="key" class="btn btn-info btn-sm">确认激活</button>
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    {{if .hasError}}
+                                        <div class="alert alert-danger">
+                                            <strong>激活失败！</strong> {{.hasErrorText}}
+                                        </div>
+                                    {{else if .hasSucces}}
+                                        <div class="alert alert-success">
+                                            <strong>激活成功！</strong>
+                                        </div>
+                                    {{end}}
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="modal-footer">
+                                    <button type="submit" form="pay" class="btn btn-info btn-sm">确认激活</button>
+                                </div>
                             </div>
                         </div><!-- /.modal-content -->
                     </div><!-- /.modal-dialog -->

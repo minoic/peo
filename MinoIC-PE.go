@@ -12,7 +12,7 @@ func main() {
 	beego.Router("/login", &controllers.LoginController{})
 	beego.Router("/pe-admin-settings", &controllers.PEAdminSettingsController{})
 	beego.Router("/new-ware", &controllers.NewWareController{})
-	beego.Router("/new-order/:specID", &controllers.OrderCreateController{})
+	beego.Router("/new-order", &controllers.OrderCreateController{})
 	beego.Router("/order/:orderID", &controllers.OrderInfoController{})
 	beego.Router("/confirm/:key", &controllers.ConfirmController{})
 	beego.Router("/delete-confirm/:wareID:int", &controllers.ConfirmDeleteController{})

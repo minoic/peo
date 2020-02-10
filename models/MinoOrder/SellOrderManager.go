@@ -17,6 +17,7 @@ func SellCreate(SpecID uint, userID uint) uint {
 		finalPrice  float32
 		originPrice float32
 	)
+	DB.Where("id = ?", SpecID).First(&wareSpec)
 	switch wareSpec.ValidDuration {
 	case 3 * 24 * time.Hour:
 		originPrice = 1
@@ -29,9 +30,7 @@ func SellCreate(SpecID uint, userID uint) uint {
 		finalPrice = 0.01 * float32(100-wareSpec.Discount) * wareSpec.PricePerMonth * 3
 	}
 	beego.Debug(originPrice, finalPrice)
-	DB.Where("id = ?", SpecID).First(&wareSpec)
-	DB.RWMutex.Lock()
-	DB.Create(MinoDatabase.Order{
+	order := MinoDatabase.Order{
 		Model:       gorm.Model{},
 		SpecID:      SpecID,
 		UserID:      userID,
@@ -39,14 +38,9 @@ func SellCreate(SpecID uint, userID uint) uint {
 		FinalPrice:  finalPrice,
 		Paid:        false,
 		Confirmed:   false,
-	})
-	var order MinoDatabase.Order
-	if !DB.Where("user_id = ?", userID).Last(&order).RecordNotFound() {
-		DB.RWMutex.Unlock()
-		return order.ID
 	}
-	DB.RWMutex.Unlock()
-	return 0
+	DB.Create(&order)
+	return order.ID
 }
 
 func SellGet(orderID uint) (MinoDatabase.Order, error) {

@@ -12,6 +12,7 @@ type UserMessagesController struct {
 }
 
 func (this *UserMessagesController) Prepare() {
+	this.TplName = "UserMessages.html"
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
 			URL:    MinoConfigure.ConfGetHostName() + "/login",
@@ -23,7 +24,6 @@ func (this *UserMessagesController) Prepare() {
 }
 
 func (this *UserMessagesController) Get() {
-	this.TplName = "UserMessages.html"
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
 		beego.Error(err)

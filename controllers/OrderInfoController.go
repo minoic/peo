@@ -3,8 +3,10 @@ package controllers
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoOrder"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"github.com/astaxie/beego"
+	"strconv"
 	"time"
 )
 
@@ -12,7 +14,7 @@ type OrderInfoController struct {
 	beego.Controller
 }
 
-func (this *OrderInfoController) Get() {
+func (this *OrderInfoController) Prepare() {
 	this.TplName = "Order.html"
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
@@ -22,7 +24,11 @@ func (this *OrderInfoController) Get() {
 		}, &this.Controller)
 	}
 	handleNavbar(&this.Controller)
-	orderID := this.Ctx.Input.Param(":orderID")
+}
+
+func (this *OrderInfoController) Get() {
+	orderIDstring := this.Ctx.Input.Param(":orderID")
+	orderID, _ := strconv.Atoi(orderIDstring)
 	DB := MinoDatabase.GetDatabase()
 	var (
 		spec  MinoDatabase.WareSpec
@@ -96,5 +102,14 @@ func (this *OrderInfoController) Get() {
 }
 
 func (this *OrderInfoController) Post() {
-
+	key := this.GetString("key")
+	orderIDstring := this.Ctx.Input.Param(":orderID")
+	orderIDint, _ := strconv.Atoi(orderIDstring)
+	orderID := uint(orderIDint)
+	if err := MinoOrder.SellPaymentCheck(orderID, key); err != nil {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "激活失败：" + err.Error() + " 请联系网站管理员！"
+	} else {
+		this.Redirect(this.Ctx.Request.URL.String(), 302)
+	}
 }
