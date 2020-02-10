@@ -16,6 +16,7 @@ type ware struct {
 	WareName          string
 	WarePricePerMonth string
 	Intros            []intro
+	WareID            uint
 }
 
 type intro struct {
@@ -41,16 +42,12 @@ func (this *WareSellerController) Get() {
 			emailText = ""
 		}
 		if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
-			for _, w := range waresInDB {
+			for i, w := range waresInDB {
 				egg := PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), w.Nest, w.Egg)
 				wares = append(wares, ware{
 					WareName:          w.WareName,
 					WarePricePerMonth: strconv.FormatFloat(float64(w.PricePerMonth), 'f', 2, 64),
 					Intros: []intro{
-						{
-							First:  "",
-							Second: w.WareDescription,
-						},
 						{
 							First:  strconv.Itoa(w.Cpu / 100),
 							Second: "个CPU核心",
@@ -76,7 +73,14 @@ func (this *WareSellerController) Get() {
 							Second: emailText,
 						},
 					},
+					WareID: w.ID,
 				})
+				if w.WareDescription != "" {
+					wares[i].Intros = append(wares[i].Intros, intro{
+						First:  w.WareDescription,
+						Second: "",
+					})
+				}
 			}
 		} else {
 			wares = append(wares, ware{

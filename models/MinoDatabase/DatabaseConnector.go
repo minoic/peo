@@ -46,6 +46,10 @@ func GetDatabase() *gorm.DB {
 		connect()
 		beego.Warn("trying to connect to database!")
 	}
+	if err := db.DB().Ping(); err != nil {
+		connect()
+		beego.Warn("trying to connect to database!")
+	}
 	return db
 }
 

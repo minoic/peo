@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Perfect Admin</title>
+    <title>{{.webApplicationName}} 订单详情</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 
@@ -34,13 +34,16 @@
                 <hr>
                 <div class="clearfix">
                     <div class="pull-left">
-                        <h4>新订单</h4>
-                        <address>
-                            <strong>订单内容</strong><br>
-                            {{range .orderInfoList}}
-                                {{.text}}<br>
+                        <h4>
+                            <strong>订单详情</strong>
+                            {{if .paid}}
+                                <span class="label label-success">已支付</span>
+                            {{else}}
+                                <span class="label label-danger">未支付</span>
                             {{end}}
-                            <abbr title="Email">mail:</abbr> cytusd@outlook.com
+                        </h4>
+                        <address>
+                            如有问题请联系：{{.adminAddress}}
                         </address>
                     </div>
                 </div>
@@ -50,7 +53,7 @@
                         <th>编号</th>
                         <th>商品名称</th>
                         <th>月付单价</th>
-                        <th>付款方式</th>
+                        <th>购买类型</th>
                         <th>总价</th>
                     </tr>
                     </thead>
@@ -59,7 +62,7 @@
                         <td>#{{.orderID}}</td>
                         <td>{{.wareName}}</td>
                         <td>￥{{.pricePerMonth}}</td>
-                        <td>{{.paymentText}}</td>
+                        <td>{{.typeText}}</td>
                         <td>￥{{.originPrice}}</td>
                     </tr>
                     <tr>
@@ -89,7 +92,7 @@
                     </tr>
                     </tbody>
                 </table>
-                <a href="#formModal" role="button" data-toggle="modal" class="btn btn-success btn-small">使用Key激活</a>
+                <a href="#formModal" role="button" data-toggle="modal" class="btn btn-primary btn-small" {{if .paid}}disabled="disabled"{{end}}>使用Key激活</a>
                 <div class="modal fade" id="formModal">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -107,7 +110,6 @@
                                 </form>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-success btn-sm" data-dismiss="modal" aria-hidden="true">返回</button>
                                 <button type="submit" form="key" class="btn btn-info btn-sm">确认激活</button>
                             </div>
                         </div><!-- /.modal-content -->

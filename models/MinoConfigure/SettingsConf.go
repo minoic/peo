@@ -34,6 +34,10 @@ func ConfGetWebName() string {
 	return conf.String("WebApplicationName")
 }
 
+func ConfGetAdminAddress() string {
+	return conf.String("WebAdminAddress")
+}
+
 func ConfGetSMTPEnabled() bool {
 	enabled, err := conf.Bool("SMTPEnabled")
 	if err != nil {

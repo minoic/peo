@@ -10,8 +10,7 @@ type UserConsoleController struct {
 	beego.Controller
 }
 
-func (this *UserConsoleController) Get() {
-	this.TplName = "Index.html"
+func (this *UserConsoleController) Prepare() {
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
 			URL:    MinoConfigure.ConfGetHostName() + "/login",
@@ -20,4 +19,8 @@ func (this *UserConsoleController) Get() {
 		}, &this.Controller)
 	}
 	handleNavbar(&this.Controller)
+}
+
+func (this *UserConsoleController) Get() {
+	this.TplName = "Index.html"
 }

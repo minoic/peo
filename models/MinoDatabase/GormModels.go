@@ -16,6 +16,7 @@ func init() {
 		&RegConfirmKey{},
 		&WareEntity{},
 		&Message{},
+		&Order{},
 	)
 	return
 }
@@ -32,7 +33,7 @@ type User struct {
 
 type WareKey struct {
 	gorm.Model
-	WareID uint
+	SpecID uint
 	Key    string
 	Exp    time.Time
 }
@@ -55,6 +56,7 @@ type WareSpec struct {
 	Io                int
 	Nest              int
 	Egg               int
+	Discount          int
 	StartOnCompletion bool
 	OomDisabled       bool
 	DockerImage       string
@@ -88,10 +90,20 @@ type Message struct {
 	Text       string
 	TimeText   string
 	HaveRead   bool
-	SendTime   time.Time
 }
 
 type DeleteConfirm struct {
 	gorm.Model
 	WareID uint
+}
+
+type Order struct {
+	gorm.Model
+	SpecID       uint
+	UserID       uint
+	AllocationID int
+	OriginPrice  float32
+	FinalPrice   float32
+	Paid         bool
+	Confirmed    bool
 }

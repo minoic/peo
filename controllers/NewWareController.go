@@ -153,7 +153,7 @@ func init() {
 			AdditionalTags: "required",
 		},
 		{
-			Name:           "off",
+			Name:           "discount",
 			FriendlyName:   "折扣",
 			Description:    "付款时减去的百分比(0-100的整数)",
 			Type:           "number",
@@ -264,6 +264,15 @@ func (this *NewWareController) Post() {
 	} else if ware.Swap < (-1) {
 		hasError = true
 		hasErrorText = "Swap 输入值不合法"
+	}
+	ware.Discount, err = this.GetInt("discount")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误 discount " + err.Error()
+	} else if ware.Discount > 100 || ware.Discount < 0 {
+		hasError = true
+		hasErrorText = "Discount 输入值不合法"
 	}
 	ware.Nest, err = this.GetInt("nest_id")
 	if err != nil {

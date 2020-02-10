@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
-	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"github.com/astaxie/beego"
 )
 
@@ -11,9 +9,6 @@ type IndexController struct {
 }
 
 func (this *IndexController) Get() {
-	this.TplName = "Index.html"
+	this.TplName = "Loading.html"
 	handleNavbar(&this.Controller)
-	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
-	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
-	_ = MinoMessage.Send("haha", 1, "hahaha")
 }

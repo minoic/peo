@@ -3,7 +3,6 @@ package MinoMessage
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/jinzhu/gorm"
-	"time"
 )
 
 func Send(senderName string, receiverID uint, text string) error {
@@ -13,7 +12,6 @@ func Send(senderName string, receiverID uint, text string) error {
 		ReceiverID: receiverID,
 		Text:       text,
 		TimeText:   "",
-		SendTime:   time.Now(),
 	}
 	DB := MinoDatabase.GetDatabase()
 	if err := DB.Create(&message).Error; err != nil {
@@ -34,7 +32,7 @@ func GetMessages(receiverID uint) []MinoDatabase.Message {
 	var messages []MinoDatabase.Message
 	DB.Where("receiver_id = ?", receiverID).Find(&messages)
 	for i, m := range messages {
-		messages[i].TimeText = m.SendTime.Format("2006-01-02 15:04:05")
+		messages[i].TimeText = m.CreatedAt.Format("2006-01-02 15:04:05")
 		//beego.Debug(m.TimeText)
 	}
 	return messages

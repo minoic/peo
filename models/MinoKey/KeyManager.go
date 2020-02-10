@@ -11,7 +11,7 @@ func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) 
 	for i := 1; i <= keyAmount; i++ {
 		newKey := MinoDatabase.WareKey{
 			Model:  gorm.Model{},
-			WareID: wareID,
+			SpecID: wareID,
 			Key:    RandKey(keyLength),
 			Exp:    time.Now().AddDate(0, 0, validityTermInDay),
 		}
