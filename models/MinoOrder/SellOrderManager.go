@@ -14,8 +14,8 @@ func SellCreate(SpecID uint, userID uint) uint {
 	DB := MinoDatabase.GetDatabase()
 	var (
 		wareSpec    MinoDatabase.WareSpec
-		finalPrice  float32
-		originPrice float32
+		finalPrice  uint
+		originPrice uint
 	)
 	DB.Where("id = ?", SpecID).First(&wareSpec)
 	switch wareSpec.ValidDuration {
@@ -23,11 +23,11 @@ func SellCreate(SpecID uint, userID uint) uint {
 		originPrice = 1
 		finalPrice = 1
 	case 30 * 24 * time.Hour:
-		originPrice = wareSpec.PricePerMonth
-		finalPrice = 0.01 * float32(100-wareSpec.Discount) * wareSpec.PricePerMonth
+		originPrice = uint(wareSpec.PricePerMonth)
+		finalPrice = uint(0.01 * float32(100-wareSpec.Discount) * wareSpec.PricePerMonth)
 	case 90 * 24 * time.Hour:
-		originPrice = wareSpec.PricePerMonth * 3
-		finalPrice = 0.01 * float32(100-wareSpec.Discount) * wareSpec.PricePerMonth * 3
+		originPrice = uint(wareSpec.PricePerMonth * 3)
+		finalPrice = uint(0.01 * float32(100-wareSpec.Discount) * wareSpec.PricePerMonth * 3)
 	}
 	beego.Debug(originPrice, finalPrice)
 	order := MinoDatabase.Order{
@@ -52,7 +52,7 @@ func SellGet(orderID uint) (MinoDatabase.Order, error) {
 	return MinoDatabase.Order{}, errors.New("cant find order by id " + strconv.Itoa(int(orderID)))
 }
 
-func SellPaymentCheck(orderID uint, keyString string) error {
+func SellPaymentCheck(orderID uint, keyString string, selectedIP int) error {
 	DB := MinoDatabase.GetDatabase()
 	var (
 		order MinoDatabase.Order
@@ -61,7 +61,7 @@ func SellPaymentCheck(orderID uint, keyString string) error {
 		spec  MinoDatabase.WareSpec
 		exp   string
 	)
-	if DB.Where("id = ?", orderID).First(&orderID).RecordNotFound() {
+	if DB.Where("id = ?", orderID).First(&order).RecordNotFound() {
 		return errors.New("cant find order by id: " + strconv.Itoa(int(orderID)))
 	}
 	if order.Paid {
@@ -70,7 +70,7 @@ func SellPaymentCheck(orderID uint, keyString string) error {
 	if DB.Where("key = ?", keyString).First(&key).RecordNotFound() {
 		return errors.New("cant find key: " + keyString)
 	}
-	if key.Exp.After(time.Now()) || key.SpecID != order.SpecID {
+	if key.Exp.Before(time.Now()) || key.SpecID != order.SpecID {
 		return errors.New("invalid key: " + keyString)
 	}
 	if DB.Where("id = ?", order.UserID).First(&user).RecordNotFound() {
@@ -79,6 +79,11 @@ func SellPaymentCheck(orderID uint, keyString string) error {
 	if DB.Where("id = ?", order.SpecID).First(&spec).RecordNotFound() {
 		return errors.New("cant find wareSpec by id: " + strconv.Itoa(int(order.SpecID)))
 	}
+	pteUser, ok := PterodactylAPI.GetUser(PterodactylAPI.ConfGetParams(), user.Name, true)
+	if !ok {
+		return errors.New("cant find pte user: " + user.Name)
+	}
+	pteUserID := pteUser.Uid
 	beego.Info("Key used: " + key.Key)
 	DB.Delete(&key)
 	switch spec.ValidDuration {
@@ -100,6 +105,7 @@ func SellPaymentCheck(orderID uint, keyString string) error {
 		}
 		DB.Create(&entity)
 		err := PterodactylAPI.PterodactylCreateServer(PterodactylAPI.ConfGetParams(), PterodactylAPI.PterodactylServer{
+			UserId:      pteUserID,
 			ExternalId:  user.Name + strconv.Itoa(int(orderID)),
 			Name:        user.Name + strconv.Itoa(int(orderID)),
 			Description: "到期时间：" + exp,
@@ -111,16 +117,18 @@ func SellPaymentCheck(orderID uint, keyString string) error {
 				IO:     spec.Io,
 				CPU:    spec.Cpu,
 			},
-			Allocation: order.AllocationID,
+			Allocation: selectedIP,
 			NestId:     spec.Nest,
 			EggId:      spec.Egg,
 			PackId:     0,
 		})
-		if err != nil {
+		DB.Model(&order).Update("allocation_id", selectedIP)
+		if err == nil {
 			DB.Model(&order).Update("confirmed", true)
+			DB.Model(&order).Update("paid", true)
 			beego.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
 		} else {
-			beego.Error("cant create server for order id: " + strconv.Itoa(int(orderID)))
+			beego.Error("cant create server for order id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())
 		}
 	}()
 	return nil

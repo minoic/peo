@@ -49,6 +49,7 @@ type WareSpec struct {
 	PricePerMonth     float32
 	WareName          string
 	WareDescription   string
+	Node              int
 	Memory            int
 	Cpu               int
 	Swap              int
@@ -102,8 +103,8 @@ type Order struct {
 	SpecID       uint
 	UserID       uint
 	AllocationID int
-	OriginPrice  float32
-	FinalPrice   float32
+	OriginPrice  uint
+	FinalPrice   uint
 	Paid         bool
 	Confirmed    bool
 }

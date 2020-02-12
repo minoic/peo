@@ -4,6 +4,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"strings"
@@ -76,6 +77,13 @@ func init() {
 			AdditionalTags: "required",
 		},
 		{
+			Name:           "node_id",
+			FriendlyName:   "节点ID",
+			Description:    "服务器将会在这个节点上创建",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
 			Name:           "nest_id",
 			FriendlyName:   "Nest ID",
 			Description:    "服务器使用的Nest的ID",
@@ -95,12 +103,6 @@ func init() {
 			Description:  "为服务器设置专用IP (可选)",
 			Type:         "checkbox",
 		},*/
-		{
-			Name:         "port_range",
-			FriendlyName: "配备给服务器的端口范围",
-			Description:  "端口范围，以逗号分隔以分配给服务器（例如：25565-25570、25580-25590）（可选）",
-			Type:         "text",
-		},
 		{
 			Name:         "startup",
 			FriendlyName: "启动命令",
@@ -273,6 +275,15 @@ func (this *NewWareController) Post() {
 	} else if ware.Discount > 100 || ware.Discount < 0 {
 		hasError = true
 		hasErrorText = "Discount 输入值不合法"
+	}
+	ware.Node, err = this.GetInt("node_id")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误 discount " + err.Error()
+	} else if ware.Node < 0 || PterodactylAPI.GetNode(PterodactylAPI.ConfGetParams(), ware.Node) == (PterodactylAPI.PterodactylNode{}) {
+		hasError = true
+		hasErrorText = "Node ID 输入值小于 0 或找不到该节点"
 	}
 	ware.Nest, err = this.GetInt("nest_id")
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoOrder"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"strconv"
 	"time"
@@ -24,9 +25,6 @@ func (this *OrderInfoController) Prepare() {
 		}, &this.Controller)
 	}
 	handleNavbar(&this.Controller)
-}
-
-func (this *OrderInfoController) Get() {
 	orderIDstring := this.Ctx.Input.Param(":orderID")
 	orderID, _ := strconv.Atoi(orderIDstring)
 	DB := MinoDatabase.GetDatabase()
@@ -99,17 +97,64 @@ func (this *OrderInfoController) Get() {
 	this.Data["discountPrice"] = order.OriginPrice - order.FinalPrice
 	this.Data["finalPrice"] = order.FinalPrice
 	this.Data["paid"] = order.Paid
+	allocations := PterodactylAPI.GetAllocations(PterodactylAPI.ConfGetParams(), spec.Node)
+	type IPInfo struct {
+		IP string
+		ID int
+	}
+	var IPInfos []IPInfo
+	beego.Info(allocations)
+	for _, a := range allocations {
+		IPInfos = append(IPInfos, IPInfo{
+			IP: a.Alias + ":" + strconv.Itoa(a.Port),
+			ID: a.ID,
+		})
+	}
+	this.Data["ips"] = IPInfos
 }
 
+func (this *OrderInfoController) Get() {}
+
 func (this *OrderInfoController) Post() {
+	if !this.CheckXSRFCookie() {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "XSRF 验证失败！"
+		return
+	}
 	key := this.GetString("key")
 	orderIDstring := this.Ctx.Input.Param(":orderID")
 	orderIDint, _ := strconv.Atoi(orderIDstring)
 	orderID := uint(orderIDint)
-	if err := MinoOrder.SellPaymentCheck(orderID, key); err != nil {
+	selectedIP, err := this.GetInt("selected_ip")
+	if err != nil {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "激活失败：" + err.Error() + " 请联系网站管理员！"
+		this.Data["hasErrorText"] = "获取选择地址失败！"
+		return
+	}
+	if err := MinoOrder.SellPaymentCheck(orderID, key, selectedIP); err != nil {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "<< " + err.Error() + " >> 请联系网站管理员！"
 	} else {
 		this.Redirect(this.Ctx.Request.URL.String(), 302)
 	}
+}
+
+func (this *OrderInfoController) CheckXSRFCookie() bool {
+	if !this.EnableXSRF {
+		return true
+	}
+	token := this.Ctx.Input.Query("_xsrf")
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
+	}
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Csrftoken")
+	}
+	if token == "" {
+		return false
+	}
+	if this.XSRFToken() != token {
+		return false
+	}
+	return true
 }

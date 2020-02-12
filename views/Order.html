@@ -27,8 +27,8 @@
                         </div>
                     </div>
                     <div class="pull-right">
-                        <h5><strong>#{{.orderID}}</strong></h5>
-                        <strong>{{.orderCreateTime}}</strong>
+                        <h4><strong>订单编号：#{{.orderID}}</strong></h4>
+                        <strong>创建时间：{{.orderCreateTime}}</strong>
                     </div>
                 </div>
                 <hr>
@@ -71,28 +71,54 @@
                 <div class="padding-sm bg-grey">
                     <p>提示：</p>
                 </div>
+                <hr>
+                {{if .hasError}}
+                    <div class="alert alert-danger">
+                        <strong>激活失败！</strong> {{.hasErrorText}}
+                    </div>
+                {{else if .hasSucces}}
+                    <div class="alert alert-success">
+                        <strong>激活成功！</strong> 前往控制台管理服务器！
+                    </div>
+                {{end}}
             </div>
             <div class="pull-right">
                 <table class="table m-top-md">
                     <tbody>
                     <tr class="no-border">
-                        <td class="no-border"></td><td class="no-border"></td><td class="no-border"></td>
-                        <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">小计</font></font></strong></td>
-                        <td><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">￥ {{.originPrice}}</font></font></strong></td>
+                        <td class="no-border"></td>
+                        <td class="no-border"></td>
+                        <td class="no-border"></td>
+                        <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
+                                            style="vertical-align: inherit;">小计</font></font></strong></td>
+                        <td><strong><font style="vertical-align: inherit;"><font
+                                            style="vertical-align: inherit;">￥ {{.originPrice}}</font></font></strong>
+                        </td>
                     </tr>
                     <tr class="no-border">
-                        <td class="no-border"></td><td class="no-border"></td><td class="no-border"></td>
-                        <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">折扣</font></font></strong></td>
-                        <td><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">￥ {{.discountPrice}}</font></font></strong></td>
+                        <td class="no-border"></td>
+                        <td class="no-border"></td>
+                        <td class="no-border"></td>
+                        <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
+                                            style="vertical-align: inherit;">折扣</font></font></strong></td>
+                        <td><strong><font style="vertical-align: inherit;"><font
+                                            style="vertical-align: inherit;">￥ {{.discountPrice}}</font></font></strong>
+                        </td>
                     </tr>
                     <tr class="no-border">
-                        <td class="no-border"></td><td class="no-border"></td><td class="no-border"></td>
-                        <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">总</font></font></strong></td>
-                        <td><strong class="text-danger"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">￥ {{.finalPrice}}</font></font></strong></td>
+                        <td class="no-border"></td>
+                        <td class="no-border"></td>
+                        <td class="no-border"></td>
+                        <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
+                                            style="vertical-align: inherit;">总</font></font></strong></td>
+                        <td><strong class="text-danger"><font style="vertical-align: inherit;"><font
+                                            style="vertical-align: inherit;">￥ {{.finalPrice}}</font></font></strong>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
-                <a href="#formModal" role="button" data-toggle="modal" class="btn btn-primary btn-small" {{if .paid}}disabled="disabled"{{end}}>使用Key激活</a>
+                <a href="#formModal" role="button" data-toggle="modal" class="btn btn-primary btn-small"
+                   {{if .paid}}disabled="disabled"{{end}}>使用Key激活</a>
                 <div class="modal fade" id="formModal">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -102,38 +128,45 @@
                                 <small>您可以在淘宝店或发卡平台购买KEY，每个KEY只能使用一次。<br>如果KEY失效不能使用请联系网站管理员！</small>
                             </div>
                             <div class="modal-body">
-                                <form method="post" id="pay">
+                                <form method="post" id="pay" class="form-horizontal no-margin form-border">
+                                    {{.xsrfData}}
                                     <div class="form-group">
-                                        <label>激活码</label>
-                                        <input type="text" class="form-control input-sm" name="key" placeholder="输入您购买到的激活码">
-                                    </div><!-- /form-group -->
+                                        <div class="col-lg-2 control-label">
+                                            <label>激活码</label>
+                                        </div>
+                                        <div class="col-lg-10">
+
+                                                <input type="text" class="form-control input-sm" name="key"
+                                                       placeholder="输入您购买到的激活码">
+                                        </div>
+                                        <div class="col-lg-2"></div>
+                                    </div>
+                                    <!-- choose -->
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">服务器地址</label>
+                                        <div class="col-lg-10">
+                                            <select class="form-control" name="selected_ip">
+                                                {{range .ips}}
+                                                    <option value="{{.ID}}">{{.IP}}</option>
+                                                {{end}}
+                                            </select>
+                                            <span class="help-block">选择的地址将作为玩家在连接MC服务器时的地址</span>
+                                        </div><!-- /.col -->
+                                    </div>
+                                    <!-- /choose -->
                                 </form>
                             </div>
-                            <div class="row">
-                                <div class="col-lg-8">
-                                    {{if .hasError}}
-                                        <div class="alert alert-danger">
-                                            <strong>激活失败！</strong> {{.hasErrorText}}
-                                        </div>
-                                    {{else if .hasSucces}}
-                                        <div class="alert alert-success">
-                                            <strong>激活成功！</strong>
-                                        </div>
-                                    {{end}}
-                                </div>
+                            <div class="modal-footer">
+                                <button type="submit" form="pay" class="btn btn-info btn-sm">确认激活</button>
                             </div>
-                            <div class="col-lg-4">
-                                <div class="modal-footer">
-                                    <button type="submit" form="pay" class="btn btn-info btn-sm">确认激活</button>
-                                </div>
-                            </div>
-                        </div><!-- /.modal-content -->
-                    </div><!-- /.modal-dialog -->
-                </div>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
             </div>
         </div>
     </div>
-    <div class="col-lg-2"></div>
+</div>
+<div class="col-lg-2"></div>
 </div>
 <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
 {{template "tpls/perfectJS.html" .}}

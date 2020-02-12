@@ -409,7 +409,7 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		"egg":          serverInfo.EggId,
 		"docker_image": eggInfo.DockerImage,
 		"startup":      eggInfo.StartUp,
-		"oom_disabled": false,
+		"oom_disabled": true,
 		"limits": map[string]int{
 			"memory": serverInfo.Limits.Memory,
 			"swap":   serverInfo.Limits.Swap,
@@ -419,7 +419,7 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		},
 		"feature_limits": map[string]interface{}{
 			"databases":   nil,
-			"allocations": 1,
+			"allocations": serverInfo.Allocation,
 		},
 		"environment":         envInfo,
 		"start_on_completion": false,
@@ -429,6 +429,7 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		},
 	}
 	body, status := pterodactylApi(data, postData, "servers", "POST")
+	//beego.Debug("body:",body)
 	if status == 400 {
 		return errors.New("could not find any nodes satisfying the request")
 	}
@@ -441,7 +442,11 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		beego.Info("New server created: ", dec.Server)
 	} else {
-		beego.Error(err.Error())
+		return err
 	}
+	if dec.Server == (PterodactylServer{}) {
+		return errors.New("Pterodactyl API returns empty struct: " + body)
+	}
+	//beego.Info(dec.Server)
 	return nil
 }

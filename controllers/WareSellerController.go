@@ -17,6 +17,7 @@ type ware struct {
 	WarePricePerMonth string
 	Intros            []intro
 	SpecID            uint
+	Discount          int
 }
 
 type intro struct {
@@ -73,7 +74,8 @@ func (this *WareSellerController) Get() {
 							Second: emailText,
 						},
 					},
-					SpecID: w.ID,
+					SpecID:   w.ID,
+					Discount: w.Discount,
 				})
 				if w.WareDescription != "" {
 					wares[i].Intros = append(wares[i].Intros, intro{
