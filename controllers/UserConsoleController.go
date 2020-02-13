@@ -22,5 +22,5 @@ func (this *UserConsoleController) Prepare() {
 }
 
 func (this *UserConsoleController) Get() {
-	this.TplName = "Index.html"
+	this.TplName = "Console.html"
 }

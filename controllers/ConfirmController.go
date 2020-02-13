@@ -3,6 +3,7 @@ package controllers
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 )
@@ -28,6 +29,7 @@ func (this *ConfirmController) Get() {
 			})
 			if err != nil {
 				beego.Error("cant create pterodactyl user for " + user.Name)
+				MinoMessage.Send("ADMIN", user.ID, "为您创建控制台账户失败，请先确认成功创建再购买服务器！")
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.ConfGetHostName() + "/login",
 					Detail: "即将跳转到登陆页面",
@@ -35,6 +37,7 @@ func (this *ConfirmController) Get() {
 				}, &this.Controller)
 				//todo:remind user to rebuild pterodactyl account
 			} else {
+				MinoMessage.Send("ADMIN", user.ID, "已为您成功创建控制台账户，可以购买服务器了！")
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.ConfGetHostName() + "/login",
 					Detail: "即将跳转到登陆页面",

@@ -7,6 +7,10 @@ import (
 )
 
 func main() {
+	beego.BConfig.WebConfig.Session.SessionProvider = "file"
+	beego.BConfig.WebConfig.Session.SessionProviderConfig = "./tmp"
+	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
+	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.Router("/index", &controllers.IndexController{})
 	beego.Router("/reg", &controllers.RegController{})
 	beego.Router("/login", &controllers.LoginController{})

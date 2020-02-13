@@ -82,10 +82,7 @@ func (this *RegController) Post() {
 		}
 		beego.Info(newUser)
 		DB.Create(&newUser)
-		err := MinoMessage.Send("ADMIN", newUser.ID, "这是您的第一条消息")
-		if err != nil {
-			beego.Error(err)
-		}
+		MinoMessage.Send("ADMIN", newUser.ID, "这是您的第一条消息")
 		if MinoConfigure.ConfGetSMTPEnabled() {
 			if err := MinoEmail.ConfirmRegister(newUser); err != nil {
 				beego.Error(err)

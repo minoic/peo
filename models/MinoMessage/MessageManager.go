@@ -5,7 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func Send(senderName string, receiverID uint, text string) error {
+func Send(senderName string, receiverID uint, text string) {
 	message := MinoDatabase.Message{
 		Model:      gorm.Model{},
 		SenderName: senderName,
@@ -15,9 +15,8 @@ func Send(senderName string, receiverID uint, text string) error {
 	}
 	DB := MinoDatabase.GetDatabase()
 	if err := DB.Create(&message).Error; err != nil {
-		return err
+		panic(err)
 	}
-	return nil
 }
 
 func UnReadNum(receiverID uint) int {

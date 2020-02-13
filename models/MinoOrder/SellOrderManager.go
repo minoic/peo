@@ -3,6 +3,7 @@ package MinoOrder
 import (
 	"errors"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
@@ -84,8 +85,6 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int) error {
 		return errors.New("cant find pte user: " + user.Name)
 	}
 	pteUserID := pteUser.Uid
-	beego.Info("Key used: " + key.Key)
-	DB.Delete(&key)
 	switch spec.ValidDuration {
 	case 3 * 24 * time.Hour:
 		exp = (time.Now().AddDate(0, 0, 3)).Format("2006-01-02 15:04:05")
@@ -122,10 +121,13 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int) error {
 			EggId:      spec.Egg,
 			PackId:     0,
 		})
-		DB.Model(&order).Update("allocation_id", selectedIP)
 		if err == nil {
+			DB.Model(&order).Update("allocation_id", selectedIP)
 			DB.Model(&order).Update("confirmed", true)
 			DB.Model(&order).Update("paid", true)
+			DB.Delete(&key)
+			beego.Info("Key used: " + key.Key)
+			MinoMessage.Send("ADMIN", user.ID, "您的订单 #"+strconv.Itoa(int(order.ID))+" 已成功创建对应服务器，请前往控制台确认")
 			beego.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
 		} else {
 			beego.Error("cant create server for order id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())

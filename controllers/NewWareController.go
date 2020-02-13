@@ -296,6 +296,9 @@ func (this *NewWareController) Post() {
 		beego.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 egg_id " + err.Error()
+	} else if PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), ware.Nest, ware.Egg) == (PterodactylAPI.PterodactylEgg{}) {
+		hasError = true
+		hasErrorText = "在翼龙面板中找不到对应的 EGG"
 	}
 	price, err := this.GetFloat("price", 999)
 	if err != nil {
