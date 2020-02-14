@@ -3,14 +3,19 @@ package controllers
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoCache"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
 	"github.com/astaxie/beego"
+	"time"
 )
 
 type ForgetPasswordController struct {
 	beego.Controller
 }
+
+var bm = MinoCache.GetCache()
 
 func (this *ForgetPasswordController) Get() {
 	this.TplName = "ForgetPassword.html"
@@ -57,6 +62,24 @@ func (this *ForgetPasswordController) Post() {
 	} else {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "该邮箱未被注册，无法找回密码！"
+	}
+}
+
+func (this *ForgetPasswordController) SendMail() {
+	this.TplName = "Index.html"
+	userEmail := this.Ctx.Input.Param(":email")
+	DB := MinoDatabase.GetDatabase()
+	if DB.Where("email = ?", userEmail).First(&MinoDatabase.User{}).RecordNotFound() || bm.IsExist("FORGET"+userEmail) {
+		return
+	}
+	key, err := MinoEmail.SendCaptcha(userEmail)
+	if err != nil {
+		beego.Error(err)
+	} else {
+		err := bm.Put("FORGET"+userEmail, key, 1*time.Minute)
+		if err != nil {
+			beego.Error(err)
+		}
 	}
 }
 
