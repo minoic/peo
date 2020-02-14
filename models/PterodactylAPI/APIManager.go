@@ -75,7 +75,7 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 
 func PterodactylTestConnection(params ParamsData) {
 	test, _ := pterodactylApi(params, "", "nodes", "GET")
-	beego.Info("PterodactylAPI returns: ", test)
+	beego.Debug("PterodactylAPI returns: ", test)
 }
 
 func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
@@ -358,7 +358,7 @@ func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 		} `json:"attributes"`
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		beego.Info(dec.Attributes.Relationships.Variables.Data)
+		//beego.Info(dec.Attributes.Relationships.Variables.Data)
 		for _, v := range dec.Attributes.Relationships.Variables.Data {
 			keys := v["attributes"].(map[string]interface{})
 			key := keys["env_variable"].(string)
@@ -378,7 +378,7 @@ func Test() {
 	PterodactylTestConnection(params)
 	ret := pterodactylGetAllocations(params, 6)
 	for k, v := range ret {
-		beego.Info(k, v)
+		beego.Debug(k, v)
 	}
 }
 

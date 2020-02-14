@@ -31,7 +31,7 @@ func (this *UserMessagesController) Get() {
 	}
 	messages := MinoMessage.GetMessages(user.ID)
 	this.Data["messages"] = messages
-	beego.Info(messages)
+	//beego.Info(messages)
 	MinoMessage.ReadAll(user.ID)
 	this.Data["unReadNum"] = 0
 }

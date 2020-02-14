@@ -63,12 +63,12 @@ func (this *PEAdminSettingsController) Get() {
 	var s MinoDatabase.PEAdminSetting
 	if !DB.Where("Key = ?", "websiteName").First(&s).RecordNotFound() {
 		this.Data["websiteNameDef"] = s.Value
-		beego.Info("value:" + s.Value)
+		//beego.Info("value:" + s.Value)
 	}
 	s = MinoDatabase.PEAdminSetting{}
 	if !DB.Where("Key = ?", "websiteHost").First(&s).RecordNotFound() {
 		this.Data["websiteHostDef"] = s.Value
-		beego.Info("value:" + s.Value)
+		//beego.Info("value:" + s.Value)
 	}
 }
 

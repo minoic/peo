@@ -29,7 +29,7 @@ func sendConfirmMail(key MinoDatabase.RegConfirmKey) {
 }
 
 func SendCaptcha(receiver string) (string, error) {
-	beego.Info(receiver)
+	//beego.Info(receiver)
 	conf := MinoConfigure.GetConf()
 	key := MinoKey.RandNumKey(6)
 	smtpServer := getSTMPClient()

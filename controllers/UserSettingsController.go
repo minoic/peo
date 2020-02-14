@@ -25,4 +25,5 @@ func (this *UserSettingsController) Prepare() {
 func (this *UserSettingsController) Get() {
 	this.TplName = "UserSettings.html"
 	this.Data["i"] = 2
+	this.Data["u"] = 3
 }
