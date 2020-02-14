@@ -171,7 +171,7 @@ func init() {
 	}
 }
 
-func (this *NewWareController) Get() {
+func (this *NewWareController) Prepare() {
 	this.TplName = "NewWare.html"
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
@@ -190,23 +190,15 @@ func (this *NewWareController) Get() {
 	handleNavbar(&this.Controller)
 	//beego.Info(WareInfo)
 	this.Data["options"] = WareInfo
+	this.Data["u"] = 0
 }
+func (this *NewWareController) Get() {}
 
 //todo: add nest/egg select instead of input ID
 func (this *NewWareController) Post() {
-	this.TplName = "NewWare.html"
-	this.Data["options"] = WareInfo
-	handleNavbar(&this.Controller)
 	if !this.CheckXSRFCookie() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
-		return
-	} else if !MinoSession.SessionIsAdmin(this.StartSession()) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName,
-			Detail: "正在跳转至主页",
-			Title:  "您不是管理员！",
-		}, &this.Controller)
 		return
 	}
 	//formText,_:=template.ParseFiles("tpls/forms/waretext.html")
@@ -309,6 +301,28 @@ func (this *NewWareController) Post() {
 		hasError = true
 		hasErrorText = "价格不能设置为负"
 	}
+	e, err := this.GetInt("exp")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误 price " + err.Error()
+	} else if !(e == 3 || e == 30 || e == 90) {
+		hasError = true
+		hasErrorText = "有效期没有输入建议的值"
+	} else {
+		ware.ValidDuration = time.Duration(e*24) * time.Hour
+	}
+	e, err = this.GetInt("delete_time")
+	if err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误 price " + err.Error()
+	} else if e < 0 {
+		hasError = true
+		hasErrorText = "删除延迟不能小于 0"
+	} else {
+		ware.DeleteDuration = time.Duration(e*24) * time.Hour
+	}
 	if hasError {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = hasErrorText
@@ -317,11 +331,6 @@ func (this *NewWareController) Post() {
 		ware.OomDisabled = true
 		ware.StartOnCompletion = true
 		//todo: handle database number
-		//todo: check if post data is valid
-		e, _ := this.GetInt("exp")
-		ware.ValidDuration = time.Duration(e*24) * time.Hour
-		e, _ = this.GetInt("delete_time")
-		ware.DeleteDuration = time.Duration(e*24) * time.Hour
 		DB := MinoDatabase.GetDatabase()
 		DB.Create(&ware)
 		DelayRedirect(DelayInfo{

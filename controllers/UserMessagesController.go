@@ -21,10 +21,10 @@ func (this *UserMessagesController) Prepare() {
 		}, &this.Controller)
 	}
 	handleNavbar(&this.Controller)
+	this.Data["u"] = 2
 }
 
 func (this *UserMessagesController) Get() {
-	this.Data["u"] = 2
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
 		beego.Error(err)
