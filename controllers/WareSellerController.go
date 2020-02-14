@@ -38,7 +38,7 @@ func (this *WareSellerController) Get() {
 		var waresInDB []MinoDatabase.WareSpec
 		DB := MinoDatabase.GetDatabase()
 		var emailText string
-		if MinoConfigure.ConfGetSMTPEnabled() {
+		if MinoConfigure.SMTPEnabled {
 			emailText = "邮件提醒！"
 		} else {
 			emailText = ""

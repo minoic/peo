@@ -12,8 +12,8 @@ import (
 func handleNavbar(this *beego.Controller) {
 	conf := MinoConfigure.GetConf()
 	this.Data["xsrfData"] = template.HTML(this.XSRFFormHTML())
-	this.Data["webHostName"] = MinoConfigure.ConfGetHostName()
-	this.Data["webApplicationName"] = MinoConfigure.ConfGetWebName()
+	this.Data["webHostName"] = MinoConfigure.WebHostName
+	this.Data["webApplicationName"] = MinoConfigure.WebApplicationName
 	this.Data["webApplicationAuthor"] = "CytusD <cytusd@outlook.com>"
 	this.Data["webDescription"] = conf.String("webDescription")
 	sess := this.StartSession()
@@ -33,5 +33,4 @@ func handleNavbar(this *beego.Controller) {
 
 func handleSidebar(this *beego.Controller) {
 	this.Data["dashboard"] = PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams())
-
 }

@@ -20,7 +20,7 @@ var bm = MinoCache.GetCache()
 func (this *ForgetPasswordController) Get() {
 	this.TplName = "ForgetPassword.html"
 	handleNavbar(&this.Controller)
-	if !MinoConfigure.ConfGetSMTPEnabled() {
+	if !MinoConfigure.SMTPEnabled {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "服务器没有开启SMTP服务，无法使用找回密码功能，请联系网站管理员找回密码！"
 	}
@@ -47,7 +47,7 @@ func (this *ForgetPasswordController) Post() {
 				b := md5.Sum([]byte(password + conf.String("DatabaseSalt")))
 				DB.Model(&user).Update("Password", hex.EncodeToString(b[:]))
 				DelayRedirect(DelayInfo{
-					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "正在跳转到登录页面",
 					Title:  "修改成功 😀",
 				}, &this.Controller)

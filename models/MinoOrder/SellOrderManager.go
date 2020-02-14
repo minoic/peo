@@ -25,10 +25,10 @@ func SellCreate(SpecID uint, userID uint) uint {
 		finalPrice = 1
 	case 30 * 24 * time.Hour:
 		originPrice = uint(wareSpec.PricePerMonth)
-		finalPrice = uint(0.01 * float32(100-wareSpec.Discount) * wareSpec.PricePerMonth)
+		finalPrice = uint(0.01 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
 	case 90 * 24 * time.Hour:
 		originPrice = uint(wareSpec.PricePerMonth * 3)
-		finalPrice = uint(0.01 * float32(100-wareSpec.Discount) * wareSpec.PricePerMonth * 3)
+		finalPrice = uint(0.03 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
 	}
 	beego.Debug(originPrice, finalPrice)
 	order := MinoDatabase.Order{

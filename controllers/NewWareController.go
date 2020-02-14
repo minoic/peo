@@ -176,13 +176,13 @@ func (this *NewWareController) Get() {
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "正在跳转至登录页面",
 			Title:  "您还没有登录！",
 		}, &this.Controller)
 	} else if !MinoSession.SessionIsAdmin(sess) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName(),
+			URL:    MinoConfigure.WebHostName,
 			Detail: "正在跳转至主页",
 			Title:  "您不是管理员！",
 		}, &this.Controller)
@@ -203,7 +203,7 @@ func (this *NewWareController) Post() {
 		return
 	} else if !MinoSession.SessionIsAdmin(this.StartSession()) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName(),
+			URL:    MinoConfigure.WebHostName,
 			Detail: "正在跳转至主页",
 			Title:  "您不是管理员！",
 		}, &this.Controller)
@@ -300,7 +300,7 @@ func (this *NewWareController) Post() {
 		hasError = true
 		hasErrorText = "在翼龙面板中找不到对应的 EGG"
 	}
-	price, err := this.GetFloat("price", 999)
+	price, err := this.GetUint32("price", 999)
 	if err != nil {
 		beego.Error(err)
 		hasError = true
@@ -313,7 +313,7 @@ func (this *NewWareController) Post() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = hasErrorText
 	} else {
-		ware.PricePerMonth = float32(price)
+		ware.PricePerMonth = uint(price)
 		ware.OomDisabled = true
 		ware.StartOnCompletion = true
 		//todo: handle database number
@@ -325,7 +325,7 @@ func (this *NewWareController) Post() {
 		DB := MinoDatabase.GetDatabase()
 		DB.Create(&ware)
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/new-ware",
+			URL:    MinoConfigure.WebHostName + "/new-ware",
 			Detail: "正在跳转回添加页面",
 			Title:  "添加商品成功！",
 		}, &this.Controller)

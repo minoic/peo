@@ -27,5 +27,5 @@ func DelayRedirect(info DelayInfo, c *beego.Controller) {
 }
 
 func DelayRedirectGetURL(info DelayInfo) string {
-	return MinoConfigure.ConfGetHostName() + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
+	return MinoConfigure.WebHostName + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
 }

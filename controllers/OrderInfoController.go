@@ -19,7 +19,7 @@ func (this *OrderInfoController) Prepare() {
 	this.TplName = "Order.html"
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "正在跳转至登陆页面",
 			Title:  "您还没有登录！",
 		}, &this.Controller)
@@ -65,7 +65,7 @@ func (this *OrderInfoController) Prepare() {
 	user, err := MinoSession.SessionGetUser(sess)
 	if err != nil || user == (MinoDatabase.User{}) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "正在跳转到登录页面",
 			Title:  "请重新登录",
 		}, &this.Controller)
@@ -84,7 +84,7 @@ func (this *OrderInfoController) Prepare() {
 	this.Data["pricePerMonth"] = spec.PricePerMonth
 	this.Data["orderID"] = order.ID
 	this.Data["orderCreateTime"] = order.CreatedAt.Format("2006-01-02 15:04:05")
-	this.Data["adminAddress"] = MinoConfigure.ConfGetAdminAddress()
+	this.Data["adminAddress"] = MinoConfigure.AdminAddress
 	switch spec.ValidDuration {
 	case 3 * 24 * time.Hour:
 		this.Data["typeText"] = "试用"

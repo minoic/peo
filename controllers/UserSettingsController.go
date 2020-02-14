@@ -13,7 +13,7 @@ type UserSettingsController struct {
 func (this *UserSettingsController) Prepare() {
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "正在跳转至登录页面",
 			Title:  "您还没有登录！",
 		}, &this.Controller)

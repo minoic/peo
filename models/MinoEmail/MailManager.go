@@ -19,7 +19,7 @@ func sendConfirmMail(key MinoDatabase.RegConfirmKey) {
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo(key.UserEmail).
-		SetSubject(MinoConfigure.ConfGetWebName()+" 注册验证邮件").
+		SetSubject(MinoConfigure.WebApplicationName+" 注册验证邮件").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		beego.Error(err)
@@ -41,7 +41,7 @@ func SendCaptcha(receiver string) (string, error) {
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo(receiver).
-		SetSubject(MinoConfigure.ConfGetWebName()+" 修改密码邮件").
+		SetSubject(MinoConfigure.WebApplicationName+" 修改密码邮件").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		return "", nil

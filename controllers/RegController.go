@@ -83,17 +83,17 @@ func (this *RegController) Post() {
 		beego.Info(newUser)
 		DB.Create(&newUser)
 		MinoMessage.Send("ADMIN", newUser.ID, "这是您的第一条消息")
-		if MinoConfigure.ConfGetSMTPEnabled() {
+		if MinoConfigure.SMTPEnabled {
 			if err := MinoEmail.ConfirmRegister(newUser); err != nil {
 				beego.Error(err)
 				DelayRedirect(DelayInfo{
-					URL:    MinoConfigure.ConfGetHostName() + "/reg",
+					URL:    MinoConfigure.WebHostName + "/reg",
 					Detail: "即将跳转到注册页面",
 					Title:  "邮件发送失败，请联系网站管理员！",
 				}, &this.Controller)
 			} else {
 				DelayRedirect(DelayInfo{
-					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "请前往您的邮箱进行验证！",
 				}, &this.Controller)
@@ -112,14 +112,14 @@ func (this *RegController) Post() {
 			if err != nil {
 				beego.Error("cant create pterodactyl user for " + newUser.Name)
 				DelayRedirect(DelayInfo{
-					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册成功，但开户失败，请联系网站管理员！",
 				}, &this.Controller)
 				//todo:remind user to rebuild pterodactyl account
 			} else {
 				DelayRedirect(DelayInfo{
-					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册成功！",
 				}, &this.Controller)
@@ -132,7 +132,7 @@ func (this *RegController) MailConfirm() {
 	key := this.Ctx.Input.Param(":key")
 	user, ok := MinoEmail.ConfirmKey(key)
 	if ok {
-		if MinoConfigure.ConfGetSMTPEnabled() {
+		if MinoConfigure.SMTPEnabled {
 			err := PterodactylAPI.PterodactylCreateUser(PterodactylAPI.ConfGetParams(), PterodactylAPI.PostPteUser{
 				ExternalId: user.Name,
 				Username:   user.Name,
@@ -147,7 +147,7 @@ func (this *RegController) MailConfirm() {
 				beego.Error("cant create pterodactyl user for " + user.Name)
 				MinoMessage.Send("ADMIN", user.ID, "为您创建控制台账户失败，请先确认成功创建再购买服务器！")
 				DelayRedirect(DelayInfo{
-					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册验证成功，但开户失败，请联系网站管理员！",
 				}, &this.Controller)
@@ -155,21 +155,21 @@ func (this *RegController) MailConfirm() {
 			} else {
 				MinoMessage.Send("ADMIN", user.ID, "已为您成功创建控制台账户，可以购买服务器了！")
 				DelayRedirect(DelayInfo{
-					URL:    MinoConfigure.ConfGetHostName() + "/login",
+					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册验证成功！",
 				}, &this.Controller)
 			}
 		} else {
 			DelayRedirect(DelayInfo{
-				URL:    MinoConfigure.ConfGetHostName() + "/login",
+				URL:    MinoConfigure.WebHostName + "/login",
 				Detail: "即将跳转到登陆页面",
 				Title:  "注册验证成功！",
 			}, &this.Controller)
 		}
 	} else {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "即将跳转到登陆页面",
 			Title:  "注册验证失败！请重新验证！",
 		}, &this.Controller)

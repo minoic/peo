@@ -17,7 +17,7 @@ func (this *OrderCreateController) Prepare() {
 	this.TplName = "Loading.html"
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "正在跳转至登陆页面",
 			Title:  "您还没有登录！",
 		}, &this.Controller)
@@ -29,7 +29,7 @@ func (this *OrderCreateController) Get() {
 	specID, err := this.GetUint32("specID", 0)
 	if err != nil {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName(),
+			URL:    MinoConfigure.WebHostName,
 			Detail: "正在跳转到主页",
 			Title:  "参数错误",
 		}, &this.Controller)
@@ -38,7 +38,7 @@ func (this *OrderCreateController) Get() {
 	DB := MinoDatabase.GetDatabase()
 	if DB.Where("id = ?", specID).First(&spec).RecordNotFound() {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName(),
+			URL:    MinoConfigure.WebHostName,
 			Detail: "正在跳转到主页",
 			Title:  "找不到此商品",
 		}, &this.Controller)
@@ -47,7 +47,7 @@ func (this *OrderCreateController) Get() {
 	user, err := MinoSession.SessionGetUser(sess)
 	if err != nil {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "正在跳转到登录页面",
 			Title:  "请重新登录",
 		}, &this.Controller)

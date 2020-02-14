@@ -38,7 +38,7 @@ func (this *PEAdminSettingsController) Get() {
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetHostName() + "/login",
+			URL:    MinoConfigure.WebHostName + "/login",
 			Detail: "正在跳转到登录",
 			Title:  "您还没有登录",
 		}, &this.Controller)
@@ -48,14 +48,14 @@ func (this *PEAdminSettingsController) Get() {
 	var user MinoDatabase.User
 	if DB.Where("Name = ?", userName).First(&user).RecordNotFound() {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetWebName(),
+			URL:    MinoConfigure.WebApplicationName,
 			Detail: "正在跳转到主页",
 			Title:  "用户名未找到",
 		}, &this.Controller)
 	}
 	if !user.IsAdmin {
 		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.ConfGetWebName(),
+			URL:    MinoConfigure.WebApplicationName,
 			Detail: "正在跳转到主页",
 			Title:  "用户没有访问权限",
 		}, &this.Controller)
@@ -90,7 +90,7 @@ func (this *PEAdminSettingsController) Post() {
 		Value: websiteHost,
 	})
 	DelayRedirect(DelayInfo{
-		URL:    MinoConfigure.ConfGetWebName() + "/pe-admin-settings",
+		URL:    MinoConfigure.WebApplicationName + "/pe-admin-settings",
 		Detail: "正在跳转回设置页",
 		Title:  "更新设置成功",
 	}, &this.Controller)
