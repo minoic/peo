@@ -4,6 +4,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"html/template"
 )
@@ -28,4 +29,9 @@ func handleNavbar(this *beego.Controller) {
 			this.Data["isAdmin"] = true
 		}
 	}
+}
+
+func handleSidebar(this *beego.Controller) {
+	this.Data["dashboard"] = PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams())
+
 }

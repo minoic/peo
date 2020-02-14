@@ -1,0 +1,42 @@
+<aside class="fixed skin-6">
+    <div class="sidebar-inner scrollable-sidebars">
+        <div class="main-menu">
+            <br>
+            <ul>
+                <li class="{{if eq .i 1}}active{{end}}">
+                    <a href="{{if eq .i 1}}#{{else}}/user-console{{end}}">
+								<span class="menu-icon">
+									<i class="fa fa-bar-chart-o fa-lg"></i>
+								</span>
+                        <span class="text">
+									服务器信息
+								</span>
+                        <span class="menu-hover"></span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{.dashboard}}" target="_blank">
+								<span class="menu-icon">
+									<i class="fa fa-desktop fa-lg"></i>
+								</span>
+                        <span class="text">
+									翼龙控制台
+								</span>
+                        <span class="menu-hover"></span>
+                    </a>
+                </li>
+                <li class="{{if eq .i 2}}active{{end}}">
+                    <a href="{{if eq .i 2}}#{{else}}/user-settings{{end}}">
+								<span class="menu-icon">
+									<i class="fa fa-file-text fa-lg"></i>
+								</span>
+                        <span class="text">
+									账户设置
+								</span>
+                        <span class="menu-hover"></span>
+                    </a>
+                </li>
+            </ul>
+        </div><!-- /main-menu -->
+    </div><!-- /sidebar-inner -->
+</aside>

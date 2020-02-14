@@ -2,12 +2,6 @@ package PterodactylAPI
 
 import "time"
 
-type ParamsData struct {
-	Serverhostname string
-	Serversecure   bool
-	Serverpassword string
-}
-
 type PterodactylUser struct {
 	Uid        int       `json:"id"`
 	ExternalId string    `json:"external_id"`

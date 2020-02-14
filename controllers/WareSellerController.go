@@ -29,6 +29,7 @@ func (this *WareSellerController) Get() {
 	this.TplName = "WareSeller.html"
 	this.Data["wareTitle"] = "Title"
 	this.Data["wareDetail"] = "Detail"
+	this.Data["u"] = 1
 	handleNavbar(&this.Controller)
 	this.Ctx.ResponseWriter.Flush()
 	wareChan := make(chan []ware)

@@ -6,11 +6,11 @@ import (
 	"github.com/astaxie/beego"
 )
 
-type UserConsoleController struct {
+type UserSettingsController struct {
 	beego.Controller
 }
 
-func (this *UserConsoleController) Prepare() {
+func (this *UserSettingsController) Prepare() {
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
 			URL:    MinoConfigure.ConfGetHostName() + "/login",
@@ -22,8 +22,7 @@ func (this *UserConsoleController) Prepare() {
 	handleSidebar(&this.Controller)
 }
 
-func (this *UserConsoleController) Get() {
-	this.TplName = "UserConsole.html"
-	this.Data["i"] = 1
-	this.Data["u"] = 3
+func (this *UserSettingsController) Get() {
+	this.TplName = "UserSettings.html"
+	this.Data["i"] = 2
 }

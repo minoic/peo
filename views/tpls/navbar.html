@@ -6,19 +6,18 @@
         </div>
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav navbar-right">
-                <li>
-
+                <li class="{{if eq .u 1}}active{{end}}">
                     <a href="/"><i class="fa fa-shopping-cart fa-lg"></i> 商品列表</a>
                 </li>
                 {{if not .notLoggedIn}}
-                    <li>
+                    <li class="{{if eq .u 2}}active{{end}}">
                         <a href="/user-messages"><i class="fa fa-envelope fa-lg"></i> 消息
                             {{if .unReadNum}}
                                 <span class="badge badge-danger">{{.unReadNum}}</span>
                             {{end}}
                         </a>
                     </li>
-                    <li>
+                    <li class="{{if eq .u 3}}active{{end}}">
                         <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> 控制台</a>
                     </li>
                 {{end}}
@@ -31,7 +30,7 @@
                     </li>
                 {{end}}
                 {{if .isAdmin}}
-                    <li>
+                    <li class="{{if eq .u 4}}active{{end}}">
                         <a href="/pe-admin-console"><i class="fa fa-cogs fa-lg"></i> 管理员面板</a>
                     </li>
                 {{end}}

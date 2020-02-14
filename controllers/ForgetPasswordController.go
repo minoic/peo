@@ -66,7 +66,7 @@ func (this *ForgetPasswordController) Post() {
 }
 
 func (this *ForgetPasswordController) SendMail() {
-	this.TplName = "Index.html"
+	this.TplName = "Loading.html"
 	userEmail := this.Ctx.Input.Param(":email")
 	DB := MinoDatabase.GetDatabase()
 	if DB.Where("email = ?", userEmail).First(&MinoDatabase.User{}).RecordNotFound() || bm.IsExist("FORGET"+userEmail) {

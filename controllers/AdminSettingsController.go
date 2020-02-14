@@ -34,6 +34,7 @@ func init() {
 
 func (this *PEAdminSettingsController) Get() {
 	this.TplName = "PEAdminSettings.html"
+	this.Data["u"] = 4
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
 		DelayRedirect(DelayInfo{

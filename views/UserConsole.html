@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{.webApplicationName}} 用户控制台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{template "tpls/perfectCSS.html" .}}
+</head>
+
+<body class="overflow-hidden">
+{{template "tpls/navbar.html" .}}
+<div id="overlay" class="transparent"></div>
+<div id="wrapper" class="preload sidebar-mini">
+    {{template "tpls/sidebar.html" .}}
+    <!-- main-container -->
+
+
+    <!-- /main-container -->
+</div><!-- /wrapper -->
+
+<a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
+<!-- Logout confirmation -->
+<div class="custom-popup width-100" id="logoutConfirm">
+    <div class="padding-md">
+        <h4 class="m-top-none"> 确定要登出吗？您将需要重新登录才能访问部分内容。</h4>
+    </div>
+
+    <div class="text-center">
+        <a class="btn btn-danger m-right-sm" onclick="logout()" href="/">登出</a>
+        <script type="text/javascript">
+            function logout() {
+                console.log($.cookie());
+                $.removeCookie('beegosessionID');
+            }
+        </script>
+    </div>
+</div>
+{{template "tpls/perfectJS.html" .}}
+<script src='../static/perfect/js/jquery.cookie.min.js'></script>
+</body>
+</html>

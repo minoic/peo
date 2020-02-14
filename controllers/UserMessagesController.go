@@ -24,6 +24,7 @@ func (this *UserMessagesController) Prepare() {
 }
 
 func (this *UserMessagesController) Get() {
+	this.Data["u"] = 2
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
 		beego.Error(err)

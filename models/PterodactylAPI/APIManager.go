@@ -10,7 +10,13 @@ import (
 	"strconv"
 )
 
-func pterodactylGethostname(params ParamsData) string {
+type ParamsData struct {
+	Serverhostname string
+	Serversecure   bool
+	Serverpassword string
+}
+
+func PterodactylGethostname(params ParamsData) string {
 	var hostname string
 	if params.Serversecure {
 		hostname = "https://" + params.Serverhostname
@@ -23,7 +29,7 @@ func pterodactylGethostname(params ParamsData) string {
 }
 
 func pterodactylApi(params ParamsData, data interface{}, endPoint string, method string) (string, int) {
-	url := pterodactylGethostname(params) + "/api/application/" + endPoint
+	url := PterodactylGethostname(params) + "/api/application/" + endPoint
 	//beego.Info(url)
 	var res string
 	var status int
