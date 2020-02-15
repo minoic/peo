@@ -70,6 +70,7 @@ type WareEntity struct {
 	UserID           uint
 	ServerExternalID string
 	UserExternalID   string
+	HostName         string
 	//DeleteStatus = 0 : Dont need to be deleted | = 1 : Delete Email Sent
 	DeleteStatus int
 	ValidDate    time.Time

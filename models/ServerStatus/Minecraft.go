@@ -1,4 +1,4 @@
-package MineCraftAPI
+package ServerStatus
 
 import (
 	"bufio"

@@ -147,7 +147,7 @@
                                         <div class="col-lg-10">
                                             <select class="form-control" name="selected_ip">
                                                 {{range .ips}}
-                                                    <option value="{{.ID}}">{{.IP}}</option>
+                                                    <option value="{{.ID}} {{.IP}}">{{.IP}}</option>
                                                 {{end}}
                                             </select>
                                             <span class="help-block">选择的地址将作为玩家在连接MC服务器时的地址</span>

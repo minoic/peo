@@ -53,7 +53,7 @@ func SellGet(orderID uint) (MinoDatabase.Order, error) {
 	return MinoDatabase.Order{}, errors.New("cant find order by id " + strconv.Itoa(int(orderID)))
 }
 
-func SellPaymentCheck(orderID uint, keyString string, selectedIP int) error {
+func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName string) error {
 	DB := MinoDatabase.GetDatabase()
 	var (
 		order MinoDatabase.Order
@@ -94,15 +94,6 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int) error {
 		exp = (time.Now().AddDate(0, 90, 0)).Format("2006-01-02 15:04:05")
 	}
 	go func() {
-		entity := MinoDatabase.WareEntity{
-			Model:            gorm.Model{},
-			UserID:           orderID,
-			ServerExternalID: user.Name + strconv.Itoa(int(orderID)),
-			UserExternalID:   user.Name,
-			DeleteStatus:     0,
-			ValidDate:        time.Now().Add(spec.ValidDuration),
-		}
-		DB.Create(&entity)
 		err := PterodactylAPI.PterodactylCreateServer(PterodactylAPI.ConfGetParams(), PterodactylAPI.PterodactylServer{
 			UserId:      pteUserID,
 			ExternalId:  user.Name + strconv.Itoa(int(orderID)),
@@ -122,6 +113,16 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int) error {
 			PackId:     0,
 		})
 		if err == nil {
+			entity := MinoDatabase.WareEntity{
+				Model:            gorm.Model{},
+				UserID:           orderID,
+				ServerExternalID: user.Name + strconv.Itoa(int(orderID)),
+				UserExternalID:   user.Name,
+				HostName:         hostName,
+				DeleteStatus:     0,
+				ValidDate:        time.Now().Add(spec.ValidDuration),
+			}
+			DB.Create(&entity)
 			DB.Model(&order).Update("allocation_id", selectedIP)
 			DB.Model(&order).Update("confirmed", true)
 			DB.Model(&order).Update("paid", true)

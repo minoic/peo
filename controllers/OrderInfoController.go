@@ -8,6 +8,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type OrderInfoController struct {
 
 func (this *OrderInfoController) Prepare() {
 	this.TplName = "Order.html"
+	this.Data["u"] = 0
 	if !MinoSession.SessionIslogged(this.StartSession()) {
 		DelayRedirect(DelayInfo{
 			URL:    MinoConfigure.WebHostName + "/login",
@@ -125,13 +127,15 @@ func (this *OrderInfoController) Post() {
 	orderIDstring := this.Ctx.Input.Param(":orderID")
 	orderIDint, _ := strconv.Atoi(orderIDstring)
 	orderID := uint(orderIDint)
-	selectedIP, err := this.GetInt("selected_ip")
+	selectedIP := this.GetString("selected_ip")
+	arr := strings.Fields(selectedIP)
+	id, err := strconv.Atoi(arr[0])
+	beego.Info(id, arr[1])
 	if err != nil {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "获取选择地址失败！"
-		return
+		this.Data["hasErrorText"] = "选取服务器地址失败！"
 	}
-	if err := MinoOrder.SellPaymentCheck(orderID, key, selectedIP); err != nil {
+	if err := MinoOrder.SellPaymentCheck(orderID, key, id, arr[1]); err != nil {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "<< " + err.Error() + " >> 请联系网站管理员！"
 	} else {
