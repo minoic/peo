@@ -34,6 +34,9 @@ func GetMessages(receiverID uint) []MinoDatabase.Message {
 		messages[i].TimeText = m.CreatedAt.Format("2006-01-02 15:04:05")
 		//beego.Debug(m.TimeText)
 	}
+	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+		messages[i], messages[j] = messages[j], messages[i]
+	}
 	return messages
 }
 

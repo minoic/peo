@@ -41,7 +41,7 @@ func SendCaptcha(receiver string) (string, error) {
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo(receiver).
-		SetSubject(MinoConfigure.WebApplicationName+" 修改密码邮件").
+		SetSubject(MinoConfigure.WebApplicationName+" 验证码").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		return "", nil

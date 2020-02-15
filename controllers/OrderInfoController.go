@@ -105,7 +105,7 @@ func (this *OrderInfoController) Prepare() {
 		ID int
 	}
 	var IPInfos []IPInfo
-	beego.Info(allocations)
+	//beego.Info(allocations)
 	for _, a := range allocations {
 		IPInfos = append(IPInfos, IPInfo{
 			IP: a.Alias + ":" + strconv.Itoa(a.Port),
@@ -130,7 +130,7 @@ func (this *OrderInfoController) Post() {
 	selectedIP := this.GetString("selected_ip")
 	arr := strings.Fields(selectedIP)
 	id, err := strconv.Atoi(arr[0])
-	beego.Info(id, arr[1])
+	//beego.Info(id, arr[1])
 	if err != nil {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "选取服务器地址失败！"
@@ -139,6 +139,7 @@ func (this *OrderInfoController) Post() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "<< " + err.Error() + " >> 请联系网站管理员！"
 	} else {
+		this.Data["hasSuccess"] = true
 		this.Redirect(this.Ctx.Request.URL.String(), 302)
 	}
 }

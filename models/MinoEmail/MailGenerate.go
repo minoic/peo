@@ -32,7 +32,7 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "点击确认注册",
-						Link:  MinoConfigure.WebHostName + "/confirm/" + key,
+						Link:  MinoConfigure.WebHostName + "/reg/confirm/" + key,
 					},
 				},
 			},

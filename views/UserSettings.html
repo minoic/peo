@@ -14,8 +14,124 @@
 <div id="wrapper" class="preload sidebar-mini">
     {{template "tpls/sidebar.html" .}}
     <!-- main-container -->
-
-
+    <div id="main-container">
+        <div class="padding-md">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <form class="form-horizontal form-border no-margin" id="basic-constraint" data-validate="parsley" novalidate="" method="post" action="/user-settings/change-password">
+                            {{.xsrfData}}
+                            <div class="panel-heading">
+                                修改密码
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">旧密码</label>
+                                    <div class="col-lg-9">
+                                        <input type="password" class="form-control input-sm parsley-validated" placeholder="输入您账号原来的密码" name="oldPassword">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">新密码</label>
+                                    <div class="col-lg-9">
+                                        <input type="password" placeholder="输入新密码" class="form-control input-sm" name="newPassword">
+                                        <div class="seperator"></div>
+                                        <input type="password" placeholder="确认新密码" class="form-control input-sm" name="confirmPassword">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                            </div>
+                            {{if .hasError}}
+                                <div class="alert alert-danger">
+                                    <strong>修改失败！</strong> {{.hasErrorText}}
+                                </div>
+                            {{else if .hasSuccess}}
+                                <div class="alert alert-success">
+                                    <strong>修改成功！</strong> 前往控制台管理服务器！
+                                </div>
+                            {{end}}
+                            <div class="panel-footer">
+                                <button type="submit" class="btn btn-primary">确认修改</button>
+                            </div>
+                        </form>
+                    </div><!-- /panel -->
+                </div><!-- /.col-->
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <form class="form-horizontal form-border no-margin" id="type-constraint" data-validate="parsley" novalidate="">
+                            <div class="panel-heading">
+                                Type Constraints
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Email</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="email" placeholder="Email Address">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Url</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="url" placeholder="Url">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Url Strict</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="urlstrict" placeholder="http://yourSite.com">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Digits</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="digits" placeholder="Digits">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Number</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="number" placeholder="Number">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Alphanum</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="alphanum" placeholder="alphanumeric string">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Min Words</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm" data-minwords="6" placeholder="Min = 6 words">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Max Words</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm" data-maxwords="6" placeholder="Max = 6 words">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Date Iso</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="dateIso" placeholder="YYYY-MM-DD">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">Phone</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm parsley-validated" data-type="phone" placeholder="(XXX) XXXX XXX">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                            </div>
+                            <div class="panel-footer">
+                                <button type="submit" class="btn btn-success">Submit</button>
+                            </div>
+                        </form>
+                    </div><!-- /panel -->
+                </div><!-- /.col-->
+            </div>
+        </div>
+    </div>
     <!-- /main-container -->
 </div><!-- /wrapper -->
 
