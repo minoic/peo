@@ -20,11 +20,11 @@
                 <div class="col-md-6">
                     <div class="panel panel-default">
                         <form class="form-horizontal form-border no-margin" id="basic-constraint" data-validate="parsley" novalidate="" method="post" action="/user-settings/change-password">
-                            {{.xsrfData}}
                             <div class="panel-heading">
                                 修改密码
                             </div>
                             <div class="panel-body">
+                                {{.xsrfData}}
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">旧密码</label>
                                     <div class="col-lg-9">
@@ -44,10 +44,6 @@
                                 <div class="alert alert-danger">
                                     <strong>修改失败！</strong> {{.hasErrorText}}
                                 </div>
-                            {{else if .hasSuccess}}
-                                <div class="alert alert-success">
-                                    <strong>修改成功！</strong> 前往控制台管理服务器！
-                                </div>
                             {{end}}
                             <div class="panel-footer">
                                 <button type="submit" class="btn btn-primary">确认修改</button>
@@ -57,74 +53,54 @@
                 </div><!-- /.col-->
                 <div class="col-md-6">
                     <div class="panel panel-default">
-                        <form class="form-horizontal form-border no-margin" id="type-constraint" data-validate="parsley" novalidate="">
+                        <form class="form-horizontal form-border no-margin" id="type-constraint" data-validate="parsley" novalidate="" method="post" action="/user-settings/change-email">
                             <div class="panel-heading">
-                                Type Constraints
+                                修改绑定邮箱
                             </div>
                             <div class="panel-body">
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Email</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="email" placeholder="Email Address">
+                                {{.xsrfData}}
+                                <div>
+                                    <label class="control-label col-lg-3">新邮箱</label>
+                                    <div class="col-lg-9 input-group">
+                                        <input id="email" name="email" type="text" class="form-control" placeholder="输入您要修改的新邮箱">
+                                        <span class="input-group-btn">
+                                            <button id="send_email" class="btn btn-default tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="每六十秒只能发送一次" type="button" onclick="send()"><small id="cooldown">发送验证码👍</small></button>
+                                            </span>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
+                                <script type="text/javascript" async="async">
+                                    function send() {
+                                        $.get({{.webHostName}}+"/user-settings/change-email/"+$("#email").val());
+                                        $("#send_email").attr("disabled","disabled");
+                                        var second = 60;
+                                        var origin_text = $("#cooldown").text()
+                                        var intervalObj = setInterval(
+                                            function () {
+                                                $("#cooldown").text(origin_text+ "(" + second + ")");
+                                                if(second==0){
+                                                    $("#cooldown").text(origin_text);
+                                                    $("#send_email").removeAttr("disabled")
+                                                    clearInterval(intervalObj);
+                                                }
+                                                second--;
+                                            },1000
+                                        )
+                                    }
+                                </script>
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">Url</label>
+                                    <label class="control-label col-lg-3">验证码</label>
                                     <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="url" placeholder="Url">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Url Strict</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="urlstrict" placeholder="http://yourSite.com">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Digits</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="digits" placeholder="Digits">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Number</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="number" placeholder="Number">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Alphanum</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="alphanum" placeholder="alphanumeric string">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Min Words</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm" data-minwords="6" placeholder="Min = 6 words">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Max Words</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm" data-maxwords="6" placeholder="Max = 6 words">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Date Iso</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="dateIso" placeholder="YYYY-MM-DD">
-                                    </div><!-- /.col -->
-                                </div><!-- /form-group -->
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3">Phone</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm parsley-validated" data-type="phone" placeholder="(XXX) XXXX XXX">
+                                        <input type="text" class="form-control input-sm parsley-validated" placeholder="输入发送到您新邮箱里的验证码" name="captcha">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>
+                            {{if .hasError2}}
+                                <div class="alert alert-danger">
+                                    <strong>修改失败！</strong> {{.hasErrorText2}}
+                                </div>
+                            {{end}}
                             <div class="panel-footer">
-                                <button type="submit" class="btn btn-success">Submit</button>
+                                <button type="submit" class="btn btn-primary">确认修改</button>
                             </div>
                         </form>
                     </div><!-- /panel -->
