@@ -39,13 +39,13 @@ type Pong struct {
 func Ping(host string) (*Pong, error) {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
-		return nil, err
+		return &Pong{}, err
 	}
 	if err := sendHandshake(conn, host); err != nil {
-		return nil, err
+		return &Pong{}, err
 	}
 	if err := sendStatusRequest(conn); err != nil {
-		return nil, err
+		return &Pong{}, err
 	}
 	pong, err := readPong(conn)
 	if err != nil {

@@ -120,7 +120,7 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 		if err == nil {
 			entity := MinoDatabase.WareEntity{
 				Model:            gorm.Model{},
-				UserID:           orderID,
+				UserID:           order.UserID,
 				ServerExternalID: user.Name + strconv.Itoa(int(orderID)),
 				UserExternalID:   user.Name,
 				HostName:         hostName,
