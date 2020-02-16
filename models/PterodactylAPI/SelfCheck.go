@@ -23,18 +23,26 @@ func CheckServers() {
 			} else {
 				beego.Warn("nonexistent wareEntity: ", entity)
 			}
-		}
-		if entity.ValidDate.AddDate(0, 0, 7).Before(time.Now()) {
+		} else if entity.ValidDate.AddDate(0, 0, 7).Before(time.Now()) {
 			if entity.DeleteStatus == 0 {
 				addConfirmWareEntity(entity)
-				entity.DeleteStatus = 1
+				DB.Model(&entity).Update("delete_status", 1)
 			} else if entity.DeleteStatus == 2 {
 				err := PterodactylDeleteServer(ConfGetParams(), entity.ServerExternalID)
 				if err != nil {
 					beego.Error(err)
+				} else {
+					DB.Delete(&entity)
 				}
 			}
-
+		} else if PterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true) == (PterodactylServer{}) {
+			if entity.DeleteStatus == 0 {
+				addConfirmWareEntity(entity)
+				DB.Model(&entity).Update("delete_status", 1)
+			} else if entity.DeleteStatus == 2 {
+				beego.Info("deleted", entity)
+				DB.Delete(&entity)
+			}
 		}
 	}
 }
@@ -67,10 +75,11 @@ func GetConfirmWareEntities() []MinoDatabase.WareEntity {
 
 func addConfirmWareEntity(entity MinoDatabase.WareEntity) {
 	DB := MinoDatabase.GetDatabase()
-	if err := DB.Create(&MinoDatabase.DeleteConfirm{
+	d := MinoDatabase.DeleteConfirm{
 		Model:  gorm.Model{},
 		WareID: entity.ID,
-	}).Error; err != nil {
+	}
+	if err := DB.Create(&d).Error; err != nil {
 		beego.Error(err)
 	}
 }

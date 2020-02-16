@@ -17,6 +17,7 @@ func init() {
 		&WareEntity{},
 		&Message{},
 		&Order{},
+		&DeleteConfirm{},
 	)
 	return
 }
