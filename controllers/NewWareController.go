@@ -306,7 +306,7 @@ func (this *NewWareController) Post() {
 		beego.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 price " + err.Error()
-	} else if !(e == 3 || e == 30 || e == 90) {
+	} else if !(e == 3 || e == 30 || e == 90 || e == 365) {
 		hasError = true
 		hasErrorText = "有效期没有输入建议的值"
 	} else {

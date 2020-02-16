@@ -94,6 +94,8 @@ func (this *OrderInfoController) Prepare() {
 		this.Data["typeText"] = "月付"
 	case 90 * 24 * time.Hour:
 		this.Data["typeText"] = "季付"
+	case 365 * 24 * time.Hour:
+		this.Data["typeText"] = "年付"
 	}
 	this.Data["originPrice"] = order.OriginPrice
 	this.Data["discountPrice"] = order.OriginPrice - order.FinalPrice

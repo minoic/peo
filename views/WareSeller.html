@@ -41,21 +41,21 @@
                 <div class="tab-content">
                     <div class="tab-pane fade active in" id="monthly">
                         <div class="row row-merge">
-                            {{range .wares}}
+                            {{range .wares1}}
                                 {{template "tpls/ware.html" .}}
                             {{end}}
                         </div><!-- /.row -->
                     </div>
                     <div class="tab-pane fade" id="seasonly">
                         <div class="row row-merge">
-                            {{range .wares}}
+                            {{range .wares2}}
                                 {{template "tpls/ware.html" .}}
                             {{end}}
                         </div><!-- /.row -->
                     </div>
                     <div class="tab-pane fade" id="yearly">
                         <div class="row row-merge">
-                            {{range .wares}}
+                            {{range .wares3}}
                                 {{template "tpls/ware.html" .}}
                             {{end}}
                         </div><!-- /.row -->
