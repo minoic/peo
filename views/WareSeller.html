@@ -12,35 +12,58 @@
 <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
 <!-- Overlay Div -->
 <div id="overlay" class="transparent"></div>
-<div id="wrapper" class="preload">
-    <div class="padding-md">
-        <br><br>
-        <div class="section-header">
-            <hr class="left visible-lg">
-            <span>
+    <div id="wrapper" class="preload">
+        <div class="padding-md">
+            <div class="section-header">
+                <br>
+                <hr class="left visible-lg">
+                <span>
 						{{.wareTitle}}
 					</span>
-            <hr class="right visible-lg">
-            {{.wareDetail}}
-            <br>
+                <hr class="right visible-lg">
+                {{.wareDetail}}
+                <br>
+            </div>
+        </div><!-- /.padding -->
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6">
+                <div class="btn-group btn-group-justified">
+                    <a href="#monthly" class="btn btn-default" data-toggle="tab"><i class="fa fa-tag fa-lg"></i> 月付</a>
+                    <a href="#seasonly" class="btn btn-default" data-toggle="tab"><i class="fa fa-tags fa-lg"></i> 季付</a>
+                    <a href="#yearly" class="btn btn-default" data-toggle="tab"><i class="fa fa-globe fa-lg"></i> 年付</a>
+                </div>
+            </div>
+            <div class="col-lg-3"></div>
         </div>
-    </div><!-- /.padding -->
-    <div class="row">
-        <div class="col-lg-5"></div>
-        <div class="col-lg-2">
-                <a class="btn btn-danger quick-btn align-self-center"><i class="fa fa-envelope"></i><span>Email</span></a>
+        <div class="padding-md">
+            <div class="container">
+                <div class="tab-content">
+                    <div class="tab-pane fade active in" id="monthly">
+                        <div class="row row-merge">
+                            {{range .wares}}
+                                {{template "tpls/ware.html" .}}
+                            {{end}}
+                        </div><!-- /.row -->
+                    </div>
+                    <div class="tab-pane fade" id="seasonly">
+                        <div class="row row-merge">
+                            {{range .wares}}
+                                {{template "tpls/ware.html" .}}
+                            {{end}}
+                        </div><!-- /.row -->
+                    </div>
+                    <div class="tab-pane fade" id="yearly">
+                        <div class="row row-merge">
+                            {{range .wares}}
+                                {{template "tpls/ware.html" .}}
+                            {{end}}
+                        </div><!-- /.row -->
+                    </div>
+                </div>
+            </div><!-- /.padding-md -->
         </div>
-        <div class="col-lg-5"></div>
-    </div>
-    <div class="container">
-        <div class="row row-merge">
-            {{range .wares}}
-                {{template "tpls/ware.html" .}}
-            {{end}}
-        </div><!-- /.row -->
-    </div><!-- /.padding-md -->
-</div><!-- /main-container -->
-</div><!-- /wrapper -->
+    </div><!-- /main-container -->
 
 <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
 {{template "tpls/perfectJS.html" .}}
