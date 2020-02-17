@@ -415,6 +415,7 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		"egg":          serverInfo.EggId,
 		"docker_image": eggInfo.DockerImage,
 		"startup":      eggInfo.StartUp,
+		"description":  serverInfo.Description,
 		"oom_disabled": true,
 		"limits": map[string]int{
 			"memory": serverInfo.Limits.Memory,

@@ -4,6 +4,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"git.ntmc.tech/root/MinoIC-PE/models/ServerStatus"
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
@@ -23,6 +24,14 @@ type serverInfo struct {
 	ServerDescription  string
 	ServerPlayerOnline int
 	ServerPlayerMax    int
+	ServerHostName     string
+	ServerIdentifier   string
+	ConsoleHostName    string
+	ServerFMLType      string
+	ServerVersion      string
+	ServerModList      []struct {
+		ModText string
+	}
 }
 
 func (this *UserConsoleController) Prepare() {
@@ -35,12 +44,12 @@ func (this *UserConsoleController) Prepare() {
 	}
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)
+	this.Data["i"] = 1
+	this.Data["u"] = 3
 }
 
 func (this *UserConsoleController) Get() {
 	this.TplName = "UserConsole.html"
-	this.Data["i"] = 1
-	this.Data["u"] = 3
 	sess := this.StartSession()
 	user, _ := MinoSession.SessionGetUser(sess)
 	this.Data["userName"] = user.Name
@@ -68,17 +77,23 @@ func (this *UserConsoleController) Get() {
 	this.Data["infoTotalUpTime"] = durafmt.Parse(infoTotalUpTime).LimitFirstN(3).String()
 	this.Data["infoTotalOnline"] = infoTotalOnline
 	for i, p := range pongs {
+		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
 		if p.Version.Protocol == 0 {
+			/* server is offline*/
 			servers = append(servers, serverInfo{
 				ServerIsOnline:     false,
 				ServerIconData:     "",
-				ServerName:         entities[i].ServerExternalID,
+				ServerName:         pteServer.Name,
 				ServerEXP:          entities[i].ValidDate.Format("2006-01-02 15:04:05"),
 				ServerDescription:  "服务器已离线",
 				ServerPlayerOnline: 0,
 				ServerPlayerMax:    0,
+				ServerHostName:     entities[i].HostName,
+				ServerIdentifier:   pteServer.Identifier,
+				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
 			})
 		} else {
+			/* server is online*/
 			var des string
 			if p.Description.Text != "" {
 				des = p.Description.Text
@@ -91,12 +106,22 @@ func (this *UserConsoleController) Get() {
 			servers = append(servers, serverInfo{
 				ServerIsOnline:     true,
 				ServerIconData:     icon,
-				ServerName:         entities[i].ServerExternalID,
-				ServerEXP:          entities[i].ValidDate.Format("2006-01-02 15:04:05"),
+				ServerName:         pteServer.Name,
+				ServerEXP:          entities[i].ValidDate.Format("2006-01-02"),
 				ServerDescription:  des,
 				ServerPlayerOnline: p.Players.Online,
 				ServerPlayerMax:    p.Players.Max,
+				ServerHostName:     entities[i].HostName,
+				ServerIdentifier:   pteServer.Identifier,
+				ServerFMLType:      p.ModInfo.ModType,
+				ServerVersion:      p.Version.Name,
+				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
 			})
+			if servers[i].ServerFMLType != "" {
+				for _, f := range p.ModInfo.ModList {
+					servers[i].ServerModList = append(servers[i].ServerModList, struct{ ModText string }{ModText: f.ModID + " " + f.ModVersion})
+				}
+			}
 		}
 	}
 	//beego.Info(servers)

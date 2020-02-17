@@ -69,7 +69,7 @@ func GetUser(data ParamsData, ID interface{}, isExternal bool) (PterodactylUser,
 	}
 }
 
-func get(data ParamsData, key string, mode string, id []int) interface{} {
+func get(data ParamsData, key string, mode string, id []int, ExternalID string) interface{} {
 	if bm.IsExist(key) {
 		return bm.Get(key)
 	} else {
@@ -89,6 +89,9 @@ func get(data ParamsData, key string, mode string, id []int) interface{} {
 			ret = pterodactylGetAllocations(data, id[0])
 		case "ENV":
 			ret = pterodactylGetEnv(data, id[0], id[1])
+		case "SERVER":
+			ret = PterodactylGetServer(data, ExternalID, true)
+
 		}
 		err := bm.Put(key, ret, timeout)
 		if err != nil {
@@ -98,30 +101,34 @@ func get(data ParamsData, key string, mode string, id []int) interface{} {
 	}
 }
 
+func GetServer(data ParamsData, ExternalID string) PterodactylServer {
+	return get(data, "SERVER"+ExternalID, "SERVER", []int{}, ExternalID).(PterodactylServer)
+}
+
 func GetAllEggs(data ParamsData) []PterodactylEgg {
-	return get(data, "ALLEGGS", "ALLEGGS", []int{}).([]PterodactylEgg)
+	return get(data, "ALLEGGS", "ALLEGGS", []int{}, "").([]PterodactylEgg)
 }
 
 func GetNest(data ParamsData, nestID int) PterodactylNest {
-	return get(data, "NEST"+strconv.Itoa(nestID), "NEST", []int{nestID}).(PterodactylNest)
+	return get(data, "NEST"+strconv.Itoa(nestID), "NEST", []int{nestID}, "").(PterodactylNest)
 }
 
 func GetAllNests(data ParamsData) []PterodactylNest {
-	return get(data, "ALLNESTS", "ALLNESTS", []int{}).([]PterodactylNest)
+	return get(data, "ALLNESTS", "ALLNESTS", []int{}, "").([]PterodactylNest)
 }
 
 func GetEgg(data ParamsData, nestID int, eggID int) PterodactylEgg {
-	return get(data, "EGG"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), "EGG", []int{nestID, eggID}).(PterodactylEgg)
+	return get(data, "EGG"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), "EGG", []int{nestID, eggID}, "").(PterodactylEgg)
 }
 
 func GetAllocations(data ParamsData, nodeID int) []PterodactylAllocation {
-	return get(data, "ALLOCATIONS", "ALLOCATIONS", []int{nodeID}).([]PterodactylAllocation)
+	return get(data, "ALLOCATIONS", "ALLOCATIONS", []int{nodeID}, "").([]PterodactylAllocation)
 }
 
 func GetNode(data ParamsData, nodeID int) PterodactylNode {
-	return get(data, "NODE"+strconv.Itoa(nodeID), "NODE", []int{nodeID}).(PterodactylNode)
+	return get(data, "NODE"+strconv.Itoa(nodeID), "NODE", []int{nodeID}, "").(PterodactylNode)
 }
 
 func GetEnv(data ParamsData, nestID int, eggID int) map[string]string {
-	return get(data, "ENV"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), "ENV", []int{nestID, eggID}).(map[string]string)
+	return get(data, "ENV"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), "ENV", []int{nestID, eggID}, "").(map[string]string)
 }

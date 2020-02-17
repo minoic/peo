@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func LoopManager() {
+func LoopTasksManager() {
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
 		for {
@@ -14,6 +14,9 @@ func LoopManager() {
 				go PterodactylAPI.CheckServers()
 			case <-ticker.C:
 				go PterodactylAPI.CacheNeededEggs()
+			case <-ticker.C:
+				go PterodactylAPI.CacheNeededServers()
+
 			}
 		}
 	}()

@@ -64,7 +64,7 @@ func Ping(host string) (Pong, error) {
 	pong, err := readPong(conn)
 	//beego.Debug(pong.FavIcon)
 	if err != nil {
-		beego.Error(err)
+		//beego.Error(err)
 		return Pong{}, err
 	}
 	return *pong, nil

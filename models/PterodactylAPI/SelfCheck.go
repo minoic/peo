@@ -57,6 +57,16 @@ func CacheNeededEggs() {
 	}
 }
 
+func CacheNeededServers() {
+	var entities []MinoDatabase.WareEntity
+	DB := MinoDatabase.GetDatabase()
+	if !DB.Find(&entities).RecordNotFound() {
+		for _, entity := range entities {
+			GetServer(ConfGetParams(), entity.ServerExternalID)
+		}
+	}
+}
+
 func ConfirmDelete(wareID uint) {
 	var entity MinoDatabase.WareEntity
 	DB := MinoDatabase.GetDatabase()

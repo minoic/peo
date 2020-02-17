@@ -33,7 +33,7 @@ func SellCreate(SpecID uint, userID uint) uint {
 		originPrice = uint(wareSpec.PricePerMonth * 12)
 		finalPrice = uint(0.12 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
 	}
-	beego.Debug(originPrice, finalPrice)
+	//beego.Debug(originPrice, finalPrice)
 	order := MinoDatabase.Order{
 		Model:       gorm.Model{},
 		SpecID:      SpecID,
@@ -90,13 +90,13 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 	pteUserID := pteUser.Uid
 	switch spec.ValidDuration {
 	case 3 * 24 * time.Hour:
-		exp = time.Now().AddDate(0, 0, 3).Format("2006-01-02 15:04:05")
+		exp = time.Now().AddDate(0, 0, 3).Format("2006-01-02")
 	case 30 * 24 * time.Hour:
-		exp = time.Now().AddDate(0, 30, 0).Format("2006-01-02 15:04:05")
+		exp = time.Now().AddDate(0, 1, 0).Format("2006-01-02")
 	case 90 * 24 * time.Hour:
-		exp = time.Now().AddDate(0, 90, 0).Format("2006-01-02 15:04:05")
+		exp = time.Now().AddDate(0, 3, 0).Format("2006-01-02")
 	case 365 * 24 * time.Hour:
-		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02 15:04:05")
+		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
 	}
 	go func() {
 		err := PterodactylAPI.PterodactylCreateServer(PterodactylAPI.ConfGetParams(), PterodactylAPI.PterodactylServer{
