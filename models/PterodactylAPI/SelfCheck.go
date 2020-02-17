@@ -65,6 +65,14 @@ func ConfirmDelete(wareID uint) {
 	DB.Where("ware_id = ?", wareID).Delete(&MinoDatabase.DeleteConfirm{})
 }
 
+func RefuseDelete(entityID uint) {
+	var entity MinoDatabase.WareEntity
+	DB := MinoDatabase.GetDatabase()
+	DB.Where("id = ?", entityID).First(&entity)
+	DB.Model(&entity).Update("delete_status", 0)
+	DB.Where("ware_id = ?", entityID).Delete(&MinoDatabase.DeleteConfirm{})
+}
+
 func GetConfirmWareEntities() []MinoDatabase.WareEntity {
 	DB := MinoDatabase.GetDatabase()
 	var entities []MinoDatabase.WareEntity

@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"github.com/astaxie/beego"
 	"io"
 	"net"
 	"strconv"
@@ -25,8 +26,18 @@ type Pong struct {
 		Online int `json:"online"`
 		Sample []map[string]string
 	} `json:"players"`
-	Description interface{} `json:"description"`
-	FavIcon     string      `json:"favicon"`
+	Description struct {
+		Text      string `json:"text"`
+		Translate string `json:"translate"`
+	} `json:"description"`
+	FavIcon string `json:"favicon"`
+	ModInfo struct {
+		ModType string `json:"type"`
+		ModList []struct {
+			ModID      string `json:"modid"`
+			ModVersion string `json:"version"`
+		} `json:"modList"`
+	} `json:"modinfo"`
 }
 
 /*func Test(){
@@ -36,22 +47,27 @@ type Pong struct {
 }
 */
 
-func Ping(host string) (*Pong, error) {
+func Ping(host string) (Pong, error) {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
-		return &Pong{}, err
+		beego.Error(err)
+		return Pong{}, err
 	}
 	if err := sendHandshake(conn, host); err != nil {
-		return &Pong{}, err
+		beego.Error(err)
+		return Pong{}, err
 	}
 	if err := sendStatusRequest(conn); err != nil {
-		return &Pong{}, err
+		beego.Error(err)
+		return Pong{}, err
 	}
 	pong, err := readPong(conn)
+	//beego.Debug(pong.FavIcon)
 	if err != nil {
-		return nil, err
+		beego.Error(err)
+		return Pong{}, err
 	}
-	return pong, nil
+	return *pong, nil
 }
 
 func makePacket(pl *bytes.Buffer) *bytes.Buffer {
@@ -145,7 +161,7 @@ func readPong(rd io.Reader) (*Pong, error) {
 	if n2 <= 0 {
 		return nil, errors.New("could not read string varint")
 	}
-
+	//beego.Debug(string(pl[n+n2:]))
 	var pong Pong
 	if err := json.Unmarshal(pl[n+n2:], &pong); err != nil {
 		return nil, errors.New("could not read pong json")

@@ -84,6 +84,16 @@
                 </div>
             </div><!-- /.col -->
         </div>
+        <div class="row">
+            <div class="col-lg-9">
+                {{range .servers}}
+                    {{template "tpls/serverinfo.html" .}}
+                {{end}}
+
+            <div class="col-lg-3">
+
+            </div>
+        </div>
     </div>
 
     <!-- /main-container -->

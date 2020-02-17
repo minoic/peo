@@ -1,0 +1,30 @@
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="clearfix">
+            <a class="pull-left m-right-sm">
+                {{if .ServerIsOnline}}
+                    {{if .ServerIconData}}
+                        <img src="{{.ServerIconData}}" class="img-circle" style="width:48px;">
+                    {{else}}
+                        <img src="../static/img/Minecraft_256px.png" class="img-circle" style="width:48px;">
+                    {{end}}
+                {{else}}
+                    <img src="../static/img/Plug_246px.png" class="img-circle" style="width:48px;">
+                {{end}}
+            </a>
+            {{if .ServerIsOnline}}
+                <span class="label label-success pull-right">在线 {{.ServerPlayerOnline}}/{{.ServerPlayerMax}}</span>
+            {{else}}
+                <span class="label label-danger pull-right">离线</span>
+            {{end}}
+            <strong class="block">{{.ServerName}}</strong>
+            <small class="text-muted">到期时间：{{.ServerEXP}}</small>
+        </div>
+        <div class="seperator"></div>
+        <p>
+            {{.ServerDescription}}
+        </p>
+        <a class="btn btn-default btn-xs pull-right"><i class="fa fa-thumbs-up"></i> Like</a>
+        <a class="btn btn-default btn-xs pull-right"><i class="fa fa-share"></i> Share</a>
+    </div>
+</div>
