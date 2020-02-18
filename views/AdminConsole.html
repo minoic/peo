@@ -1,55 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>管理员设置</title>
-
-    <meta name="description" content="Source code generated using layoutit.com">
-    <meta name="author" content="LayoutIt!">
-
-    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-
-
+    <title>{{.webApplicationName}} 管理员控制台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{template "tpls/perfectCSS.html" .}}
 </head>
 <body>
 {{template "tpls/navbar.html" .}}
-<div class="container-fluid">
+<div id="main-container">
     <div class="row">
-        <div class="col-md-12">
-            <div class="row">
-                <div class="col-md-2">
-                </div>
-                <div class="col-md-10">
-                    <form role="form" method="post">
-                        <div class="form-group">
+        <div class="col-lg-6">
 
-                            <label for="websiteName">
-                                站点标题
-                            </label>
-                            <label>
-                                <input type="text" class="form-control" name="websiteName" value="{{.websiteNameDef}}"
-                                       required>
-                            </label>
-                        </div>
-                        <div class="form-group">
-
-                            <label for="websiteHost">
-                                站点地址
-                            </label>
-                            <label>
-                                <input type="text" class="form-control" name="websiteHost" value="{{.websiteHostDef}}"
-                                       required>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            提交更改
-                        </button>
-                    </form>
+        </div>
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading clearfix">
+										<span class="pull-left">
+											To Do List <span class="text-success m-left-xs"><i class="fa fa-check"></i></span>
+										</span>
+                    <ul class="tool-bar">
+                        <li><a href="#" class="refresh-widget" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Refresh"><i class="fa fa-refresh"></i></a></li>
+                        <li><a href="#toDoListWidget" data-toggle="collapse" class=""><i class="fa fa-arrows-v"></i></a></li>
+                    </ul>
                 </div>
-            </div>
+                <div class="panel-body no-padding collapse in" id="toDoListWidget" style="height: auto;">
+                    <ul class="list-group task-list no-margin collapse in">
+                        <li class="list-group-item">
+                            <label class="label-checkbox inline">
+                                <input type="checkbox" class="task-finish" checked="">
+                                <span class="custom-checkbox"></span>
+                            </label>
+                            SEO Optimisation
+                            <span class="pull-right">
+													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
+												</span>
+                        </li>
+                        <li class="list-group-item">
+                            <label class="label-checkbox inline">
+                                <input type="checkbox" class="task-finish">
+                                <span class="custom-checkbox"></span>
+                            </label>
+                            Unit Testing
+                            <span class="pull-right">
+													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
+												</span>
+                        </li>
+                        <li class="list-group-item">
+                            <label class="label-checkbox inline">
+                                <input type="checkbox" class="task-finish">
+                                <span class="custom-checkbox"></span>
+                            </label>
+                            Mobile Development
+                            <span class="pull-right">
+													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
+												</span>
+                            <span class="badge badge-success m-right-xs">3</span>
+                        </li>
+                        <li class="list-group-item">
+                            <label class="label-checkbox inline">
+                                <input type="checkbox" class="task-finish">
+                                <span class="custom-checkbox"></span>
+                            </label>
+                            Database Migration
+                            <span class="pull-right">
+													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
+												</span>
+                        </li>
+                        <li class="list-group-item">
+                            <label class="label-checkbox inline">
+                                <input type="checkbox" class="task-finish">
+                                <span class="custom-checkbox"></span>
+                            </label>
+                            New Frontend Layout <span class="label label-warning m-left-xs">PENDING</span>
+                            <span class="pull-right">
+													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
+												</span>
+                        </li>
+                        <li class="list-group-item">
+                            <label class="label-checkbox inline">
+                                <input type="checkbox" class="task-finish">
+                                <span class="custom-checkbox"></span>
+                            </label>
+                            Bug Fixes <span class="label label-danger m-left-xs">IMPORTANT</span>
+                            <span class="pull-right">
+													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
+												</span>
+                        </li>
+                    </ul><!-- /list-group -->
+                </div>
+                <div class="loading-overlay">
+                    <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                </div>
+            </div><!-- /panel -->
         </div>
     </div>
 </div>

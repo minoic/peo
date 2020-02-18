@@ -9,6 +9,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
 	"html/template"
+	"sync"
 	"time"
 )
 
@@ -59,25 +60,38 @@ func (this *UserConsoleController) Get() {
 		orders          []MinoDatabase.Order
 		infoTotalUpTime time.Duration
 		infoTotalOnline int
-		pongs           []ServerStatus.Pong
+		wg              sync.WaitGroup
 		servers         []serverInfo
 	)
 	DB.Where("user_id = ?", user.ID).Find(&entities)
 	DB.Where("user_id = ?", user.ID).Find(&orders)
 	this.Data["infoOrderCount"] = len(orders)
 	this.Data["infoServerCount"] = len(entities)
-	for _, e := range entities {
-		infoTotalUpTime += time.Now().Sub(e.CreatedAt)
-		pong, _ := ServerStatus.Ping(e.HostName)
-		//beego.Debug(pong.Players.Online,pong.Players.Max)
-		pongs = append(pongs, pong)
-		infoTotalOnline += pong.Players.Online
+	var pongsSync struct {
+		sync.Mutex
+		pongs []ServerStatus.Pong
 	}
+	pongsSync.pongs = make([]ServerStatus.Pong, len(entities))
+	for i, e := range entities {
+		infoTotalUpTime += time.Now().Sub(e.CreatedAt)
+		wg.Add(1)
+		go func(host string, index int) {
+			pongTemp, _ := ServerStatus.Ping(host)
+			//beego.Info(pongTemp,host)
+			pongsSync.Lock()
+			pongsSync.pongs[index] = pongTemp
+			//beego.Info(len(pongsSync.pongs))
+			pongsSync.Unlock()
+			wg.Done()
+		}(e.HostName, i)
+		//beego.Debug(pong.Players.Online,pong.Players.Max)
+	}
+	wg.Wait()
 	//beego.Debug(pongs)
 	this.Data["infoTotalUpTime"] = durafmt.Parse(infoTotalUpTime).LimitFirstN(3).String()
-	this.Data["infoTotalOnline"] = infoTotalOnline
-	for i, p := range pongs {
+	for i, p := range pongsSync.pongs {
 		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
+		infoTotalOnline += p.Players.Online
 		if p.Version.Protocol == 0 {
 			/* server is offline*/
 			servers = append(servers, serverInfo{
@@ -126,4 +140,5 @@ func (this *UserConsoleController) Get() {
 	}
 	//beego.Info(servers)
 	this.Data["servers"] = servers
+	this.Data["infoTotalOnline"] = infoTotalOnline
 }
