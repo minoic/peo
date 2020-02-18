@@ -12,26 +12,28 @@
 {{template "tpls/navbar.html" .}}
 <div id="main-container">
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-9">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4><i class="fa fa-envelope"></i> <strong>消息列表</strong></h4>
-                    </div>
-                    <div class="panel-body">
-                        <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: auto;"><div id="chatScroll" style="overflow: hidden; width: auto; height: auto;">
-                                <ul class="chat">
-                                    {{range .messages}}
-                                        {{template "tpls/message.html" .}}
-                                    {{end}}
-                                </ul>
-                            </div><div class="slimScrollBar" style="background: rgb(0, 0, 0); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: none; border-radius: 7px; z-index: 99; right: 1px; height: 150.602px;"></div><div class="slimScrollRail" style="width: 7px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; background: rgb(51, 51, 51); opacity: 0.2; z-index: 90; right: 1px;"></div></div>
+        <div class="padding-md">
+            <div class="row">
+                <div class="col-md-9">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4><i class="fa fa-envelope"></i> <strong>消息列表</strong></h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: auto;"><div id="chatScroll" style="overflow: hidden; width: auto; height: auto;">
+                                    <ul class="chat">
+                                        {{range .messages}}
+                                            {{template "tpls/message.html" .}}
+                                        {{end}}
+                                    </ul>
+                                </div><div class="slimScrollBar" style="background: rgb(0, 0, 0); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: none; border-radius: 7px; z-index: 99; right: 1px; height: 150.602px;"></div><div class="slimScrollRail" style="width: 7px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; background: rgb(51, 51, 51); opacity: 0.2; z-index: 90; right: 1px;"></div></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <br><br><br><br>
-                <div class="panel-group" id="accordion">
+                <div class="col-md-3">
+                    <br><br><br><br>
+                    <div class="panel-group" id="accordion">
+                    </div>
                 </div>
             </div>
         </div>

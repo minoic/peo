@@ -121,7 +121,7 @@ func (this *WareSellerController) Get() {
 					Discount: w.Discount,
 				})
 				if w.WareDescription != "" {
-					wares1[len(wares2)-1].Intros = append(wares2[len(wares2)-1].Intros, intro{
+					wares2[len(wares2)-1].Intros = append(wares2[len(wares2)-1].Intros, intro{
 						First:  w.WareDescription,
 						Second: "",
 					})
@@ -160,7 +160,7 @@ func (this *WareSellerController) Get() {
 					Discount: w.Discount,
 				})
 				if w.WareDescription != "" {
-					wares1[len(wares3)-1].Intros = append(wares3[len(wares3)-1].Intros, intro{
+					wares3[len(wares3)-1].Intros = append(wares3[len(wares3)-1].Intros, intro{
 						First:  w.WareDescription,
 						Second: "",
 					})

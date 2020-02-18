@@ -9,38 +9,82 @@
 <body>
 {{template "tpls/navbar.html" .}}
 <div id="main-container">
-    <div class="row">
-        <div class="col-lg-6">
-
-        </div>
-        <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading clearfix">
-                    <span class="pull-left"><strong>待确认的过期服务器</strong></span>
+    <div class="padding-md">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="col-md-4 col-sm-4">
+                    <a href="/new-ware">
+                        <div class="panel panel-default panel-stat2 bg-warning" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击添加商品">
+                            <div class="panel-body">
+								<span class="stat-icon">
+									<i class="fa fa-shopping-cart"></i>
+								</span>
+                                <div class="pull-right text-right">
+                                    <div class="value">{{.specAmount}}</div>
+                                    <div class="title">商品数量</div>
+                                </div>
+                            </div>
+                        </div><!-- /panel -->
+                    </a>
                 </div>
-                <div class="panel-body no-padding collapse in" id="toDoListWidget" style="height: auto;">
-                    <ul class="list-group task-list no-margin collapse in">
-                        {{range .deleteServers}}
-                            <li class="list-group-item" id="{{.ServerIdentifier}}">
-                                <a href="{{.ServerConsoleHostName}}" target="_blank">
-                                    <span class="label label-default">{{.ServerIdentifier}}</span>
-                                </a>
-                                <span>{{.ServerName}} 所有者：{{.ServerOwner}} <br>过期时间：{{.ServerEXP}} 服务器地址：{{.ServerHostName}}</span>
-                                <a href="#" class="btn-danger btn-sm pull-right">
-                                    <i class="fa fa-trash-o" onclick="$.get('{{.DeleteURL}}',function(data) {
-                                        if (data==='SUCCESS')
-                                        {$('#{{.ServerIdentifier}}').remove();alert('删除成功！')}
-                                        else {alert('删除失败！');}
-                                            })"></i>
-                                </a>
-                            </li>
-                        {{end}}
-                    </ul><!-- /list-group -->
+                <div class="col-md-4 col-sm-4">
+                    <a>
+                        <div class="panel panel-default panel-stat2 bg-primary">
+                            <div class="panel-body">
+								<span class="stat-icon">
+									<i class="fa fa-hdd-o"></i>
+								</span>
+                                <div class="pull-right text-right">
+                                    <div class="value">{{.entityAmount}}</div>
+                                    <div class="title">服务器数量</div>
+                                </div>
+                            </div>
+                        </div><!-- /panel -->
+                    </a>
                 </div>
-                <div class="loading-overlay">
-                    <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                <div class="col-md-4 col-sm-4">
+                    <div class="panel panel-default panel-stat2">
+                        <div class="panel-body">
+								<span class="stat-icon">
+									<i class="fa fa-user"></i>
+								</span>
+                            <div class="pull-right text-right">
+                                <div class="value">{{.userAmount}}</div>
+                                <div class="title">用户数量</div>
+                            </div>
+                        </div>
+                    </div><!-- /panel -->
                 </div>
-            </div><!-- /panel -->
+            </div>
+            <div class="col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading clearfix">
+                        <span class="pull-left"><strong>待确认的过期服务器</strong></span>
+                    </div>
+                    <div class="panel-body no-padding collapse in" id="toDoListWidget" style="height: auto;">
+                        <ul class="list-group task-list no-margin collapse in">
+                            {{range .deleteServers}}
+                                <li class="list-group-item" id="{{.ServerIdentifier}}">
+                                    <a href="{{.ServerConsoleHostName}}" target="_blank">
+                                        <span class="label label-default">{{.ServerIdentifier}}</span>
+                                    </a>
+                                    <span>{{.ServerName}} 所有者：{{.ServerOwner}} <br>过期时间：{{.ServerEXP}} 服务器地址：{{.ServerHostName}}</span>
+                                    <a href="#" class="btn-danger btn-sm pull-right">
+                                        <i class="fa fa-trash-o" onclick="$.get('{{.DeleteURL}}',function(data) {
+                                                if (data==='SUCCESS')
+                                                {$('#{{.ServerIdentifier}}').remove();alert('删除成功！')}
+                                                else {alert('删除失败！');}
+                                                })"></i>
+                                    </a>
+                                </li>
+                            {{end}}
+                        </ul><!-- /list-group -->
+                    </div>
+                    <div class="loading-overlay">
+                        <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                    </div>
+                </div><!-- /panel -->
+            </div>
         </div>
     </div>
 </div>

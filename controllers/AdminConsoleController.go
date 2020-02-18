@@ -33,6 +33,7 @@ func (this *AdminConsoleController) Prepare() {
 		}, &this.Controller)
 	}
 	DB := MinoDatabase.GetDatabase()
+	/* delete confirm */
 	var (
 		dib           []MinoDatabase.DeleteConfirm
 		deleteServers []struct {
@@ -80,6 +81,18 @@ func (this *AdminConsoleController) Prepare() {
 	}
 	//beego.Debug(deleteServers)
 	this.Data["deleteServers"] = deleteServers
+	/* panel stats*/
+	var (
+		specs    []MinoDatabase.WareSpec
+		entities []MinoDatabase.WareEntity
+		users    []MinoDatabase.User
+	)
+	DB.Find(&specs)
+	this.Data["specAmount"] = len(specs)
+	DB.Find(&entities)
+	this.Data["entityAmount"] = len(entities)
+	DB.Find(&users)
+	this.Data["userAmount"] = len(users)
 }
 
 func (this *AdminConsoleController) Get() {}
