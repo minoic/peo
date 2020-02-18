@@ -16,7 +16,7 @@
         <div class="col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-heading clearfix">
-                    <span class="pull-left">To Do List</span>
+                    <span class="pull-left"><strong>待确认的过期服务器</strong></span>
                 </div>
                 <div class="panel-body no-padding collapse in" id="toDoListWidget" style="height: auto;">
                     <ul class="list-group task-list no-margin collapse in">
@@ -25,7 +25,7 @@
                                 <a href="{{.ServerConsoleHostName}}" target="_blank">
                                     <span class="label label-default">{{.ServerIdentifier}}</span>
                                 </a>
-                                <span>{{.ServerName}} 所有者：{{.ServerOwner}} 过期时间：{{.ServerEXP}}</span>
+                                <span>{{.ServerName}} 所有者：{{.ServerOwner}} <br>过期时间：{{.ServerEXP}} 服务器地址：{{.ServerHostName}}</span>
                                 <a href="#" class="btn-danger btn-sm pull-right">
                                     <i class="fa fa-trash-o" onclick="$.get('{{.DeleteURL}}',function(data) {
                                         if (data==='SUCCESS')

@@ -42,6 +42,7 @@ func (this *AdminConsoleController) Prepare() {
 			DeleteURL             template.URL
 			ServerOwner           string
 			ServerEXP             string
+			ServerHostName        string
 		}
 	)
 	DB.Find(&dib)
@@ -58,6 +59,7 @@ func (this *AdminConsoleController) Prepare() {
 				DeleteURL             template.URL
 				ServerOwner           string
 				ServerEXP             string
+				ServerHostName        string
 			}{
 				ServerName:            pteServer.Name,
 				ServerConsoleHostName: template.URL(PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()) + "/server/" + pteServer.Identifier),
@@ -65,6 +67,7 @@ func (this *AdminConsoleController) Prepare() {
 				DeleteURL:             template.URL(MinoConfigure.WebHostName + "/admin-console/delete-confirm/" + strconv.Itoa(int(entity.ID))),
 				ServerOwner:           entity.UserExternalID,
 				ServerEXP:             entity.ValidDate.Format("2006-01-02"),
+				ServerHostName:        entity.HostName,
 			})
 			if deleteServers[i].ServerName == "" {
 				deleteServers[i].ServerName = "无法获取服务器名称"
@@ -75,7 +78,7 @@ func (this *AdminConsoleController) Prepare() {
 		}
 
 	}
-	beego.Debug(deleteServers)
+	//beego.Debug(deleteServers)
 	this.Data["deleteServers"] = deleteServers
 }
 
