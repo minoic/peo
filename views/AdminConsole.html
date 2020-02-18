@@ -16,77 +16,25 @@
         <div class="col-lg-6">
             <div class="panel panel-default">
                 <div class="panel-heading clearfix">
-										<span class="pull-left">
-											To Do List <span class="text-success m-left-xs"><i class="fa fa-check"></i></span>
-										</span>
-                    <ul class="tool-bar">
-                        <li><a href="#" class="refresh-widget" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Refresh"><i class="fa fa-refresh"></i></a></li>
-                        <li><a href="#toDoListWidget" data-toggle="collapse" class=""><i class="fa fa-arrows-v"></i></a></li>
-                    </ul>
+                    <span class="pull-left">To Do List</span>
                 </div>
                 <div class="panel-body no-padding collapse in" id="toDoListWidget" style="height: auto;">
                     <ul class="list-group task-list no-margin collapse in">
-                        <li class="list-group-item">
-                            <label class="label-checkbox inline">
-                                <input type="checkbox" class="task-finish" checked="">
-                                <span class="custom-checkbox"></span>
-                            </label>
-                            SEO Optimisation
-                            <span class="pull-right">
-													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-												</span>
-                        </li>
-                        <li class="list-group-item">
-                            <label class="label-checkbox inline">
-                                <input type="checkbox" class="task-finish">
-                                <span class="custom-checkbox"></span>
-                            </label>
-                            Unit Testing
-                            <span class="pull-right">
-													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-												</span>
-                        </li>
-                        <li class="list-group-item">
-                            <label class="label-checkbox inline">
-                                <input type="checkbox" class="task-finish">
-                                <span class="custom-checkbox"></span>
-                            </label>
-                            Mobile Development
-                            <span class="pull-right">
-													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-												</span>
-                            <span class="badge badge-success m-right-xs">3</span>
-                        </li>
-                        <li class="list-group-item">
-                            <label class="label-checkbox inline">
-                                <input type="checkbox" class="task-finish">
-                                <span class="custom-checkbox"></span>
-                            </label>
-                            Database Migration
-                            <span class="pull-right">
-													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-												</span>
-                        </li>
-                        <li class="list-group-item">
-                            <label class="label-checkbox inline">
-                                <input type="checkbox" class="task-finish">
-                                <span class="custom-checkbox"></span>
-                            </label>
-                            New Frontend Layout <span class="label label-warning m-left-xs">PENDING</span>
-                            <span class="pull-right">
-													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-												</span>
-                        </li>
-                        <li class="list-group-item">
-                            <label class="label-checkbox inline">
-                                <input type="checkbox" class="task-finish">
-                                <span class="custom-checkbox"></span>
-                            </label>
-                            Bug Fixes <span class="label label-danger m-left-xs">IMPORTANT</span>
-                            <span class="pull-right">
-													<a href="#" class="task-del"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-												</span>
-                        </li>
+                        {{range .deleteServers}}
+                            <li class="list-group-item" id="{{.ServerIdentifier}}">
+                                <a href="{{.ServerConsoleHostName}}" target="_blank">
+                                    <span class="label label-default">{{.ServerIdentifier}}</span>
+                                </a>
+                                <span>{{.ServerName}} 所有者：{{.ServerOwner}} 过期时间：{{.ServerEXP}}</span>
+                                <a href="#" class="btn-danger btn-sm pull-right">
+                                    <i class="fa fa-trash-o" onclick="$.get('{{.DeleteURL}}',function(data) {
+                                        if (data==='SUCCESS')
+                                        {$('#{{.ServerIdentifier}}').remove();alert('删除成功！')}
+                                        else {alert('删除失败！');}
+                                            })"></i>
+                                </a>
+                            </li>
+                        {{end}}
                     </ul><!-- /list-group -->
                 </div>
                 <div class="loading-overlay">

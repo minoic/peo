@@ -17,6 +17,7 @@ func main() {
 	beego.Router("/reg/confirm/:key", &controllers.RegController{}, "get:MailConfirm")
 	beego.Router("/login", &controllers.LoginController{})
 	beego.Router("/admin-console", &controllers.AdminConsoleController{})
+	beego.Router("/admin-console/delete-confirm/:entityID", &controllers.AdminConsoleController{}, "get:DeleteConfirm")
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Router("/new-order", &controllers.OrderCreateController{})
 	beego.Router("/order/:orderID", &controllers.OrderInfoController{})

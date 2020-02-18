@@ -1,9 +1,11 @@
 package PterodactylAPI
 
 import (
+	"errors"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
+	"strconv"
 	"time"
 )
 
@@ -67,20 +69,19 @@ func CacheNeededServers() {
 	}
 }
 
-func ConfirmDelete(wareID uint) {
+func ConfirmDelete(entityID uint) error {
 	var entity MinoDatabase.WareEntity
 	DB := MinoDatabase.GetDatabase()
-	DB.Where("id = ?", wareID).First(&entity)
-	DB.Model(&entity).Update("delete_status", 2)
-	DB.Where("ware_id = ?", wareID).Delete(&MinoDatabase.DeleteConfirm{})
-}
-
-func RefuseDelete(entityID uint) {
-	var entity MinoDatabase.WareEntity
-	DB := MinoDatabase.GetDatabase()
-	DB.Where("id = ?", entityID).First(&entity)
-	DB.Model(&entity).Update("delete_status", 0)
+	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
+		return errors.New("cant find entity by ID: " + strconv.Itoa(int(entityID)))
+	}
+	err := PterodactylDeleteServer(ConfGetParams(), entity.ServerExternalID)
+	if err != nil {
+		return err
+	}
+	DB.Delete(&entity)
 	DB.Where("ware_id = ?", entityID).Delete(&MinoDatabase.DeleteConfirm{})
+	return nil
 }
 
 func GetConfirmWareEntities() []MinoDatabase.WareEntity {
