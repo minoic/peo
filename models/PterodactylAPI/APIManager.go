@@ -299,6 +299,18 @@ func PterodactylUnsuspendServer(data ParamsData, serverExternalID string) error 
 	return nil
 }
 
+func PterodactylReinstallServer(data ParamsData, serverExternalID string) error {
+	serverID := pterodactylGetServerID(data, serverExternalID)
+	if serverID == 0 {
+		return errors.New("unsuspend failed because server not found: " + strconv.Itoa(serverID))
+	}
+	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/reinstall", "POST")
+	if status != 204 {
+		return errors.New("cant reinstall server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
+	}
+	return nil
+}
+
 func PterodactylDeleteServer(data ParamsData, serverExternalID string) error {
 	serverID := pterodactylGetServerID(data, serverExternalID)
 	if serverID == 0 {

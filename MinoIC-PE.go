@@ -16,7 +16,7 @@ func main() {
 	beego.Router("/reg", &controllers.RegController{})
 	beego.Router("/reg/confirm/:key", &controllers.RegController{}, "get:MailConfirm")
 	beego.Router("/login", &controllers.LoginController{})
-	beego.Router("/pe-admin-settings", &controllers.PEAdminSettingsController{})
+	beego.Router("/admin-console", &controllers.AdminConsoleController{})
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Router("/new-order", &controllers.OrderCreateController{})
 	beego.Router("/order/:orderID", &controllers.OrderInfoController{})

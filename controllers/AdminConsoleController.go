@@ -8,7 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type PEAdminSettingsController struct {
+type AdminConsoleController struct {
 	beego.Controller
 }
 
@@ -30,11 +30,13 @@ func init() {
 			Value: "localhost",
 		})
 	}
+
 }
 
-func (this *PEAdminSettingsController) Get() {
-	this.TplName = "PEAdminSettings.html"
+func (this *AdminConsoleController) Prepare() {
+	this.TplName = "AdminConsole.html"
 	this.Data["u"] = 4
+	handleNavbar(&this.Controller)
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
 		DelayRedirect(DelayInfo{
@@ -42,7 +44,17 @@ func (this *PEAdminSettingsController) Get() {
 			Detail: "正在跳转到登录",
 			Title:  "您还没有登录",
 		}, &this.Controller)
+	} else if !MinoSession.SessionIsAdmin(sess) {
+		DelayRedirect(DelayInfo{
+			URL:    MinoConfigure.WebHostName,
+			Detail: "正在跳转到主页",
+			Title:  "您不是管理员",
+		}, &this.Controller)
 	}
+}
+
+func (this *AdminConsoleController) Get() {
+	sess := this.StartSession()
 	userName := sess.Get("UN").(string)
 	DB := MinoDatabase.GetDatabase()
 	var user MinoDatabase.User
@@ -72,8 +84,8 @@ func (this *PEAdminSettingsController) Get() {
 	}
 }
 
-func (this *PEAdminSettingsController) Post() {
-	this.TplName = "PEAdminSettings.html"
+func (this *AdminConsoleController) Post() {
+	this.TplName = "AdminConsole.html"
 	handleNavbar(&this.Controller)
 	websiteName := this.GetString("websiteName")
 	websiteHost := this.GetString("websiteHost")
