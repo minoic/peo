@@ -118,6 +118,7 @@ func (this *RegController) Post() {
 				}, &this.Controller)
 				//todo:remind user to rebuild pterodactyl account
 			} else {
+				DB.Model(&newUser).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
@@ -131,6 +132,7 @@ func (this *RegController) Post() {
 func (this *RegController) MailConfirm() {
 	key := this.Ctx.Input.Param(":key")
 	user, ok := MinoEmail.ConfirmKey(key)
+	DB := MinoDatabase.GetDatabase()
 	if ok {
 		if MinoConfigure.SMTPEnabled {
 			err := PterodactylAPI.PterodactylCreateUser(PterodactylAPI.ConfGetParams(), PterodactylAPI.PostPteUser{
@@ -154,6 +156,7 @@ func (this *RegController) MailConfirm() {
 				//todo:remind user to rebuild pterodactyl account
 			} else {
 				MinoMessage.Send("ADMIN", user.ID, "已为您成功创建控制台账户，可以购买服务器了！")
+				DB.Model(&user).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",

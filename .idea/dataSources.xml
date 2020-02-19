@@ -19,5 +19,11 @@
         <property name="enable_load_extension" value="true" />
       </driver-properties>
     </data-source>
+    <data-source source="LOCAL" name="sqlite3 [2]" uuid="2bd49c05-aa2c-4209-ba73-3f3feb11560a">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:D:\GoWorks\src\git.ntmc.tech\root\MinoIC-PE\sqlite3.db</jdbc-url>
+    </data-source>
   </component>
 </project>

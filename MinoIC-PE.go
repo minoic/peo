@@ -26,6 +26,7 @@ func main() {
 	beego.Router("/user-settings/change-password", &controllers.UserSettingsController{}, "post:UpdateUserPassword")
 	beego.Router("/user-settings/change-email", &controllers.UserSettingsController{}, "post:UpdateUserEmail")
 	beego.Router("/user-settings/change-email/:email", &controllers.UserSettingsController{}, "get:SendCaptcha")
+	beego.Router("/user-settings/create-pterodactyl-user", &controllers.UserSettingsController{}, "get:CreatePterodactylUser")
 	beego.Router("/user-messages", &controllers.UserMessagesController{})
 	beego.Router("/user-console", &controllers.UserConsoleController{})
 	beego.Router("/user-terms", &controllers.UserTermsController{})

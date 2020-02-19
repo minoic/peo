@@ -29,6 +29,7 @@ type User struct {
 	Password       string
 	IsAdmin        bool
 	EmailConfirmed bool
+	PteUserCreated bool
 	UUID           uuid.UUID `gorm:"not null;unique"`
 }
 

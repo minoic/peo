@@ -8,6 +8,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
+	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"time"
 )
@@ -29,6 +30,30 @@ func (this *UserSettingsController) Prepare() {
 	this.TplName = "UserSettings.html"
 	this.Data["i"] = 2
 	this.Data["u"] = 3
+	user, _ := MinoSession.SessionGetUser(this.StartSession())
+	this.Data["userCreated"] = user.PteUserCreated
+	if user.PteUserCreated {
+		pteUser, ok := PterodactylAPI.GetUser(PterodactylAPI.ConfGetParams(), user.Name, true)
+		if !ok || pteUser == (PterodactylAPI.PterodactylUser{}) {
+			this.Data["pteUserUUID"] = "获取用户信息失败"
+			this.Data["pteUserName"] = "获取用户信息失败"
+			this.Data["pteUserEmail"] = "获取用户信息失败"
+			this.Data["pteUser2FA"] = false
+			this.Data["pteUserCreatedAt"] = "获取用户信息失败"
+		}
+		this.Data["pteUserUUID"] = pteUser.Uuid
+		this.Data["pteUserName"] = pteUser.UserName
+		this.Data["pteUserEmail"] = pteUser.Email
+		this.Data["pteUser2FA"] = pteUser.TwoFA
+		this.Data["pteUserCreatedAt"] = pteUser.CreatedAt
+	} else {
+		this.Data["pteUserUUID"] = "请先创建用户"
+		this.Data["pteUserName"] = "请先创建用户"
+		this.Data["pteUserEmail"] = "请先创建用户"
+		this.Data["pteUser2FA"] = false
+		this.Data["pteUserCreatedAt"] = "请先创建用户"
+	}
+
 }
 
 func (this *UserSettingsController) Get() {}
@@ -112,6 +137,30 @@ func (this *UserSettingsController) SendCaptcha() {
 			beego.Error(err)
 		}
 	}
+}
+
+func (this *UserSettingsController) CreatePterodactylUser() {
+	sess := this.StartSession()
+	user, err := MinoSession.SessionGetUser(sess)
+	if err != nil || user == (MinoDatabase.User{}) {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
+		return
+	}
+	if err = PterodactylAPI.PterodactylCreateUser(PterodactylAPI.ConfGetParams(), PterodactylAPI.PostPteUser{
+		ExternalId: user.Name,
+		Username:   user.Name,
+		Email:      user.Email,
+		Language:   "zh",
+		RootAdmin:  user.IsAdmin,
+		Password:   user.Name,
+		FirstName:  user.Name,
+		LastName:   "_",
+	}); err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
+	}
+	DB := MinoDatabase.GetDatabase()
+	DB.Model(&user).Update("pte_user_created", true)
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
 func (this *UserSettingsController) CheckXSRFCookie() bool {
