@@ -7,34 +7,68 @@
     {{template "tpls/perfectCSS.html" .}}
 </head>
 
-<body class="overflow-hidden">
-{{template "tpls/navbar.html" .}}
+<body class="vsc-initialized pace-done" style>
+
 <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
 <!-- Overlay Div -->
 <div id="overlay" class="transparent"></div>
+<div id="main-container" class="no-margin">
     <div id="wrapper" class="preload">
+        {{template "tpls/navbar.html" .}}
         <div class="padding-md">
             <div class="section-header">
-                <br>
                 <hr class="left visible-lg">
-                <span>
-						{{.wareTitle}}
-					</span>
+                <h3>{{.wareTitle}}</h3>
                 <hr class="right visible-lg">
-                {{.wareDetail}}
                 <br>
+                {{.wareDetail}}
             </div>
         </div><!-- /.padding -->
         <div class="row">
-            <div class="col-lg-3"></div>
-            <div class="col-lg-6">
-                <div class="btn-group btn-group-justified">
-                    <a href="#monthly" class="btn btn-default" data-toggle="tab"><i class="fa fa-tag fa-lg"></i> 月付</a>
-                    <a href="#seasonly" class="btn btn-default" data-toggle="tab"><i class="fa fa-tags fa-lg"></i> 季付</a>
-                    <a href="#yearly" class="btn btn-default" data-toggle="tab"><i class="fa fa-globe fa-lg"></i> 年付</a>
-                </div>
+            <div class="col-md-3 col-sm-1"></div>
+            <div class="col-md-6 col-sm-10 col-xs-12">
+                    <div class="btn-group btn-group-justified">
+                        <div class="row padding-md">
+                            <div class="col-md-4 col-sm-4 col-xs-4">
+                                <div class="panel panel-default panel-stat1">
+                                    <a href="#monthly" data-toggle="tab">
+                                        <div class="panel-body">
+                                            <div class="value"><i class="fa fa-tag"></i></div>
+                                            <div class="title">
+                                                <span class="m-left-xs text-info"><strong>月付</strong></span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-4">
+                                <div class="panel panel-default panel-stat1">
+                                    <a href="#seasonly" data-toggle="tab">
+                                        <div class="panel-body">
+                                            <div class="value"><i class="fa fa-tags"></i></div>
+                                            <div class="title">
+                                                <span class="m-left-xs text-info"><strong>季付</strong></span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-4">
+                                <div class="panel panel-default panel-stat1">
+                                    <a href="#yearly" data-toggle="tab">
+                                        <div class="panel-body">
+                                            <div class="value"><i class="fa fa-globe"></i></div>
+                                            <div class="title">
+                                                <span class="m-left-xs text-info"><strong>年付</strong></span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
             </div>
-            <div class="col-lg-3"></div>
+            <div class="col-md-3 col-sm-1"></div>
         </div>
         <div class="padding-md">
             <div class="container">
@@ -64,6 +98,7 @@
             </div><!-- /.padding-md -->
         </div>
     </div><!-- /main-container -->
+</div>
 
 <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
 {{template "tpls/perfectJS.html" .}}
