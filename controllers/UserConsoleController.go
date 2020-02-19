@@ -9,6 +9,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
 	"html/template"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -30,6 +31,7 @@ type serverInfo struct {
 	ConsoleHostName    string
 	ServerFMLType      string
 	ServerVersion      string
+	ServerIndex        string
 	ServerModList      []struct {
 		ModText string
 	}
@@ -88,7 +90,7 @@ func (this *UserConsoleController) Get() {
 	}
 	wg.Wait()
 	//beego.Debug(pongs)
-	this.Data["infoTotalUpTime"] = durafmt.Parse(infoTotalUpTime).LimitFirstN(3).String()
+	this.Data["infoTotalUpTime"] = durafmt.Parse(infoTotalUpTime).LimitFirstN(2).String()
 	for i, p := range pongsSync.pongs {
 		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
 		infoTotalOnline += p.Players.Online
@@ -104,6 +106,7 @@ func (this *UserConsoleController) Get() {
 				ServerPlayerMax:    0,
 				ServerHostName:     entities[i].HostName,
 				ServerIdentifier:   pteServer.Identifier,
+				ServerIndex:        strconv.Itoa(i),
 				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
 			})
 		} else {
@@ -129,6 +132,7 @@ func (this *UserConsoleController) Get() {
 				ServerIdentifier:   pteServer.Identifier,
 				ServerFMLType:      p.ModInfo.ModType,
 				ServerVersion:      p.Version.Name,
+				ServerIndex:        strconv.Itoa(i),
 				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
 			})
 			if servers[i].ServerFMLType != "" {

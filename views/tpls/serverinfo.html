@@ -23,12 +23,12 @@
             {{.ServerDescription}}
         </p>
         {{if .ServerFMLType}}
-            <a class="btn btn-default btn-xs pull-left" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}MOD"> <i class="fa fa-info-circle fa-lg"></i> MOD列表 </a>
+            <a class="btn btn-default btn-xs pull-left" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}{{.ServerIndex}}"> <i class="fa fa-info-circle fa-lg"></i> MOD列表 </a>
         {{end}}
         <a class="btn btn-default btn-xs pull-right"> <i class="fa fa-check fa-lg"></i> 续费</a>
         <a class="btn btn-default btn-xs pull-right" disabled="disabled"><i class="fa fa-wrench fa-lg"></i> 重装服务端</a>
     </div>
-    <div class="modal fade" id="{{.ServerIdentifier}}MOD" aria-hidden="true" style="display: none;">
+    <div class="modal fade" id="{{.ServerIdentifier}}{{.ServerIndex}}" aria-hidden="true" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
