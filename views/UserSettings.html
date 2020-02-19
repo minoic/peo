@@ -62,38 +62,42 @@
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">UUID</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserUUID}}" class="form-control input-sm" name="newPassword" {{if .userCreated}}disabled{{end}}>
+                                        <input type="text" placeholder="{{.pteUserUUID}}" class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">用户名</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserName}}" class="form-control input-sm" name="newPassword" {{if .userCreated}}disabled{{end}}>
+                                        <input type="text" placeholder="{{.pteUserName}}" class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">邮箱</label>
                                     <div class="col-lg-8">
-                                        <input type="password" placeholder="{{.pteUserEmail}}" class="form-control input-sm" name="newPassword" {{if .userCreated}}disabled{{end}}>
+                                        <input type="password" placeholder="{{.pteUserEmail}}" class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">两步验证</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{if .pteUser2FA}}已开启{{else}}未开启{{end}}" class="form-control input-sm" name="newPassword" {{if .userCreated}}disabled{{end}}>
+                                        <input type="text" placeholder="{{if .pteUser2FA}}已开启{{else}}未开启{{end}}" class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">创建日期</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserCreatedAt}}" class="form-control input-sm" name="newPassword" {{if .userCreated}}disabled{{end}}>
+                                        <input type="text" placeholder="{{.pteUserCreatedAt}}" class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>
                             <div class="panel-footer" >
-                                <button type="button" class="btn btn-info" onclick="function f() {
-                                  $.get()
-                                }" {{if .userCreated}}disabled{{end}}>创建翼龙面板用户</button>
+                                <button type="button" class="btn btn-info" onclick="$.get('{{.pteUserCreateURL}}',
+                                        function(data) {
+                                        if (data==='SUCCESS')
+                                        {alert('创建成功！');parent.location.reload();}
+                                        else {alert('创建失败！');}
+                                        })
+                                " {{if .userCreated}}disabled{{end}}>创建翼龙面板用户</button>
                             </div>
                         </form>
                     </div><!-- /panel -->

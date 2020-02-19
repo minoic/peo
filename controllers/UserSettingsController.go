@@ -40,20 +40,21 @@ func (this *UserSettingsController) Prepare() {
 			this.Data["pteUserEmail"] = "获取用户信息失败"
 			this.Data["pteUser2FA"] = false
 			this.Data["pteUserCreatedAt"] = "获取用户信息失败"
+		} else {
+			this.Data["pteUserUUID"] = pteUser.Uuid
+			this.Data["pteUserName"] = pteUser.UserName
+			this.Data["pteUserEmail"] = pteUser.Email
+			this.Data["pteUser2FA"] = pteUser.TwoFA
+			this.Data["pteUserCreatedAt"] = pteUser.CreatedAt
 		}
-		this.Data["pteUserUUID"] = pteUser.Uuid
-		this.Data["pteUserName"] = pteUser.UserName
-		this.Data["pteUserEmail"] = pteUser.Email
-		this.Data["pteUser2FA"] = pteUser.TwoFA
-		this.Data["pteUserCreatedAt"] = pteUser.CreatedAt
 	} else {
 		this.Data["pteUserUUID"] = "请先创建用户"
 		this.Data["pteUserName"] = "请先创建用户"
 		this.Data["pteUserEmail"] = "请先创建用户"
 		this.Data["pteUser2FA"] = false
 		this.Data["pteUserCreatedAt"] = "请先创建用户"
+		this.Data["pteUserCreateURL"] = MinoConfigure.WebHostName + "/user-settings/create-pterodactyl-user"
 	}
-
 }
 
 func (this *UserSettingsController) Get() {}
@@ -143,6 +144,7 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 	sess := this.StartSession()
 	user, err := MinoSession.SessionGetUser(sess)
 	if err != nil || user == (MinoDatabase.User{}) {
+		beego.Debug("cant get user")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
 		return
 	}
@@ -156,6 +158,7 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 		FirstName:  user.Name,
 		LastName:   "_",
 	}); err != nil {
+		beego.Debug("cant create pte user")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
 	}
 	DB := MinoDatabase.GetDatabase()
