@@ -12,6 +12,7 @@ import (
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/utils/captcha"
 	uuid "github.com/satori/go.uuid"
+	"strings"
 )
 
 var cpt *captcha.Captcha
@@ -56,18 +57,27 @@ func (this *RegController) Post() {
 	if !cptSuccess {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "验证码输入错误，请重试！"
+		return
 	} else if !agreement {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "您必须同意我们的用户协议才能注册！"
+		return
 	} else if registerPassword != registerPasswordConfirm {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "两次密码输入不一致，请检查！"
+		return
+	} else if !checkUserName(registerName) {
+		this.Data["hasError"] = true
+		this.Data["hasErrorText"] = "用户名只能包含字母、数字、下划线！"
+		return
 	} else if !DB.Where("name = ?", registerName).First(&MinoDatabase.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "您输入的用户名已被占用！"
+		return
 	} else if !DB.Where("email = ?", registerEmail).First(&MinoDatabase.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "您输入的邮箱已被占用！"
+		return
 	} else {
 		newUuid := uuid.NewV4()
 		conf := MinoConfigure.GetConf()
@@ -177,6 +187,17 @@ func (this *RegController) MailConfirm() {
 		}, &this.Controller)
 	}
 	this.TplName = "Delay.html"
+}
+
+func checkUserName(userName string) bool {
+	const validChar = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+	for i := 0; i < len(userName); i++ {
+		//beego.Info(string(userName[i]))
+		if !strings.ContainsAny(validChar, string(userName[i])) {
+			return false
+		}
+	}
+	return true
 }
 
 func (this *RegController) CheckXSRFCookie() bool {

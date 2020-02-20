@@ -70,6 +70,7 @@ type WareSpec struct {
 type WareEntity struct {
 	gorm.Model
 	UserID           uint
+	SpecID           uint
 	ServerExternalID string
 	UserExternalID   string
 	HostName         string
