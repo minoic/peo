@@ -208,7 +208,6 @@ func (this *NewWareController) Post() {
 		WareDescription: this.GetString("ware_description"),
 		DockerImage:     this.GetString("image"),
 	}
-	//todo: handle errors
 	var (
 		err          error
 		hasError     bool

@@ -55,7 +55,8 @@
                             <div class="panel-heading">
                                 翼龙面板用户<br>
                                 <small class="text-muted">
-                                    如果注册时没有创建成功，您需要手动点击创建按钮，创建成功后才可以购买服务器！
+                                    如果注册时没有创建成功，您需要手动点击创建按钮，创建成功后才可以购买服务器！<br>
+                                    您不需要手动输入用户信息，我们会帮您使用注册时输入的信息自动创建！
                                 </small>
                             </div>
                             <div class="panel-body">
@@ -97,7 +98,7 @@
                                         {alert('创建成功！');parent.location.reload();}
                                         else {alert('创建失败！');}
                                         })
-                                " {{if .userCreated}}disabled{{end}}>创建翼龙面板用户</button>
+                                " {{if .userCreated}}disabled{{end}}>{{if .userCreated}}已创建{{else}}创建翼龙面板用户{{end}}</button>
                             </div>
                         </form>
                     </div><!-- /panel -->

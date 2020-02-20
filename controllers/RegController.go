@@ -116,7 +116,6 @@ func (this *RegController) Post() {
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册成功，但开户失败，请联系网站管理员！",
 				}, &this.Controller)
-				//todo:remind user to rebuild pterodactyl account
 			} else {
 				DB.Model(&newUser).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
@@ -153,7 +152,7 @@ func (this *RegController) MailConfirm() {
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册验证成功，但开户失败，请联系网站管理员！",
 				}, &this.Controller)
-				//todo:remind user to rebuild pterodactyl account
+
 			} else {
 				MinoMessage.Send("ADMIN", user.ID, "已为您成功创建控制台账户，可以购买服务器了！")
 				DB.Model(&user).Update("pte_user_created", true)
