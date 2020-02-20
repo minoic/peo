@@ -469,3 +469,19 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 	//beego.Info(dec.Server)
 	return nil
 }
+
+func PterodactylUpdateServerDetail(data ParamsData, externalID string, details PostUpdateDetails) error {
+	serverID := pterodactylGetServerID(ConfGetParams(), externalID)
+	patchData := map[string]interface{}{
+		"user":        details.UserID,
+		"description": details.Description,
+		"name":        details.ServerName,
+		"external_id": details.ExternalID,
+	}
+	_, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(serverID)+"/details", "PATCH")
+	//beego.Debug(body)
+	if status != 200 {
+		return errors.New("cant update server data: " + externalID)
+	}
+	return nil
+}

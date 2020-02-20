@@ -77,6 +77,7 @@ type PterodactylServerLimit struct {
 	IO     int `json:"io"`
 	CPU    int `json:"cpu"`
 }
+
 type PterodactylServer struct {
 	Id          int                    `json:"id"`
 	ExternalId  string                 `json:"external_id"`
@@ -103,4 +104,11 @@ type PostPteUser struct {
 	Password   string `json:"password"`
 	FirstName  string `json:"first_name"`
 	LastName   string `json:"last_name"`
+}
+
+type PostUpdateDetails struct {
+	UserID      int
+	ServerName  string
+	Description string
+	ExternalID  string
 }

@@ -23,12 +23,12 @@
             {{.ServerDescription}}
         </p>
         {{if .ServerFMLType}}
-            <a class="btn btn-default btn-xs pull-left" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}{{.ServerIndex}}"> <i class="fa fa-info-circle fa-lg"></i> MOD列表 </a>
+            <a class="btn btn-default btn-xs pull-left" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}{{.ServerIndex}}MOD"> <i class="fa fa-info-circle fa-lg"></i> MOD列表 </a>
         {{end}}
-        <a class="btn btn-default btn-xs pull-right"> <i class="fa fa-check fa-lg"></i> 续费</a>
+        <a class="btn btn-default btn-xs pull-right" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}{{.ServerIndex}}RENEW"> <i class="fa fa-check fa-lg"></i> 续费</a>
         <a class="btn btn-default btn-xs pull-right" disabled="disabled"><i class="fa fa-wrench fa-lg"></i> 重装服务端</a>
     </div>
-    <div class="modal fade" id="{{.ServerIdentifier}}{{.ServerIndex}}" aria-hidden="true" style="display: none;">
+    <div class="modal fade" id="{{.ServerIdentifier}}{{.ServerIndex}}MOD" aria-hidden="true" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -42,5 +42,44 @@
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
+    </div>
+    <div class="modal fade" id="{{.ServerIdentifier}}{{.ServerIndex}}RENEW" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4>使用预购买的KEY续费服务器</h4>
+                    <small>您可以在淘宝店或发卡平台购买KEY，每个KEY只能使用一次。<br>如果KEY失效不能使用请联系网站管理员！</small>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal no-margin form-border">
+                        <div class="form-group">
+                            <div class="col-lg-2 control-label">
+                                <label>激活码</label>
+                            </div>
+                            <div class="col-lg-10">
+
+                                <input type="text" class="form-control input-sm" name="key"
+                                       placeholder="输入您购买到的激活码" id="{{.ServerIdentifier}}{{.ServerIndex}}KEY">
+                            </div>
+                            <div class="col-lg-2"></div>
+                        </div>
+                        <!-- choose -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-info btn-sm" onclick="
+                            $.get('{{.ServerRenewURL}}/'+$('#{{.ServerIdentifier}}{{.ServerIndex}}KEY').val(),function(data) {
+                            if (data==='SUCCESS'){
+                            alert('续费成功！');
+                            parent.location.reload();
+                            }else{
+                            alert('续费失败：'+data);
+                            }
+                            })
+                            "> 确认续费</a>
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
     </div>
 </div>

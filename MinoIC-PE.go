@@ -29,6 +29,7 @@ func main() {
 	beego.Router("/user-settings/create-pterodactyl-user", &controllers.UserSettingsController{}, "get:CreatePterodactylUser")
 	beego.Router("/user-messages", &controllers.UserMessagesController{})
 	beego.Router("/user-console", &controllers.UserConsoleController{})
+	beego.Router("/user-console/renew/:entityID/:key", &controllers.UserConsoleController{}, "get:Renew")
 	beego.Router("/user-terms", &controllers.UserTermsController{})
 	beego.Router("/forget-password", &controllers.ForgetPasswordController{})
 	beego.Router("/forget-password-mail/:email", &controllers.ForgetPasswordController{}, "get:SendMail")
