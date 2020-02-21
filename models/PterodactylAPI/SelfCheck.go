@@ -16,7 +16,7 @@ func CheckServers() {
 	for _, entity := range entities {
 		if entity.ValidDate.Before(time.Now()) &&
 			entity.ValidDate.AddDate(0, 0, 7).After(time.Now()) {
-			server := PterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true)
+			server := pterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true)
 			if server != (PterodactylServer{}) && !server.Suspended {
 				err := PterodactylSuspendServer(ConfGetParams(), server.ExternalId)
 				if err != nil {
@@ -37,7 +37,7 @@ func CheckServers() {
 					DB.Delete(&entity)
 				}
 			}
-		} else if PterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true) == (PterodactylServer{}) {
+		} else if pterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true) == (PterodactylServer{}) {
 			if entity.DeleteStatus == 0 {
 				addConfirmWareEntity(entity)
 				DB.Model(&entity).Update("delete_status", 1)

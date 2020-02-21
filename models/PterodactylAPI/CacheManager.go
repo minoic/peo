@@ -90,7 +90,7 @@ func get(data ParamsData, key string, mode string, id []int, ExternalID string) 
 		case "ENV":
 			ret = pterodactylGetEnv(data, id[0], id[1])
 		case "SERVER":
-			ret = PterodactylGetServer(data, ExternalID, true)
+			ret = pterodactylGetServer(data, ExternalID, true)
 
 		}
 		err := bm.Put(key, ret, timeout)

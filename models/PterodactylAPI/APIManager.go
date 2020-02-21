@@ -226,7 +226,7 @@ func pterodactylGetAllocations(data ParamsData, nodeID int) []PterodactylAllocat
 	return ret
 }
 
-func PterodactylGetServer(data ParamsData, ID interface{}, isExternal bool) PterodactylServer {
+func pterodactylGetServer(data ParamsData, ID interface{}, isExternal bool) PterodactylServer {
 	var endPoint string
 	if isExternal {
 		endPoint = "servers/external/" + ID.(string)
@@ -268,7 +268,7 @@ func PterodactylGetAllServers(data ParamsData) []PterodactylServer {
 }
 
 func pterodactylGetServerID(data ParamsData, serverExternalID string) int {
-	server := PterodactylGetServer(data, serverExternalID, true)
+	server := pterodactylGetServer(data, serverExternalID, true)
 	if server == (PterodactylServer{}) {
 		return 0
 	}
@@ -302,7 +302,7 @@ func PterodactylUnsuspendServer(data ParamsData, serverExternalID string) error 
 func PterodactylReinstallServer(data ParamsData, serverExternalID string) error {
 	serverID := pterodactylGetServerID(data, serverExternalID)
 	if serverID == 0 {
-		return errors.New("unsuspend failed because server not found: " + strconv.Itoa(serverID))
+		return errors.New("reinstall failed because server not found: " + strconv.Itoa(serverID))
 	}
 	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/reinstall", "POST")
 	if status != 204 {
@@ -481,7 +481,49 @@ func PterodactylUpdateServerDetail(data ParamsData, externalID string, details P
 	_, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(serverID)+"/details", "PATCH")
 	//beego.Debug(body)
 	if status != 200 {
-		return errors.New("cant update server data: " + externalID)
+		return errors.New("cant update server details data: " + externalID)
 	}
 	return nil
+}
+
+func PterodactylUpdateServerBuild(data ParamsData, externalID string, build PostUpdateBuild) error {
+	serverID := pterodactylGetServerID(ConfGetParams(), externalID)
+	patchData := map[string]interface{}{
+		"allocation":   build.Allocation,
+		"memory":       build.Memory,
+		"io":           build.IO,
+		"swap":         build.Swap,
+		"cpu":          build.CPU,
+		"disk":         build.Disk,
+		"oom_disabled": build.OomDisabled,
+		"feature_limits": map[string]interface{}{
+			"databases":   build.Database,
+			"allocations": build.Allocations,
+		},
+	}
+	body, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(serverID)+"/build", "PATCH")
+	beego.Debug(body)
+	if status != 200 {
+		return errors.New("cant update server build data: " + externalID)
+	}
+	return nil
+}
+
+func PterodactylUpdateServerStartup(data ParamsData, externalID string, packID int) error {
+	server := pterodactylGetServer(data, externalID, true)
+	eggInfo := pterodactylGetEgg(data, server.NestId, server.EggId)
+	patchData := map[string]interface{}{
+		"environment":  GetEnv(data, server.NestId, server.EggId),
+		"startup":      eggInfo.StartUp,
+		"egg":          server.EggId,
+		"pack":         packID,
+		"image":        eggInfo.DockerImage,
+		"skip_scripts": false,
+	}
+	body, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(server.Id)+"/startup", "PATCH")
+	beego.Debug(body)
+	if status != 200 {
+		return errors.New("cant update server startup data: " + externalID)
+	}
+	return PterodactylReinstallServer(data, externalID)
 }

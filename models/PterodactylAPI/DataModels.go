@@ -112,3 +112,15 @@ type PostUpdateDetails struct {
 	Description string
 	ExternalID  string
 }
+
+type PostUpdateBuild struct {
+	Allocation  int
+	CPU         int
+	Memory      int
+	Swap        int
+	IO          int
+	Disk        int
+	OomDisabled bool
+	Database    int
+	Allocations int
+}

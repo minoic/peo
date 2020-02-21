@@ -79,7 +79,7 @@ func (this *AdminConsoleController) Prepare() {
 		}
 
 	}
-	//beego.Debug(deleteServers)
+	//beego.Debug(deleteServers )
 	this.Data["deleteServers"] = deleteServers
 	/* panel stats*/
 	var (

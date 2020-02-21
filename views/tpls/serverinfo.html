@@ -58,7 +58,6 @@
                                 <label>激活码</label>
                             </div>
                             <div class="col-lg-10">
-
                                 <input type="text" class="form-control input-sm" name="key"
                                        placeholder="输入您购买到的激活码" id="{{.ServerIdentifier}}{{.ServerIndex}}KEY">
                             </div>
@@ -70,7 +69,7 @@
                 <div class="modal-footer">
                     <a class="btn btn-info btn-sm" onclick="
                             $.get('{{.ServerRenewURL}}/'+$('#{{.ServerIdentifier}}{{.ServerIndex}}KEY').val(),function(data) {
-                            if (data==='SUCCESS'){
+                            if (data==='SUCCESS'){nn
                             alert('续费成功！');
                             parent.location.reload();
                             }else{
