@@ -26,14 +26,14 @@
             <a class="btn btn-default btn-xs pull-left" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}{{.ServerIndex}}MOD"> <i class="fa fa-info-circle fa-lg"></i> MOD列表 </a>
         {{end}}
         <a class="btn btn-default btn-xs pull-right" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}{{.ServerIndex}}RENEW"> <i class="fa fa-check fa-lg"></i> 续费</a>
-        <a class="btn btn-default btn-xs pull-right" disabled="disabled"><i class="fa fa-wrench fa-lg"></i> 重装服务端</a>
+        <a class="btn btn-default btn-xs pull-right" role="button" data-toggle="modal" href="#{{.ServerIdentifier}}{{.ServerIndex}}CP"><i class="fa fa-wrench fa-lg"></i> 重装服务端</a>
     </div>
-    <div class="modal fade" id="{{.ServerIdentifier}}{{.ServerIndex}}MOD" aria-hidden="true" style="display: none;">
+    <div class="modal fade" id="{{.ServerIdentifier}}{{.ServerIndex}}MOD" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4>MOD 加载器：{{.ServerFMLType}}</h4>
+                    <h4>MOD ({{.ServerModCount}}个) 加载器：{{.ServerFMLType}} </h4>
                 </div>
                 <div class="modal-body">
                     {{range .ServerModList}}
@@ -77,6 +77,46 @@
                             }
                             })
                             "> 确认续费</a>
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div>
+    <div class="modal fade" id="{{.ServerIdentifier}}{{.ServerIndex}}CP" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4>更换预设服务器包</h4>
+                    您可以选择我们预设的一些服务器整合包来作为快捷启动选项<br>
+                    一旦选择新的或与原来相同的整合包并点击&ldquo;确认安装&rdquo;按钮，我们将<strong class="text-danger">清空服务器数据</strong>并进行安装操作<br>
+                    由于这一过程<strong class="text-danger">不可逆</strong>，请您确认<strong class="text-danger">没有贵重数据或已备份</strong>！
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal no-margin form-border">
+                        <div class="form-group">
+                            <div class="col-lg-2 control-label">
+                                <label>整合包</label>
+                            </div>
+                            <div class="col-lg-10">
+                                <input type="text" class="form-control input-sm" name="key"
+                                       placeholder="输入您购买到的激活码" id="{{.ServerIdentifier}}{{.ServerIndex}}KEY">
+                            </div>
+                            <div class="col-lg-2"></div>
+                        </div>
+                        <!-- choose -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-danger btn-sm" onclick="
+                            $.get('{{.ServerRenewURL}}/'+$('#{{.ServerIdentifier}}{{.ServerIndex}}KEY').val(),function(data) {
+                            if (data==='SUCCESS'){nn
+                            alert('续费成功！');
+                            parent.location.reload();
+                            }else{
+                            alert('续费失败：'+data);
+                            }
+                            })
+                            "> 确认安装</a>
                 </div>
             </div>
         </div><!-- /.modal-content -->

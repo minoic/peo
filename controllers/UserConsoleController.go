@@ -37,6 +37,7 @@ type serverInfo struct {
 	ServerModList      []struct {
 		ModText string
 	}
+	ServerModCount int
 }
 
 func (this *UserConsoleController) Prepare() {
@@ -143,6 +144,7 @@ func (this *UserConsoleController) Get() {
 				for _, f := range p.ModInfo.ModList {
 					servers[i].ServerModList = append(servers[i].ServerModList, struct{ ModText string }{ModText: f.ModID + " " + f.ModVersion})
 				}
+				servers[i].ServerModCount = len(servers[i].ServerModList)
 			}
 		}
 	}
