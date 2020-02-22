@@ -98,8 +98,13 @@
                                 <label>整合包</label>
                             </div>
                             <div class="col-lg-10">
-                                <input type="text" class="form-control input-sm" name="key"
-                                       placeholder="输入您购买到的激活码" id="{{.ServerIdentifier}}{{.ServerIndex}}KEY">
+                                <select class="form-control" id="{{.ServerIdentifier}}{{.ServerIndex}}REIN">
+                                    {{range .ServerPacks}}
+                                        <option value="{{.PackID}}">
+                                            {{.PackName}}
+                                        </option>
+                                    {{end}}
+                                </select>
                             </div>
                             <div class="col-lg-2"></div>
                         </div>
@@ -108,12 +113,12 @@
                 </div>
                 <div class="modal-footer">
                     <a class="btn btn-danger btn-sm" onclick="
-                            $.get('{{.ServerRenewURL}}/'+$('#{{.ServerIdentifier}}{{.ServerIndex}}KEY').val(),function(data) {
-                            if (data==='SUCCESS'){nn
-                            alert('续费成功！');
+                            $.get('{{.ServerReinstallURL}}/'+$('#{{.ServerIdentifier}}{{.ServerIndex}}REIN').val(),function(data) {
+                            if (data==='SUCCESS'){
+                            alert('重装成功！');
                             parent.location.reload();
                             }else{
-                            alert('续费失败：'+data);
+                            alert('重装失败：'+data);
                             }
                             })
                             "> 确认安装</a>

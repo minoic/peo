@@ -18,6 +18,7 @@ func init() {
 		&Message{},
 		&Order{},
 		&DeleteConfirm{},
+		&Pack{},
 	)
 	return
 }
@@ -111,4 +112,13 @@ type Order struct {
 	FinalPrice   uint
 	Paid         bool
 	Confirmed    bool
+}
+
+type Pack struct {
+	gorm.Model
+	PackName        string
+	NestID          int
+	EggID           int
+	PackID          int
+	PackDescription string
 }

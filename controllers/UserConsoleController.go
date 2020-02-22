@@ -9,6 +9,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/ServerStatus"
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
+	"github.com/jinzhu/gorm"
 	"html/template"
 	"strconv"
 	"sync"
@@ -34,10 +35,12 @@ type serverInfo struct {
 	ServerVersion      string
 	ServerIndex        string
 	ServerRenewURL     template.URL
+	ServerReinstallURL template.URL
 	ServerModList      []struct {
 		ModText string
 	}
 	ServerModCount int
+	ServerPacks    []MinoDatabase.Pack
 }
 
 func (this *UserConsoleController) Prepare() {
@@ -73,7 +76,6 @@ func (this *UserConsoleController) Get() {
 	this.Data["infoOrderCount"] = len(orders)
 	this.Data["infoServerCount"] = len(entities)
 	var pongsSync struct {
-		sync.Mutex
 		pongs []ServerStatus.Pong
 	}
 	pongsSync.pongs = make([]ServerStatus.Pong, len(entities))
@@ -83,10 +85,9 @@ func (this *UserConsoleController) Get() {
 		go func(host string, index int) {
 			pongTemp, _ := ServerStatus.Ping(host)
 			//beego.Info(pongTemp,host)
-			pongsSync.Lock()
+			/* different index dont need Lock*/
 			pongsSync.pongs[index] = pongTemp
 			//beego.Info(len(pongsSync.pongs))
-			pongsSync.Unlock()
 			wg.Done()
 		}(e.HostName, i)
 		//beego.Debug(pong.Players.Online,pong.Players.Max)
@@ -111,6 +112,7 @@ func (this *UserConsoleController) Get() {
 				ServerIdentifier:   pteServer.Identifier,
 				ServerIndex:        strconv.Itoa(i),
 				ServerRenewURL:     template.URL(MinoConfigure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
+				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
 			})
 		} else {
@@ -139,6 +141,7 @@ func (this *UserConsoleController) Get() {
 				ServerVersion:      p.Version.Name,
 				ServerIndex:        strconv.Itoa(i),
 				ServerRenewURL:     template.URL(MinoConfigure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
+				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 			})
 			if servers[i].ServerFMLType != "" {
 				for _, f := range p.ModInfo.ModList {
@@ -147,10 +150,23 @@ func (this *UserConsoleController) Get() {
 				servers[i].ServerModCount = len(servers[i].ServerModList)
 			}
 		}
+		/* no matter server is online or offline*/
+		DB.Where("nest_id = ? AND egg_id = ?", pteServer.NestId, pteServer.EggId).Find(&servers[i].ServerPacks)
+		if len(servers[i].ServerPacks) == 0 {
+			servers[i].ServerPacks = append(servers[i].ServerPacks, MinoDatabase.Pack{
+				Model:           gorm.Model{},
+				PackName:        "没有可以安装的包",
+				NestID:          0,
+				EggID:           0,
+				PackID:          -1,
+				PackDescription: "",
+			})
+		}
 	}
 	//beego.Info(servers)
 	this.Data["servers"] = servers
 	this.Data["infoTotalOnline"] = infoTotalOnline
+
 }
 
 func (this *UserConsoleController) Renew() {
@@ -214,6 +230,39 @@ func (this *UserConsoleController) Renew() {
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
 		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+	}
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *UserConsoleController) Reinstall() {
+	entityID := this.Ctx.Input.Param(":entityID")
+	packIDstring := this.Ctx.Input.Param(":packID")
+	packID, err := strconv.Atoi(packIDstring)
+	if err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入了无效的PackID"))
+		return
+	}
+	if packID == -1 {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法安装这个包"))
+		return
+	}
+	user, err := MinoSession.SessionGetUser(this.StartSession())
+	if err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		return
+	}
+	DB := MinoDatabase.GetDatabase()
+	var entity MinoDatabase.WareEntity
+	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("找不到指定服务器"))
+		return
+	}
+	if entity.UserID != user.ID && !user.IsAdmin {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("您没有权限操作他人服务器"))
+		return
+	}
+	if err = PterodactylAPI.PterodactylUpdateServerStartup(PterodactylAPI.ConfGetParams(), entity.ServerExternalID, packID); err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
