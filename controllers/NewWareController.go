@@ -134,13 +134,6 @@ func init() {
 					Type:         "checkbox",
 				},*/
 		{
-			Name:           "exp",
-			FriendlyName:   "有效时间（天）",
-			Description:    "商品从订购启动到被暂停的时间（目前仅支持3/30/90即试用/月付/季付）",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
 			Name:           "delete_time",
 			FriendlyName:   "删除延迟（天）",
 			Description:    "商品从失效暂停到被删除的时间",
@@ -155,8 +148,22 @@ func init() {
 			AdditionalTags: "required",
 		},
 		{
-			Name:           "discount",
-			FriendlyName:   "折扣",
+			Name:           "discount0",
+			FriendlyName:   "月付折扣",
+			Description:    "付款时减去的百分比(0-100的整数)",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "discount1",
+			FriendlyName:   "季付折扣",
+			Description:    "付款时减去的百分比(0-100的整数)",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "discount2",
+			FriendlyName:   "年付折扣",
 			Description:    "付款时减去的百分比(0-100的整数)",
 			Type:           "number",
 			AdditionalTags: "required",
@@ -258,14 +265,30 @@ func (this *NewWareController) Post() {
 		hasError = true
 		hasErrorText = "Swap 输入值不合法"
 	}
-	ware.Discount, err = this.GetInt("discount")
-	if err != nil {
+	var discount [3]int
+	if discount[0], err = this.GetInt("discount0"); err != nil {
 		beego.Error(err)
 		hasError = true
-		hasErrorText = "POST 表单获取错误 discount " + err.Error()
-	} else if ware.Discount > 100 || ware.Discount < 0 {
+		hasErrorText = "POST 表单获取错误 discount0 " + err.Error()
+	} else if discount[0] > 100 || discount[0] < 0 {
 		hasError = true
-		hasErrorText = "Discount 输入值不合法"
+		hasErrorText = "Discount0 输入值不合法"
+	}
+	if discount[1], err = this.GetInt("discount1"); err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误 discount1 " + err.Error()
+	} else if discount[1] > 100 || discount[1] < 0 {
+		hasError = true
+		hasErrorText = "Discount1 输入值不合法"
+	}
+	if discount[2], err = this.GetInt("discount2"); err != nil {
+		beego.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误 discount2 " + err.Error()
+	} else if discount[2] > 100 || discount[2] < 0 {
+		hasError = true
+		hasErrorText = "Discount2 输入值不合法"
 	}
 	ware.Node, err = this.GetInt("node_id")
 	if err != nil {
@@ -300,18 +323,7 @@ func (this *NewWareController) Post() {
 		hasError = true
 		hasErrorText = "价格不能设置为负"
 	}
-	e, err := this.GetInt("exp")
-	if err != nil {
-		beego.Error(err)
-		hasError = true
-		hasErrorText = "POST 表单获取错误 price " + err.Error()
-	} else if !(e == 3 || e == 30 || e == 90 || e == 365) {
-		hasError = true
-		hasErrorText = "有效期没有输入建议的值"
-	} else {
-		ware.ValidDuration = time.Duration(e*24) * time.Hour
-	}
-	e, err = this.GetInt("delete_time")
+	e, err := this.GetInt("delete_time")
 	if err != nil {
 		beego.Error(err)
 		hasError = true
@@ -331,7 +343,17 @@ func (this *NewWareController) Post() {
 		ware.StartOnCompletion = true
 		//todo: handle database number
 		DB := MinoDatabase.GetDatabase()
-		DB.Create(&ware)
+		for i, d := range []time.Duration{
+			30 * 24 * time.Hour,
+			90 * 24 * time.Hour,
+			365 * 24 * time.Hour,
+		} {
+			//beego.Debug(d)
+			wareTemp := ware
+			wareTemp.ValidDuration = d
+			wareTemp.Discount = discount[i]
+			DB.Create(&wareTemp)
+		}
 		DelayRedirect(DelayInfo{
 			URL:    MinoConfigure.WebHostName + "/new-ware",
 			Detail: "正在跳转回添加页面",

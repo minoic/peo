@@ -28,7 +28,7 @@ func connect() {
 			conf.String("MYSQLHost") + ")/" +
 			conf.String("MYSQLDatabaseName") +
 			"?charset=utf8&parseTime=True&loc=Local"
-		beego.Debug(DSN)
+		//beego.Debug(DSN)
 		DB, err := gorm.Open("mysql", DSN)
 		if err != nil {
 			db = nil

@@ -48,6 +48,7 @@ func (this *WareSellerController) Get() {
 	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
 		for _, w := range waresInDB {
 			egg := PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), w.Nest, w.Egg)
+			//beego.Debug(w)
 			switch w.ValidDuration {
 			case 30 * 24 * time.Hour:
 				wares1 = append(wares1, ware{

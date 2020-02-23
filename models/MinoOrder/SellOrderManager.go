@@ -121,7 +121,6 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 			entity := MinoDatabase.WareEntity{
 				Model:            gorm.Model{},
 				UserID:           order.UserID,
-				SpecID:           spec.ID,
 				ServerExternalID: user.Name + strconv.Itoa(int(orderID)),
 				UserExternalID:   user.Name,
 				HostName:         hostName,
