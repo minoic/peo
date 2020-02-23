@@ -5,6 +5,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
+	"html/template"
 	"strconv"
 	"time"
 )
@@ -28,8 +29,8 @@ type intro struct {
 
 func (this *WareSellerController) Get() {
 	this.TplName = "WareSeller.html"
-	this.Data["wareTitle"] = "Title"
-	this.Data["wareDetail"] = "Detail"
+	this.Data["wareTitle"] = template.HTML("MinoIC - Minecraft 面板服")
+	this.Data["wareDetail"] = template.HTML(``)
 	this.Data["u"] = 1
 	handleNavbar(&this.Controller)
 	this.Ctx.ResponseWriter.Flush()

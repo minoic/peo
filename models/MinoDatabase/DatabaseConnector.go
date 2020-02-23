@@ -32,7 +32,6 @@ func connect() {
 		if err != nil {
 			db = nil
 			panic(err.Error())
-
 		}
 		db = DB
 		return
