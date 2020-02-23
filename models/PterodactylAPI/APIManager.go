@@ -522,7 +522,7 @@ func PterodactylUpdateServerStartup(data ParamsData, externalID string, packID i
 		"skip_scripts": false,
 	}
 	//beego.Debug(patchData)
-	body, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(server.Id)+"/startup", "PATCH")
+	_, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(server.Id)+"/startup", "PATCH")
 	//beego.Debug(body)
 	if status != 200 {
 		return errors.New("cant update server startup data: " + externalID)
