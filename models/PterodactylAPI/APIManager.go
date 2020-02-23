@@ -305,6 +305,7 @@ func PterodactylReinstallServer(data ParamsData, serverExternalID string) error 
 		return errors.New("reinstall failed because server not found: " + strconv.Itoa(serverID))
 	}
 	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/reinstall", "POST")
+	//beego.Debug(body)
 	if status != 204 {
 		return errors.New("cant reinstall server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
 	}
@@ -520,8 +521,9 @@ func PterodactylUpdateServerStartup(data ParamsData, externalID string, packID i
 		"image":        eggInfo.DockerImage,
 		"skip_scripts": false,
 	}
+	//beego.Debug(patchData)
 	body, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(server.Id)+"/startup", "PATCH")
-	beego.Debug(body)
+	//beego.Debug(body)
 	if status != 200 {
 		return errors.New("cant update server startup data: " + externalID)
 	}

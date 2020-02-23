@@ -239,6 +239,7 @@ func (this *UserConsoleController) Reinstall() {
 	packIDstring := this.Ctx.Input.Param(":packID")
 	packID, err := strconv.Atoi(packIDstring)
 	if err != nil {
+		//beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入了无效的PackID"))
 		return
 	}
@@ -248,6 +249,7 @@ func (this *UserConsoleController) Reinstall() {
 	}
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
+		//beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
@@ -262,7 +264,9 @@ func (this *UserConsoleController) Reinstall() {
 		return
 	}
 	if err = PterodactylAPI.PterodactylUpdateServerStartup(PterodactylAPI.ConfGetParams(), entity.ServerExternalID, packID); err != nil {
+		beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
+		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
