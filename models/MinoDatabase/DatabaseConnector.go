@@ -24,10 +24,11 @@ func connect() {
 		return
 	case "MYSQL":
 		DSN := conf.String("MYSQLUsername") + ":" +
-			conf.String("MYSQLUserPassword") + "@" +
-			conf.String("MYSQLHost") + "/" +
+			conf.String("MYSQLUserPassword") + "@(" +
+			conf.String("MYSQLHost") + ")/" +
 			conf.String("MYSQLDatabaseName") +
 			"?charset=utf8&parseTime=True&loc=Local"
+		beego.Debug(DSN)
 		DB, err := gorm.Open("mysql", DSN)
 		if err != nil {
 			db = nil
