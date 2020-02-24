@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
 	beego.Router("/", &controllers.WareSellerController{})
 	beego.Router("/index", &controllers.IndexController{})
 	beego.Router("/reg", &controllers.RegController{})

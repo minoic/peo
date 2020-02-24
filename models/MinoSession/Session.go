@@ -8,13 +8,6 @@ import (
 	"strconv"
 )
 
-/*func init(){
-	beego.BConfig.WebConfig.Session.SessionProvider = "file"
-	beego.BConfig.WebConfig.Session.SessionProviderConfig = "./tmp"
-	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
-	beego.BConfig.WebConfig.Session.SessionOn = true
-}*/
-
 func SessionIslogged(sess session.Store) bool {
 	cookie1 := sess.Get("LST")
 	cookie2 := sess.Get("UN")
