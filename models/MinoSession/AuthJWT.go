@@ -17,9 +17,9 @@ func GeneToken(username string, remember bool) string {
 	claims := jwt.NewClaim()
 	claims.Set("username", username)
 	if remember {
-		claims.SetTime("end", time.Now().AddDate(0, 2, 0))
+		claims.SetTime("exp", time.Now().AddDate(0, 2, 0))
 	} else {
-		claims.SetTime("end", time.Now().AddDate(0, 0, 1))
+		claims.SetTime("exp", time.Now().AddDate(0, 0, 1))
 	}
 	if token, err := AuthAlgo.Encode(claims); err != nil {
 		beego.Error("cant GeneToken for " + username)
@@ -35,6 +35,7 @@ func ValidateToken(utoken string, username string) bool {
 		return false
 	}
 	claims, err := AuthAlgo.Decode(utoken)
+	//beego.Debug(claims)
 	if err != nil {
 		beego.Error(err.Error())
 		return false
@@ -44,7 +45,7 @@ func ValidateToken(utoken string, username string) bool {
 	if !ok {
 		beego.Error(username + "`s tokenName is not a string!")
 	}
-	tokenTime, _ := claims.GetTime("end")
+	tokenTime, _ := claims.GetTime("exp")
 	//beego.Info(tokenTime)
 	if tokenName == username && time.Now().Before(tokenTime) {
 		return true

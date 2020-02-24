@@ -8,6 +8,13 @@ import (
 	"strconv"
 )
 
+/*func init(){
+	beego.BConfig.WebConfig.Session.SessionProvider = "file"
+	beego.BConfig.WebConfig.Session.SessionProviderConfig = "./tmp"
+	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
+	beego.BConfig.WebConfig.Session.SessionOn = true
+}*/
+
 func SessionIslogged(sess session.Store) bool {
 	cookie1 := sess.Get("LST")
 	cookie2 := sess.Get("UN")
@@ -17,12 +24,11 @@ func SessionIslogged(sess session.Store) bool {
 	}
 	lsToken := cookie1.(string)
 	unToken := cookie2.(string)
+	//beego.Debug(lsToken, unToken)
 	if len(lsToken) == 0 || !ValidateToken(lsToken, unToken) {
-		//beego.Info(lsToken, unToken)
 		beego.Warn(unToken + " is not logged in!")
 		return false
 	} else {
-		//beego.Info(lsToken, unToken)
 		//beego.Info(unToken + " is logged in!")
 		return true
 	}
