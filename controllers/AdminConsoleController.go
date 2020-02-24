@@ -77,7 +77,6 @@ func (this *AdminConsoleController) Prepare() {
 				deleteServers[i].ServerIdentifier = "无法获取编号"
 			}
 		}
-
 	}
 	//beego.Debug(deleteServers )
 	this.Data["deleteServers"] = deleteServers
@@ -86,6 +85,9 @@ func (this *AdminConsoleController) Prepare() {
 		specs    []MinoDatabase.WareSpec
 		entities []MinoDatabase.WareEntity
 		users    []MinoDatabase.User
+		packs    []MinoDatabase.Pack
+		keys     []MinoDatabase.WareKey
+		orders   []MinoDatabase.Order
 	)
 	DB.Find(&specs)
 	this.Data["specAmount"] = len(specs)
@@ -93,6 +95,12 @@ func (this *AdminConsoleController) Prepare() {
 	this.Data["entityAmount"] = len(entities)
 	DB.Find(&users)
 	this.Data["userAmount"] = len(users)
+	DB.Find(&packs)
+	this.Data["packAmount"] = len(packs)
+	DB.Find(&keys)
+	this.Data["keyAmount"] = len(keys)
+	DB.Where("confirmed = ?", true).Find(&orders)
+	this.Data["orderAmount"] = len(orders)
 }
 
 func (this *AdminConsoleController) Get() {}

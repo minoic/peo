@@ -18,7 +18,7 @@
                             <div class="panel panel-default panel-stat2 bg-warning" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击添加商品">
                                 <div class="panel-body">
 								<span class="stat-icon">
-									<i class="fa fa-shopping-cart"></i>
+									<i class="fa fa-shopping-cart fa-lg"></i>
 								</span>
                                     <div class="pull-right text-right">
                                         <div class="value">{{.specAmount}}</div>
@@ -33,7 +33,7 @@
                             <div class="panel panel-default panel-stat2 bg-primary">
                                 <div class="panel-body">
 								<span class="stat-icon">
-									<i class="fa fa-hdd-o"></i>
+									<i class="fa fa-hdd-o fa-lg"></i>
 								</span>
                                     <div class="pull-right text-right">
                                         <div class="value">{{.entityAmount}}</div>
@@ -44,10 +44,10 @@
                         </a>
                     </div>
                     <div class="col-md-4 col-sm-4 col-xs-6">
-                        <div class="panel panel-default panel-stat2">
+                        <div class="panel panel-default panel-stat2 bg-dark">
                             <div class="panel-body">
 								<span class="stat-icon">
-									<i class="fa fa-user"></i>
+									<i class="fa fa-user fa-lg"></i>
 								</span>
                                 <div class="pull-right text-right">
                                     <div class="value">{{.userAmount}}</div>
@@ -56,34 +56,75 @@
                             </div>
                         </div><!-- /panel -->
                     </div>
+                    <div class="col-md-4 col-sm-4 col-xs-6">
+                        <div class="panel panel-default panel-stat2">
+                            <div class="panel-body">
+								<span class="stat-icon">
+									<i class="fa fa-briefcase fa-lg"></i>
+								</span>
+                                <div class="pull-right text-right">
+                                    <div class="value">{{.packAmount}}</div>
+                                    <div class="title">整合包</div>
+                                </div>
+                            </div>
+                        </div><!-- /panel -->
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-6">
+                        <div class="panel panel-default panel-stat2 bg-success">
+                            <div class="panel-body">
+								<span class="stat-icon">
+									<i class="fa fa-key fa-lg"></i>
+								</span>
+                                <div class="pull-right text-right">
+                                    <div class="value">{{.keyAmount}}</div>
+                                    <div class="title">有效KEY</div>
+                                </div>
+                            </div>
+                        </div><!-- /panel -->
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-6">
+                        <div class="panel panel-default panel-stat2 bg-info">
+                            <div class="panel-body">
+								<span class="stat-icon">
+									<i class="fa fa-edit fa-lg"></i>
+								</span>
+                                <div class="pull-right text-right">
+                                    <div class="value">{{.orderAmount}}</div>
+                                    <div class="title">完成订单</div>
+                                </div>
+                            </div>
+                        </div><!-- /panel -->
+                    </div>
                 </div>
-                <div class="panel-primary">
-                    <div class="panel-heading">
-                        <strong>待确认的过期服务器</strong>
-                    </div>
-                    <div class="panel-body no-padding" style="height: auto;">
-                        <ul class="list-group task-list no-margin collapse in">
-                            {{range .deleteServers}}
-                                <li class="list-group-item" id="{{.ServerIdentifier}}">
-                                    <a href="{{.ServerConsoleHostName}}" target="_blank">
-                                        <span class="label label-default">{{.ServerIdentifier}}</span>
-                                    </a>
-                                    <a class="pull-right" onclick="$.get('{{.DeleteURL}}',function(data) {
-                                            if (data==='SUCCESS')
-                                            {$('#{{.ServerIdentifier}}').remove();alert('删除成功！')}
-                                            else {alert('删除失败！');}
-                                            })">
-                                        <button class="btn-danger btn-sm" type="button">确认删除</button>
-                                    </a>
-                                    <span>{{.ServerName}} 所有者：{{.ServerOwner}} <br>过期时间：{{.ServerEXP}} 服务器地址：{{.ServerHostName}}</span>
-                                </li>
-                            {{end}}
-                        </ul><!-- /list-group -->
-                    </div>
-                    <div class="loading-overlay">
-                        <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
-                    </div>
-                </div><!-- /panel -->
+                {{if .deleteServers}}
+                    <div class="panel-primary">
+                        <div class="panel-heading">
+                            <strong>待确认删除的过期服务器</strong>
+                        </div>
+                        <div class="panel-body no-padding" style="height: auto;">
+                            <ul class="list-group task-list no-margin collapse in">
+                                {{range .deleteServers}}
+                                    <li class="list-group-item" id="{{.ServerIdentifier}}">
+                                        <a href="{{.ServerConsoleHostName}}" target="_blank">
+                                            <span class="label label-default">{{.ServerIdentifier}}</span>
+                                        </a>
+                                        <a class="pull-right" onclick="$.get('{{.DeleteURL}}',function(data) {
+                                                if (data==='SUCCESS')
+                                                {$('#{{.ServerIdentifier}}').remove();alert('删除成功！')}
+                                                else {alert('删除失败！');}
+                                                })">
+                                            <button class="btn-danger btn-sm" type="button">确认删除</button>
+                                        </a>
+                                        <span>{{.ServerName}} 所有者：{{.ServerOwner}} <br>过期时间：{{.ServerEXP}} 服务器地址：{{.ServerHostName}}</span>
+                                    </li>
+                                {{end}}
+                            </ul><!-- /list-group -->
+                        </div>
+                        <div class="loading-overlay">
+                            <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                        </div>
+                    </div><!-- /panel -->
+                {{end}}
             </div>
             <div class="col-lg-6 col-md-6"></div>
         </div>
