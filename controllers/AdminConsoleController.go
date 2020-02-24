@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego"
 	"html/template"
 	"strconv"
+	"sync"
 )
 
 type AdminConsoleController struct {
@@ -88,18 +89,39 @@ func (this *AdminConsoleController) Prepare() {
 		packs    []MinoDatabase.Pack
 		keys     []MinoDatabase.WareKey
 		orders   []MinoDatabase.Order
+		wg       sync.WaitGroup
 	)
-	DB.Find(&specs)
+	wg.Add(6)
+	go func() {
+		DB.Find(&specs)
+		wg.Done()
+	}()
+	go func() {
+		DB.Find(&entities)
+		wg.Done()
+	}()
+	go func() {
+		DB.Find(&users)
+		wg.Done()
+	}()
+	go func() {
+		DB.Find(&packs)
+		wg.Done()
+	}()
+	go func() {
+		DB.Find(&keys)
+		wg.Done()
+	}()
+	go func() {
+		DB.Where("confirmed = ?", true).Find(&orders)
+		wg.Done()
+	}()
+	wg.Wait()
 	this.Data["specAmount"] = len(specs)
-	DB.Find(&entities)
 	this.Data["entityAmount"] = len(entities)
-	DB.Find(&users)
 	this.Data["userAmount"] = len(users)
-	DB.Find(&packs)
 	this.Data["packAmount"] = len(packs)
-	DB.Find(&keys)
 	this.Data["keyAmount"] = len(keys)
-	DB.Where("confirmed = ?", true).Find(&orders)
 	this.Data["orderAmount"] = len(orders)
 }
 

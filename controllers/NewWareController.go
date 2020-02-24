@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var WareInfo []InfoDetail
+var wareInfo []InfoDetail
 
 type NewWareController struct {
 	beego.Controller
@@ -27,7 +27,7 @@ type InfoDetail struct {
 }
 
 func init() {
-	WareInfo = []InfoDetail{
+	wareInfo = []InfoDetail{
 		{
 			Name:           "ware_name",
 			FriendlyName:   "商品名称",
@@ -169,11 +169,11 @@ func init() {
 			AdditionalTags: "required",
 		},
 	}
-	for i, w := range WareInfo {
+	for i, w := range packInfo {
 		if strings.Index(w.AdditionalTags, "required") != -1 {
-			WareInfo[i].Required = true
+			packInfo[i].Required = true
 		} else {
-			WareInfo[i].Required = false
+			packInfo[i].Required = false
 		}
 	}
 }
@@ -195,8 +195,8 @@ func (this *NewWareController) Prepare() {
 		}, &this.Controller)
 	}
 	handleNavbar(&this.Controller)
-	//beego.Info(WareInfo)
-	this.Data["options"] = WareInfo
+	//beego.Info(wareInfo)
+	this.Data["options"] = wareInfo
 	this.Data["u"] = 0
 }
 func (this *NewWareController) Get() {}

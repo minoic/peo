@@ -16,6 +16,7 @@ func main() {
 	beego.Router("/admin-console/delete-confirm/:entityID", &controllers.AdminConsoleController{}, "get:DeleteConfirm")
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Router("/new-order", &controllers.OrderCreateController{})
+	beego.Router("/new-pack", &controllers.NewPackController{})
 	beego.Router("/order/:orderID", &controllers.OrderInfoController{})
 	beego.Router("/delay", &controllers.DelayController{})
 	beego.Router("/user-settings", &controllers.UserSettingsController{})
