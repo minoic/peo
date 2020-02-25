@@ -3,6 +3,7 @@ package controllers
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoKey"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
@@ -123,6 +124,7 @@ func (this *AdminConsoleController) Prepare() {
 	this.Data["packAmount"] = len(packs)
 	this.Data["keyAmount"] = len(keys)
 	this.Data["orderAmount"] = len(orders)
+	this.Data["specs"] = specs
 }
 
 func (this *AdminConsoleController) Get() {}
@@ -137,4 +139,53 @@ func (this *AdminConsoleController) DeleteConfirm() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *AdminConsoleController) NewKey() {
+	if !this.CheckXSRFCookie() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
+		return
+	}
+	keyAmount, err := this.GetInt("key_amount", 1)
+	if err != nil || keyAmount <= 0 || keyAmount >= 100 {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入不合理的 KEY 数量"))
+		return
+	}
+	validDuration, err := this.GetInt("valid_duration", 60)
+	if err != nil || validDuration <= 0 {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入不合理的有效期"))
+		return
+	}
+	DB := MinoDatabase.GetDatabase()
+	specID, err := this.GetInt("spec_id")
+	if err != nil || DB.Where("id = ?", specID).First(&MinoDatabase.WareSpec{}).RecordNotFound() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("选择了无效的商品"))
+		return
+	}
+	err = MinoKey.GeneKeys(keyAmount, uint(specID), validDuration, 20)
+	if err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+		return
+	}
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *AdminConsoleController) CheckXSRFCookie() bool {
+	if !this.EnableXSRF {
+		return true
+	}
+	token := this.Ctx.Input.Query("_xsrf")
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
+	}
+	if token == "" {
+		token = this.Ctx.Request.Header.Get("X-Csrftoken")
+	}
+	if token == "" {
+		return false
+	}
+	if this.XSRFToken() != token {
+		return false
+	}
+	return true
 }

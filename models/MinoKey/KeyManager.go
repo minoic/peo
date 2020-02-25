@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) {
+func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) error {
 	DB := MinoDatabase.GetDatabase()
 	for i := 1; i <= keyAmount; i++ {
 		newKey := MinoDatabase.WareKey{
@@ -15,6 +15,9 @@ func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) 
 			Key:    RandKey(keyLength),
 			Exp:    time.Now().AddDate(0, 0, validityTermInDay),
 		}
-		DB.Create(&newKey)
+		if err := DB.Create(&newKey).Error; err != nil {
+			return err
+		}
 	}
+	return nil
 }
