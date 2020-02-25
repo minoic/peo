@@ -53,11 +53,11 @@ func init() {
 			AdditionalTags: "required",
 		},
 	}
-	for i, w := range wareInfo {
+	for i, w := range packInfo {
 		if strings.Index(w.AdditionalTags, "required") != -1 {
-			wareInfo[i].Required = true
+			packInfo[i].Required = true
 		} else {
-			wareInfo[i].Required = false
+			packInfo[i].Required = false
 		}
 	}
 }

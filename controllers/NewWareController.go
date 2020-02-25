@@ -169,11 +169,11 @@ func init() {
 			AdditionalTags: "required",
 		},
 	}
-	for i, w := range packInfo {
+	for i, w := range wareInfo {
 		if strings.Index(w.AdditionalTags, "required") != -1 {
-			packInfo[i].Required = true
+			wareInfo[i].Required = true
 		} else {
-			packInfo[i].Required = false
+			wareInfo[i].Required = false
 		}
 	}
 }
@@ -208,7 +208,7 @@ func (this *NewWareController) Post() {
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
 		return
 	}
-	//formText,_:=template.ParseFiles("tpls/forms/waretext.html")
+	//formText,_:=template.ParseFiles("tpls/forms/formgroup.html")
 	ware := MinoDatabase.WareSpec{
 		Model:           gorm.Model{},
 		WareName:        this.GetString("ware_name"),

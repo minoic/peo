@@ -134,11 +134,17 @@ func (this *AdminConsoleController) DeleteConfirm() {
 	entityIDint, err := strconv.Atoi(entityID)
 	if err != nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
+		return
 	}
-	if err := PterodactylAPI.ConfirmDelete(uint(entityIDint)); err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
+	err = PterodactylAPI.ConfirmDelete(uint(entityIDint))
+	DB := MinoDatabase.GetDatabase()
+	DB.Delete(&MinoDatabase.DeleteConfirm{}, "ware_id = ?", entityIDint)
+	DB.Delete(&MinoDatabase.WareEntity{}, "id = ?", entityIDint)
+	if err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法在面板中删除该服务器，请手动删除！"))
+	} else {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 	}
-	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
 func (this *AdminConsoleController) NewKey() {

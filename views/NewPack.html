@@ -22,7 +22,7 @@
                             <form role="form" method="post" id="new-pack">
                                 {{.xsrfData}}
                                 {{range .options}}
-                                    {{template "tpls/forms/waretext.html" .}}
+                                    {{template "tpls/formgroup.html" .}}
                                 {{end}}
                             </form>
                             <hr/>

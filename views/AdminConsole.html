@@ -175,7 +175,8 @@
                                         <a class="pull-right" onclick="$.get('{{.DeleteURL}}',function(data) {
                                                 if (data==='SUCCESS')
                                                 {$('#{{.ServerIdentifier}}').remove();alert('删除成功！')}
-                                                else {alert('删除失败！');}
+                                                else {alert('删除失败！'+data);}
+                                                parent.location.reload();
                                                 })">
                                             <button class="btn-danger btn-sm" type="button">确认删除</button>
                                         </a>
