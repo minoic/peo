@@ -3,6 +3,9 @@ package MinoCache
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego/cache"
+	_ "github.com/astaxie/beego/cache/memcache"
+	_ "github.com/astaxie/beego/cache/redis"
+	_ "github.com/astaxie/beego/cache/ssdb"
 	"strconv"
 )
 
