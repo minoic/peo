@@ -97,6 +97,7 @@
                                         if (data==='SUCCESS')
                                         {alert('创建成功！');parent.location.reload();}
                                         else {alert('创建失败！');}
+                                        parent.location.reload();
                                         })
                                 " {{if .userCreated}}disabled{{end}}>{{if .userCreated}}已创建{{else}}创建翼龙面板用户{{end}}</button>
                             </div>
@@ -175,6 +176,7 @@
         <script type="text/javascript">
             function logout() {
                 $.removeCookie('beegosessionID');
+                parent.location.reload();
             }
         </script>
     </div>

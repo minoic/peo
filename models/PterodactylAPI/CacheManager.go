@@ -43,7 +43,7 @@ func GetUser(data ParamsData, ID interface{}, isExternal bool) (PterodactylUser,
 			}
 			return user.(PterodactylUser), ok
 		} else {
-			user, ok := PterodactylGetUser(data, ID, isExternal)
+			user, ok := pterodactylGetUser(data, ID, isExternal)
 			err := bm.Put("USERE"+ID.(string), user, timeout)
 			if err != nil {
 				panic(err)
@@ -59,7 +59,7 @@ func GetUser(data ParamsData, ID interface{}, isExternal bool) (PterodactylUser,
 			}
 			return user.(PterodactylUser), ok
 		} else {
-			user, ok := PterodactylGetUser(data, ID, isExternal)
+			user, ok := pterodactylGetUser(data, ID, isExternal)
 			err := bm.Put("USER"+strconv.Itoa(ID.(int)), user, timeout)
 			if err != nil {
 				panic(err)

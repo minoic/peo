@@ -158,8 +158,9 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 		FirstName:  user.Name,
 		LastName:   "_",
 	}); err != nil {
-		beego.Debug("cant create pte user")
+		beego.Debug(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
+		return
 	}
 	DB := MinoDatabase.GetDatabase()
 	DB.Model(&user).Update("pte_user_created", true)

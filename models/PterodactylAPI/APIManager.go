@@ -78,7 +78,7 @@ func PterodactylTestConnection(params ParamsData) {
 	beego.Debug("PterodactylAPI returns: ", test)
 }
 
-func PterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
+func pterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
 	var endPoint string
 	if isExternal {
 		endPoint = "users/external/" + ID.(string)
@@ -336,15 +336,15 @@ LastName:   "ds",
 })*/
 
 func PterodactylCreateUser(data ParamsData, userInfo interface{}) error {
-	_, status := pterodactylApi(data, userInfo, "users", "POST")
+	body, status := pterodactylApi(data, userInfo, "users", "POST")
 	if status != 201 {
-		return errors.New("cant create user with status code: " + strconv.Itoa(status))
+		return errors.New("cant create user with status code: " + strconv.Itoa(status) + " body: " + body)
 	}
 	return nil
 }
 
 func PterodactylDeleteUser(data ParamsData, externalID string) error {
-	if user, ok := PterodactylGetUser(data, externalID, true); ok {
+	if user, ok := pterodactylGetUser(data, externalID, true); ok {
 		_, status := pterodactylApi(data, "", "users/"+strconv.Itoa(user.Uid), "DELETE")
 		if status != 204 {
 			return errors.New("cant delete user: " + user.UserName + " with status code: " + strconv.Itoa(status))
