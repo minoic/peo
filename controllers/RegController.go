@@ -121,10 +121,11 @@ func (this *RegController) Post() {
 			})
 			if err != nil {
 				beego.Error("cant create pterodactyl user for " + newUser.Name)
+				MinoMessage.Send("ADMIN", newUser.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
-					Title:  "注册成功，但开户失败，请联系网站管理员！",
+					Title:  "注册成功，但开户失败，请手动开通！",
 				}, &this.Controller)
 			} else {
 				DB.Model(&newUser).Update("pte_user_created", true)
@@ -133,6 +134,8 @@ func (this *RegController) Post() {
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册成功！",
 				}, &this.Controller)
+				MinoMessage.Send("ADMIN", newUser.ID, "已为您开通翼龙面板账户，您可以购买服务器了！翼"+
+					"龙面板的账户名为您的邮箱，密码为您的用户名，登录后请及时修改密码！")
 			}
 		}
 	}
@@ -156,7 +159,7 @@ func (this *RegController) MailConfirm() {
 			})
 			if err != nil {
 				beego.Error("cant create pterodactyl user for " + user.Name)
-				MinoMessage.Send("ADMIN", user.ID, "为您创建控制台账户失败，请先确认成功创建再购买服务器！")
+				MinoMessage.Send("ADMIN", user.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/login",
 					Detail: "即将跳转到登陆页面",
@@ -164,7 +167,8 @@ func (this *RegController) MailConfirm() {
 				}, &this.Controller)
 
 			} else {
-				MinoMessage.Send("ADMIN", user.ID, "已为您成功创建控制台账户，可以购买服务器了！")
+				MinoMessage.Send("ADMIN", user.ID, "已为您开通翼龙面板账户，您可以购买服务器了！翼"+
+					"龙面板的账户名为您的邮箱，密码为您的用户名，登录后请及时修改密码！")
 				DB.Model(&user).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/login",

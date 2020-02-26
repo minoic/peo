@@ -98,46 +98,65 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 	case 365 * 24 * time.Hour:
 		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
 	}
-	go func() {
-		err := PterodactylAPI.PterodactylCreateServer(PterodactylAPI.ConfGetParams(), PterodactylAPI.PterodactylServer{
-			UserId:      pteUserID,
-			ExternalId:  user.Name + strconv.Itoa(int(orderID)),
-			Name:        user.Name + strconv.Itoa(int(orderID)),
-			Description: "到期时间：" + exp,
-			Suspended:   false,
-			Limits: PterodactylAPI.PterodactylServerLimit{
-				Memory: spec.Memory,
-				Swap:   spec.Swap,
-				Disk:   spec.Disk,
-				IO:     spec.Io,
-				CPU:    spec.Cpu,
-			},
-			Allocation: selectedIP,
-			NestId:     spec.Nest,
-			EggId:      spec.Egg,
-			PackId:     0,
-		})
-		if err == nil {
-			entity := MinoDatabase.WareEntity{
-				Model:            gorm.Model{},
-				UserID:           order.UserID,
-				ServerExternalID: user.Name + strconv.Itoa(int(orderID)),
-				UserExternalID:   user.Name,
-				HostName:         hostName,
-				DeleteStatus:     0,
-				ValidDate:        time.Now().Add(spec.ValidDuration),
-			}
-			DB.Create(&entity)
-			DB.Model(&order).Update("allocation_id", selectedIP)
-			DB.Model(&order).Update("confirmed", true)
-			DB.Model(&order).Update("paid", true)
-			DB.Delete(&key)
-			beego.Info("Key used: " + key.Key)
-			MinoMessage.Send("ADMIN", user.ID, "您的订单 #"+strconv.Itoa(int(order.ID))+" 已成功创建对应服务器，请前往控制台确认")
-			beego.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
-		} else {
-			beego.Error("cant create server for order id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())
+	err := PterodactylAPI.PterodactylCreateServer(PterodactylAPI.ConfGetParams(), PterodactylAPI.PterodactylServer{
+		UserId:      pteUserID,
+		ExternalId:  user.Name + strconv.Itoa(int(orderID)),
+		Name:        user.Name + strconv.Itoa(int(orderID)),
+		Description: "到期时间：" + exp,
+		Suspended:   false,
+		Limits: PterodactylAPI.PterodactylServerLimit{
+			Memory: spec.Memory,
+			Swap:   spec.Swap,
+			Disk:   spec.Disk,
+			IO:     spec.Io,
+			CPU:    spec.Cpu,
+		},
+		Allocation: selectedIP,
+		NestId:     spec.Nest,
+		EggId:      spec.Egg,
+		PackId:     0,
+	})
+	if err == nil {
+		entity := MinoDatabase.WareEntity{
+			Model:            gorm.Model{},
+			UserID:           order.UserID,
+			ServerExternalID: user.Name + strconv.Itoa(int(orderID)),
+			UserExternalID:   user.Name,
+			HostName:         hostName,
+			DeleteStatus:     0,
+			ValidDate:        time.Now().Add(spec.ValidDuration),
 		}
-	}()
+		if err := DB.Create(&entity).Error; err != nil {
+			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			return err
+		}
+		if err = DB.Model(&order).Update("allocation_id", selectedIP).Error; err != nil {
+			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			DB.Delete(&entity)
+			return err
+		}
+		if err = DB.Model(&order).Update("confirmed", true).Error; err != nil {
+			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			DB.Delete(&entity)
+			return err
+		}
+		if err = DB.Model(&order).Update("paid", true).Error; err != nil {
+			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			DB.Delete(&entity)
+			return err
+		}
+		if err = DB.Delete(&key).Error; err != nil {
+			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			DB.Delete(&entity)
+			DB.Model(&order).Update("paid", false)
+			return err
+		}
+		beego.Info("Key used: " + key.Key)
+		MinoMessage.Send("ADMIN", user.ID, "您的订单 #"+strconv.Itoa(int(order.ID))+" 已成功创建对应服务器，请前往控制台确认")
+		beego.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
+	} else {
+		beego.Error("cant create server for order id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())
+		return err
+	}
 	return nil
 }
