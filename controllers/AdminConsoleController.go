@@ -7,9 +7,11 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
+	"github.com/jinzhu/gorm"
 	"html/template"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type AdminConsoleController struct {
@@ -124,7 +126,28 @@ func (this *AdminConsoleController) Prepare() {
 	this.Data["packAmount"] = len(packs)
 	this.Data["keyAmount"] = len(keys)
 	this.Data["orderAmount"] = len(orders)
-	this.Data["specs"] = specs
+	this.Data["specs"] = append(specs, MinoDatabase.WareSpec{
+		Model: gorm.Model{
+			ID: ^uint(0),
+		},
+		PricePerMonth:     999,
+		WareName:          "全部商品",
+		WareDescription:   "",
+		Node:              0,
+		Memory:            0,
+		Cpu:               0,
+		Swap:              0,
+		Disk:              0,
+		Io:                0,
+		Nest:              0,
+		Egg:               0,
+		Discount:          0,
+		StartOnCompletion: false,
+		OomDisabled:       false,
+		DockerImage:       "",
+		ValidDuration:     1 * time.Second,
+		DeleteDuration:    0,
+	})
 }
 
 func (this *AdminConsoleController) Get() {}
@@ -163,7 +186,21 @@ func (this *AdminConsoleController) NewKey() {
 		return
 	}
 	DB := MinoDatabase.GetDatabase()
-	specID, err := this.GetInt("spec_id")
+	specID, err := this.GetUint64("spec_id")
+	if uint(specID) == ^uint(0) {
+		/*add keys for all specs*/
+		var specs []MinoDatabase.WareSpec
+		DB.Find(&specs)
+		for _, s := range specs {
+			err = MinoKey.GeneKeys(keyAmount, s.ID, validDuration, 20)
+			if err != nil {
+				_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+				return
+			}
+		}
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+		return
+	}
 	if err != nil || DB.Where("id = ?", specID).First(&MinoDatabase.WareSpec{}).RecordNotFound() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("选择了无效的商品"))
 		return
