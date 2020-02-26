@@ -235,6 +235,16 @@ func (this *UserConsoleController) Renew() {
 }
 
 func (this *UserConsoleController) Reinstall() {
+	user, err := MinoSession.SessionGetUser(this.StartSession())
+	if err != nil {
+		//beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		return
+	}
+	if bm.IsExist("REINSTALL" + user.Name) {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("您每分钟只能重装一次服务器"))
+		return
+	}
 	entityID := this.Ctx.Input.Param(":entityID")
 	packIDstring := this.Ctx.Input.Param(":packID")
 	packID, err := strconv.Atoi(packIDstring)
@@ -247,12 +257,7 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法安装这个包"))
 		return
 	}
-	user, err := MinoSession.SessionGetUser(this.StartSession())
-	if err != nil {
-		//beego.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
-		return
-	}
+
 	DB := MinoDatabase.GetDatabase()
 	var entity MinoDatabase.WareEntity
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
@@ -268,5 +273,6 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
 		return
 	}
+	_ = bm.Put("REINSTALL"+user.Name, "", time.Minute)
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
