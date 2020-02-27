@@ -257,7 +257,6 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法安装这个包"))
 		return
 	}
-
 	DB := MinoDatabase.GetDatabase()
 	var entity MinoDatabase.WareEntity
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {

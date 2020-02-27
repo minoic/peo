@@ -1,6 +1,7 @@
 package AutoManager
 
 import (
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoKey"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"time"
 )
@@ -16,7 +17,8 @@ func LoopTasksManager() {
 				go PterodactylAPI.CacheNeededEggs()
 			case <-ticker.C:
 				go PterodactylAPI.CacheNeededServers()
-
+			case <-ticker.C:
+				go MinoKey.DeleteOutdatedKeys()
 			}
 		}
 	}()

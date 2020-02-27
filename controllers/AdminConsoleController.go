@@ -1,14 +1,18 @@
 package controllers
 
 import (
+	"compress/flate"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoKey"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
+	"github.com/hako/durafmt"
 	"github.com/jinzhu/gorm"
+	"github.com/mholt/archiver"
 	"html/template"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -36,6 +40,9 @@ func (this *AdminConsoleController) Prepare() {
 			Title:  "您不是管理员",
 		}, &this.Controller)
 	}
+}
+
+func (this *AdminConsoleController) Get() {
 	DB := MinoDatabase.GetDatabase()
 	/* delete confirm */
 	var (
@@ -130,27 +137,11 @@ func (this *AdminConsoleController) Prepare() {
 		Model: gorm.Model{
 			ID: ^uint(0),
 		},
-		PricePerMonth:     999,
-		WareName:          "全部商品",
-		WareDescription:   "",
-		Node:              0,
-		Memory:            0,
-		Cpu:               0,
-		Swap:              0,
-		Disk:              0,
-		Io:                0,
-		Nest:              0,
-		Egg:               0,
-		Discount:          0,
-		StartOnCompletion: false,
-		OomDisabled:       false,
-		DockerImage:       "",
-		ValidDuration:     1 * time.Second,
-		DeleteDuration:    0,
+		PricePerMonth: 999,
+		WareName:      "全部商品",
+		ValidDuration: 1 * time.Second,
 	})
 }
-
-func (this *AdminConsoleController) Get() {}
 
 func (this *AdminConsoleController) DeleteConfirm() {
 	entityID := this.Ctx.Input.Param(":entityID")
@@ -211,6 +202,68 @@ func (this *AdminConsoleController) NewKey() {
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *AdminConsoleController) GetKeys() {
+	DB := MinoDatabase.GetDatabase()
+	var (
+		specs  []MinoDatabase.WareSpec
+		wg     sync.WaitGroup
+		failed bool
+	)
+	DB.Find(&specs)
+	err := os.MkdirAll("tmp/download/keys", os.ModePerm)
+	if err != nil {
+		beego.Error(err)
+	}
+	for _, s := range specs {
+		//beego.Debug(s)
+		wg.Add(1)
+		go func(spec MinoDatabase.WareSpec) {
+			defer wg.Done()
+			txt, err := os.Create("tmp/download/keys/key_" + spec.WareName + "_" + durafmt.Parse(spec.ValidDuration).LimitFirstN(1).String() + ".txt")
+			if err != nil {
+				beego.Error(err)
+				failed = true
+			}
+			//beego.Debug(spec,txt.Name())
+			var keys []MinoDatabase.WareKey
+			DB.Where("spec_id = ?", spec.ID).Find(&keys)
+			for _, k := range keys {
+				_, err = txt.Write([]byte(k.Key + "\n"))
+				if err != nil {
+					beego.Error(err)
+					failed = true
+				}
+			}
+			_ = txt.Close()
+		}(s)
+	}
+	wg.Wait()
+	if failed {
+		//_, _ = this.Ctx.ResponseWriter.Write([]byte("生成文件失败！"))
+		return
+	}
+	arc := archiver.Zip{
+		CompressionLevel:       flate.DefaultCompression,
+		OverwriteExisting:      true,
+		MkdirAll:               true,
+		SelectiveCompression:   false,
+		ImplicitTopLevelFolder: false,
+		ContinueOnError:        false,
+	}
+	err = arc.Archive([]string{"tmp/download/keys"}, "tmp/download/keys.zip")
+	if err != nil {
+		beego.Error(err)
+		//_, _ = this.Ctx.ResponseWriter.Write([]byte("生成文件失败！"+err.Error()))
+		return
+	}
+	this.Ctx.Output.Download("tmp/download/keys.zip", "keys_"+time.Now().Format("2006-01-02 15:04:05")+".zip")
+	err = os.RemoveAll("tmp/download/")
+	if err != nil {
+		beego.Error(err)
+	}
+	//_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
 func (this *AdminConsoleController) CheckXSRFCookie() bool {

@@ -131,6 +131,7 @@
                                         </form>
                                     </div>
                                     <div class="modal-footer">
+                                        <button class="btn btn-info btn-sm" type="button" onclick="window.location='/admin-console/get-keys'">导出 KEY</button>
                                         <button class="btn btn-info btn-sm" type="button" onclick="$.get('/admin-console/new-key?'+$('#new-key').serialize(),function(data) {
                                             console.log($('#new-key').serialize())
                                             if (data === 'SUCCESS'){
