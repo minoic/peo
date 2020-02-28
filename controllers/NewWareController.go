@@ -115,12 +115,12 @@ func init() {
 			Description:  "自定义Docker映像以分配给创建的服务器（可选）",
 			Type:         "text",
 		},
-		{
-			Name:         "database",
-			FriendlyName: "数据库数量",
-			Description:  "客户端将能够为其服务器创建此数量的数据库（可选）",
-			Type:         "int",
-		},
+		/*		{
+				Name:         "database",
+				FriendlyName: "数据库数量",
+				Description:  "客户端将能够为其服务器创建此数量的数据库（可选）",
+				Type:         "int",
+			},*/
 		/*		{
 					Name:         "start_on_completion",
 					FriendlyName: "立即启动",

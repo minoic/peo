@@ -55,6 +55,7 @@ func (this *UserSettingsController) Prepare() {
 		this.Data["pteUserCreatedAt"] = "请先创建用户"
 		this.Data["pteUserCreateURL"] = MinoConfigure.WebHostName + "/user-settings/create-pterodactyl-user"
 	}
+
 }
 
 func (this *UserSettingsController) Get() {}

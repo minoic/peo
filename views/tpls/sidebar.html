@@ -4,7 +4,7 @@
             <br>
             <ul>
                 <li class="{{if eq .i 1}}active{{end}}">
-                    <a href="{{if eq .i 1}}#{{else}}/user-console{{end}}">
+                    <a href="/user-console">
 								<span class="menu-icon">
 									<i class="fa fa-bar-chart-o fa-lg"></i>
 								</span>
@@ -26,12 +26,23 @@
                     </a>
                 </li>
                 <li class="{{if eq .i 2}}active{{end}}">
-                    <a href="{{if eq .i 2}}#{{else}}/user-settings{{end}}">
+                    <a href="/user-settings">
 								<span class="menu-icon">
 									<i class="fa fa-file-text fa-lg"></i>
 								</span>
                         <span class="text">
 									账户设置
+								</span>
+                        <span class="menu-hover"></span>
+                    </a>
+                </li>
+                <li class="{{if eq .i 3}}active{{end}}">
+                    <a href="/user-recharge">
+								<span class="menu-icon">
+									<i class="fa fa-money fa-lg"></i>
+								</span>
+                        <span class="text">
+									余额充值
 								</span>
                         <span class="menu-hover"></span>
                     </a>
@@ -48,6 +59,20 @@
                     </a>
                 </li>
             </ul>
+            <div class="custom-popup width-100" id="logoutConfirm">
+                <div class="padding-md">
+                    <h4 class="m-top-none"> 确定要登出吗？您将需要重新登录才能访问部分内容。</h4>
+                </div>
+                <div class="text-center">
+                    <a class="btn btn-danger m-right-sm" onclick="logout()" href="/">登出</a>
+                    <script type="text/javascript">
+                        function logout() {
+                            $.removeCookie('tOZENDENoNOS');
+                            parent.location.reload();
+                        }
+                    </script>
+                </div>
+            </div>
         </div><!-- /main-menu -->
     </div><!-- /sidebar-inner -->
 </aside>

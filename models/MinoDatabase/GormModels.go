@@ -3,6 +3,7 @@ package MinoDatabase
 import (
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
+	"html/template"
 	"time"
 )
 
@@ -19,6 +20,7 @@ func init() {
 		&Order{},
 		&DeleteConfirm{},
 		&Pack{},
+		&RechargeLog{},
 	)
 	return
 }
@@ -28,6 +30,7 @@ type User struct {
 	Name           string
 	Email          string
 	Password       string
+	Balance        uint
 	IsAdmin        bool
 	EmailConfirmed bool
 	PteUserCreated bool
@@ -121,4 +124,21 @@ type Pack struct {
 	EggID           int
 	PackID          int
 	PackDescription string
+}
+
+type RechargeLog struct {
+	gorm.Model
+	UserID  uint
+	Code    string
+	Method  string
+	Balance uint
+	Time    time.Time
+	Status  template.HTML
+}
+
+type RechargeKey struct {
+	gorm.Model
+	Key     string
+	Balance uint
+	Exp     time.Time
 }
