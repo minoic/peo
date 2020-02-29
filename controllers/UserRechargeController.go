@@ -94,6 +94,20 @@ func (this *UserRechargeController) RechargeByKey() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("增加余额失败！"))
 		return
 	}
+	if err = DB.Delete(&key).Error; err != nil {
+		DB.Create(&MinoDatabase.RechargeLog{
+			Model:   gorm.Model{},
+			UserID:  user.ID,
+			Code:    "FAILED_ByKEY_" + keyString + "_" + strconv.Itoa(int(user.Balance)),
+			Method:  "激活码",
+			Balance: 0,
+			Time:    time.Now().Format("2006-01-02_15:04:05"),
+			Status:  `<span class="label label-warning">请重试</span>`,
+		})
+		DB.Model(&user).Update("balance", user.Balance-key.Balance)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("销毁激活码失败！"))
+		return
+	}
 	DB.Create(&MinoDatabase.RechargeLog{
 		Model:   gorm.Model{},
 		UserID:  user.ID,

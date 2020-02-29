@@ -91,7 +91,12 @@
                                     <div class="modal-header">
                                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                                         <h4>创建新的 KEY</h4>
-                                        <small>创建的 KEY 用于激活指定的商品<br>您可以选择在发卡平台或淘宝等平台售卖 KEY<br>请点击按钮提交表单</small>
+                                        <small>
+                                            创建的 KEY 用于激活指定的商品<br>
+                                            您可以选择在发卡平台或淘宝等平台售卖 KEY<br>
+                                            请点击按钮提交表单<br>
+                                            目前仅支持添加面额为 30 50 100 的余额激活码
+                                        </small>
                                     </div>
                                     <div class="modal-body">
                                         <form id="new-key" class="form-horizontal no-margin form-border">
@@ -121,8 +126,8 @@
                                                 <label class="col-lg-2 control-label">商品类型</label>
                                                 <div class="col-lg-10">
                                                     <select class="form-control" name="spec_id">
-                                                        {{range .specs}}
-                                                            <option value="{{.ID}}">{{.WareName}} | CPU:{{.Cpu}} | 有效期:{{.ValidDuration}}</option>
+                                                        {{range .keySpecs}}
+                                                            <option value="{{.ID}}">{{.Name}} | {{.Description}} | {{.ValidDuration}}</option>
                                                         {{end}}
                                                     </select>
                                                 </div><!-- /.col -->

@@ -9,7 +9,6 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
-	"github.com/jinzhu/gorm"
 	"github.com/mholt/archiver"
 	"html/template"
 	"os"
@@ -133,14 +132,42 @@ func (this *AdminConsoleController) Get() {
 	this.Data["packAmount"] = len(packs)
 	this.Data["keyAmount"] = len(keys)
 	this.Data["orderAmount"] = len(orders)
-	this.Data["specs"] = append(specs, MinoDatabase.WareSpec{
-		Model: gorm.Model{
-			ID: ^uint(0),
-		},
-		PricePerMonth: 999,
-		WareName:      "全部商品",
-		ValidDuration: 1 * time.Second,
+	type keySpec struct {
+		ID            uint
+		Name          string
+		Description   string
+		ValidDuration string
+	}
+	var keySpecs []keySpec
+	for _, s := range specs {
+		keySpecs = append(keySpecs, keySpec{
+			ID:            s.ID,
+			Name:          s.WareName,
+			Description:   "Memory:" + strconv.Itoa(s.Memory),
+			ValidDuration: durafmt.Parse(s.ValidDuration).LimitFirstN(1).String(),
+		})
+	}
+	keySpecs = append(keySpecs, keySpec{
+		ID:            ^uint(0),
+		Name:          "全部商品",
+		Description:   "包含全部的商品激活码",
+		ValidDuration: "跟随商品",
 	})
+	for _, s := range []uint{30, 50, 100} {
+		keySpecs = append(keySpecs, keySpec{
+			ID:            ^uint(0) - s,
+			Name:          "余额",
+			Description:   strconv.Itoa(int(s)) + " CNY",
+			ValidDuration: "余额无有效期",
+		})
+	}
+	keySpecs = append(keySpecs, keySpec{
+		ID:            ^uint(0) - 1,
+		Name:          "全部余额",
+		Description:   "包含全部余额的激活码",
+		ValidDuration: "余额无有效期",
+	})
+	this.Data["keySpecs"] = keySpecs
 }
 
 func (this *AdminConsoleController) DeleteConfirm() {
@@ -178,6 +205,7 @@ func (this *AdminConsoleController) NewKey() {
 	}
 	DB := MinoDatabase.GetDatabase()
 	specID, err := this.GetUint64("spec_id")
+	/* special method */
 	if uint(specID) == ^uint(0) {
 		/*add keys for all specs*/
 		var specs []MinoDatabase.WareSpec
@@ -192,6 +220,50 @@ func (this *AdminConsoleController) NewKey() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 		return
 	}
+	if uint(specID) == ^uint(0)-30 {
+		err = MinoKey.GeneRechargeKeys(keyAmount, 30, validDuration, 20)
+		if err != nil {
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			return
+		}
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+		return
+	} else if uint(specID) == ^uint(0)-50 {
+		err = MinoKey.GeneRechargeKeys(keyAmount, 50, validDuration, 20)
+		if err != nil {
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			return
+		}
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+		return
+	} else if uint(specID) == ^uint(0)-100 {
+		err = MinoKey.GeneRechargeKeys(keyAmount, 100, validDuration, 20)
+		if err != nil {
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			return
+		}
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+		return
+	} else if uint(specID) == ^uint(0)-1 {
+		err = MinoKey.GeneRechargeKeys(keyAmount, 30, validDuration, 20)
+		if err != nil {
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			return
+		}
+		err = MinoKey.GeneRechargeKeys(keyAmount, 50, validDuration, 20)
+		if err != nil {
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			return
+		}
+		err = MinoKey.GeneRechargeKeys(keyAmount, 100, validDuration, 20)
+		if err != nil {
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			return
+		}
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+		return
+	}
+	/* end special method */
 	if err != nil || DB.Where("id = ?", specID).First(&MinoDatabase.WareSpec{}).RecordNotFound() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("选择了无效的商品"))
 		return
@@ -229,6 +301,27 @@ func (this *AdminConsoleController) GetKeys() {
 			//beego.Debug(spec,txt.Name())
 			var keys []MinoDatabase.WareKey
 			DB.Where("spec_id = ?", spec.ID).Find(&keys)
+			for _, k := range keys {
+				_, err = txt.Write([]byte(k.Key + "\n"))
+				if err != nil {
+					beego.Error(err)
+					failed = true
+				}
+			}
+			_ = txt.Close()
+		}(s)
+	}
+	for _, s := range []uint{30, 50, 100} {
+		wg.Add(1)
+		go func(balance uint) {
+			defer wg.Done()
+			txt, err := os.Create("tmp/download/keys/recharge_key_" + strconv.Itoa(int(balance)) + ".txt")
+			if err != nil {
+				beego.Error(err)
+				failed = true
+			}
+			var keys []MinoDatabase.RechargeKey
+			DB.Where("balance = ?", balance).Find(&keys)
 			for _, k := range keys {
 				_, err = txt.Write([]byte(k.Key + "\n"))
 				if err != nil {
