@@ -61,7 +61,7 @@ func (this *UserRechargeController) RechargeByKey() {
 	keyString := this.GetString("keyString")
 	DB := MinoDatabase.GetDatabase()
 	var key MinoDatabase.RechargeKey
-	if DB.Where("key = ?", keyString).First(&key).RecordNotFound() {
+	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无效的 KEY"))
 		DB.Create(&MinoDatabase.RechargeLog{
 			Model:   gorm.Model{},
@@ -86,10 +86,10 @@ func (this *UserRechargeController) RechargeByKey() {
 			Status:  `<span class="label label-warning">请重试</span>`,
 		})
 		DB.Create(&MinoDatabase.RechargeKey{
-			Model:   gorm.Model{},
-			Key:     key.Key,
-			Balance: key.Balance,
-			Exp:     key.Exp,
+			Model:     gorm.Model{},
+			KeyString: key.KeyString,
+			Balance:   key.Balance,
+			Exp:       key.Exp,
 		})
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("增加余额失败！"))
 		return
@@ -111,7 +111,7 @@ func (this *UserRechargeController) RechargeByKey() {
 	DB.Create(&MinoDatabase.RechargeLog{
 		Model:   gorm.Model{},
 		UserID:  user.ID,
-		Code:    "ByKEY_" + key.Key + "_" + strconv.Itoa(int(user.Balance-key.Balance)) + "_" + strconv.Itoa(int(user.Balance)),
+		Code:    "ByKEY_" + key.KeyString + "_" + strconv.Itoa(int(user.Balance-key.Balance)) + "_" + strconv.Itoa(int(user.Balance)),
 		Method:  "激活码",
 		Balance: key.Balance,
 		Time:    time.Now().Format("2006-01-02_15:04:05"),

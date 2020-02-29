@@ -10,10 +10,10 @@ func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) 
 	DB := MinoDatabase.GetDatabase()
 	for i := 1; i <= keyAmount; i++ {
 		newKey := MinoDatabase.WareKey{
-			Model:  gorm.Model{},
-			SpecID: wareID,
-			Key:    RandKey(keyLength),
-			Exp:    time.Now().AddDate(0, 0, validityTermInDay),
+			Model:     gorm.Model{},
+			SpecID:    wareID,
+			KeyString: RandKey(keyLength),
+			Exp:       time.Now().AddDate(0, 0, validityTermInDay),
 		}
 		if err := DB.Create(&newKey).Error; err != nil {
 			return err
@@ -26,10 +26,10 @@ func GeneRechargeKeys(keyAmount int, balance uint, validityTermInDay int, keyLen
 	DB := MinoDatabase.GetDatabase()
 	for i := 1; i <= keyAmount; i++ {
 		newKey := MinoDatabase.RechargeKey{
-			Model:   gorm.Model{},
-			Key:     RandKey(keyLength),
-			Balance: balance,
-			Exp:     time.Now().AddDate(0, 0, validityTermInDay),
+			Model:     gorm.Model{},
+			KeyString: RandKey(keyLength),
+			Balance:   balance,
+			Exp:       time.Now().AddDate(0, 0, validityTermInDay),
 		}
 		if err := DB.Create(&newKey).Error; err != nil {
 			return err

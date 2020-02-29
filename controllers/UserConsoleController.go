@@ -191,7 +191,7 @@ func (this *UserConsoleController) Renew() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("找不到指定服务器"))
 		return
 	}
-	if DB.Where("key = ?", keyString).First(&key).RecordNotFound() {
+	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无效的 KEY"))
 		return
 	}

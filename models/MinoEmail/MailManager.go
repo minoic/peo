@@ -15,7 +15,7 @@ func sendConfirmMail(key MinoDatabase.RegConfirmKey) {
 	if err != nil {
 		panic(err)
 	}
-	mailHtml, _ := genRegConfirmMail(key.UserName, key.Key)
+	mailHtml, _ := genRegConfirmMail(key.UserName, key.KeyString)
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo(key.UserEmail).

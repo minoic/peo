@@ -40,15 +40,15 @@ type User struct {
 
 type WareKey struct {
 	gorm.Model
-	SpecID uint
-	Key    string
-	Exp    time.Time
+	SpecID    uint
+	KeyString string
+	Exp       time.Time
 }
 
 type PEAdminSetting struct {
 	gorm.Model
-	Key   string
-	Value string
+	KeyString string
+	Value     string
 }
 
 type WareSpec struct {
@@ -86,7 +86,7 @@ type WareEntity struct {
 
 type RegConfirmKey struct {
 	gorm.Model
-	Key       string
+	KeyString string
 	UserName  string
 	UserID    uint
 	UserEmail string
@@ -139,7 +139,7 @@ type RechargeLog struct {
 
 type RechargeKey struct {
 	gorm.Model
-	Key     string
-	Balance uint
-	Exp     time.Time
+	KeyString string
+	Balance   uint
+	Exp       time.Time
 }

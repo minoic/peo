@@ -71,7 +71,7 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 	if order.Paid {
 		return errors.New("order is already paid: " + strconv.Itoa(int(orderID)))
 	}
-	if DB.Where("key = ?", keyString).First(&key).RecordNotFound() {
+	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
 		return errors.New("cant find key: " + keyString)
 	}
 	if key.Exp.Before(time.Now()) || key.SpecID != order.SpecID {
@@ -151,7 +151,7 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 			DB.Model(&order).Update("paid", false)
 			return err
 		}
-		beego.Info("Key used: " + key.Key)
+		beego.Info("KeyString used: " + key.KeyString)
 		MinoMessage.Send("ADMIN", user.ID, "您的订单 #"+strconv.Itoa(int(order.ID))+" 已成功创建对应服务器，请前往控制台确认")
 		beego.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
 	} else {

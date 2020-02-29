@@ -97,10 +97,11 @@ func (this *AdminConsoleController) Get() {
 		users    []MinoDatabase.User
 		packs    []MinoDatabase.Pack
 		keys     []MinoDatabase.WareKey
+		rkeys    []MinoDatabase.RechargeKey
 		orders   []MinoDatabase.Order
 		wg       sync.WaitGroup
 	)
-	wg.Add(6)
+	wg.Add(7)
 	go func() {
 		DB.Find(&specs)
 		wg.Done()
@@ -125,12 +126,16 @@ func (this *AdminConsoleController) Get() {
 		DB.Where("confirmed = ?", true).Find(&orders)
 		wg.Done()
 	}()
+	go func() {
+		DB.Find(&rkeys)
+		wg.Done()
+	}()
 	wg.Wait()
 	this.Data["specAmount"] = len(specs)
 	this.Data["entityAmount"] = len(entities)
 	this.Data["userAmount"] = len(users)
 	this.Data["packAmount"] = len(packs)
-	this.Data["keyAmount"] = len(keys)
+	this.Data["keyAmount"] = len(keys) + len(rkeys)
 	this.Data["orderAmount"] = len(orders)
 	type keySpec struct {
 		ID            uint
@@ -213,7 +218,7 @@ func (this *AdminConsoleController) NewKey() {
 		for _, s := range specs {
 			err = MinoKey.GeneKeys(keyAmount, s.ID, validDuration, 20)
 			if err != nil {
-				_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+				_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 				return
 			}
 		}
@@ -223,7 +228,7 @@ func (this *AdminConsoleController) NewKey() {
 	if uint(specID) == ^uint(0)-30 {
 		err = MinoKey.GeneRechargeKeys(keyAmount, 30, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -231,7 +236,7 @@ func (this *AdminConsoleController) NewKey() {
 	} else if uint(specID) == ^uint(0)-50 {
 		err = MinoKey.GeneRechargeKeys(keyAmount, 50, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -239,7 +244,7 @@ func (this *AdminConsoleController) NewKey() {
 	} else if uint(specID) == ^uint(0)-100 {
 		err = MinoKey.GeneRechargeKeys(keyAmount, 100, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -247,17 +252,17 @@ func (this *AdminConsoleController) NewKey() {
 	} else if uint(specID) == ^uint(0)-1 {
 		err = MinoKey.GeneRechargeKeys(keyAmount, 30, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 			return
 		}
 		err = MinoKey.GeneRechargeKeys(keyAmount, 50, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 			return
 		}
 		err = MinoKey.GeneRechargeKeys(keyAmount, 100, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -270,7 +275,7 @@ func (this *AdminConsoleController) NewKey() {
 	}
 	err = MinoKey.GeneKeys(keyAmount, uint(specID), validDuration, 20)
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 Key 失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -302,7 +307,7 @@ func (this *AdminConsoleController) GetKeys() {
 			var keys []MinoDatabase.WareKey
 			DB.Where("spec_id = ?", spec.ID).Find(&keys)
 			for _, k := range keys {
-				_, err = txt.Write([]byte(k.Key + "\n"))
+				_, err = txt.Write([]byte(k.KeyString + "\n"))
 				if err != nil {
 					beego.Error(err)
 					failed = true
@@ -323,7 +328,7 @@ func (this *AdminConsoleController) GetKeys() {
 			var keys []MinoDatabase.RechargeKey
 			DB.Where("balance = ?", balance).Find(&keys)
 			for _, k := range keys {
-				_, err = txt.Write([]byte(k.Key + "\n"))
+				_, err = txt.Write([]byte(k.KeyString + "\n"))
 				if err != nil {
 					beego.Error(err)
 					failed = true
