@@ -21,6 +21,7 @@ func init() {
 		&DeleteConfirm{},
 		&Pack{},
 		&RechargeLog{},
+		&RechargeKey{},
 	)
 	return
 }
@@ -132,7 +133,7 @@ type RechargeLog struct {
 	Code    string
 	Method  string
 	Balance uint
-	Time    time.Time
+	Time    string
 	Status  template.HTML
 }
 

@@ -50,14 +50,25 @@
                                         {{.xsrfData}}
                                         <div class="panel-heading">
                                             <h4>用激活码充值</h4>
+                                            <p>您可以在淘宝或发卡平台购买到用于充值余额的激活码</p>
+                                            <p>若充值后等待一分钟扔未到账，请联系网站管理员为您解决</p>
                                         </div>
                                         <div class="panel-body">
                                             <div class="form-group">
-                                                <input type="text" placeholder="输入您购买到的激活码" class="form-control input-lg parsley-validated" data-required="true">
+                                                <input id="keyString" name="keyString" type="text" placeholder="输入您购买到的激活码" class="form-control input-lg parsley-validated" data-required="true" autocomplete="off">
                                             </div><!-- /form-group -->
                                         </div>
                                         <div class="panel-footer text-right">
-                                            <button type="submit" class="btn btn-info btn-lg"><i class="fa fa-heart"></i> 充值</button>
+                                            <button type="button" class="btn btn-info btn-lg" onclick="$.get('/user-recharge/recharge_by_key?'+$('#FormByKey').serialize(),function(data) {
+                                            console.log($('#FormByKey').serialize());
+                                            if (data === 'SUCCESS'){
+                                                alert('充值成功！请刷新查看余额！');
+                                            }else{
+                                                alert('充值失败！'+data);
+                                            }
+                                            parent.location.reload();
+                                          })
+                                        "><i class="fa fa-heart"></i> 充值</button>
                                         </div>
                                     </form>
                                 </div>
@@ -132,7 +143,7 @@
                                 <tbody role="alert" aria-live="polite" aria-relevant="all">
                                 {{range .rechargeLogs}}
                                     <tr class="odd">
-                                        <td class="  sorting_1">{{.ID}}</td>
+                                        <td class="sorting_2">#{{.ID}}</td>
                                         <td class=" ">{{.Method}}</td>
                                         <td class=" ">{{.Code}}</td>
                                         <td class=" ">{{.Balance}}</td>

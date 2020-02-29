@@ -32,7 +32,7 @@ func main() {
 	beego.Router("/user-console/renew/:entityID/:key", &controllers.UserConsoleController{}, "get:Renew")
 	beego.Router("/user-console/reinstall/:entityID/:packID", &controllers.UserConsoleController{}, "get:Reinstall")
 	beego.Router("/user-recharge", &controllers.UserRechargeController{})
-	beego.Router("/user-recharge/recharge_by_key/:key", &controllers.UserRechargeController{}, "get:RechargeByKey")
+	beego.Router("/user-recharge/recharge_by_key", &controllers.UserRechargeController{}, "get:RechargeByKey")
 	beego.Router("/user-terms", &controllers.UserTermsController{})
 	beego.Router("/forget-password", &controllers.ForgetPasswordController{})
 	beego.Router("/forget-password-mail/:email", &controllers.ForgetPasswordController{}, "get:SendMail")

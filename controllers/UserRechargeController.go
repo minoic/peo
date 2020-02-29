@@ -6,6 +6,7 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
+	"strconv"
 	"time"
 )
 
@@ -35,27 +36,55 @@ func (this *UserRechargeController) Get() {
 	DB.Where("user_id = ?", user.ID).Find(&logs)
 	this.Data["rechargeLogs"] = logs
 	this.Data["balance"] = user.Balance
+	this.Data["rechargeTimes"] = len(logs)
 }
 
 func (this *UserRechargeController) RechargeByKey() {
+	if !this.CheckXSRFCookie() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
+		return
+	}
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
+	//beego.Debug(bm.Get("RECHARGE_DELAY"+user.Name))
 	if bm.IsExist("RECHARGE_DELAY" + user.Name) {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 2 秒钟内只能充值一次"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 3 秒钟内只能充值一次"))
 		return
 	}
-	keyString := this.Ctx.Input.Param(":key")
+	err = bm.Put("RECHARGE_DELAY"+user.Name, 1, 3*time.Second)
+	if err != nil {
+		beego.Error(err)
+	}
+	keyString := this.GetString("keyString")
 	DB := MinoDatabase.GetDatabase()
 	var key MinoDatabase.RechargeKey
 	if DB.Where("key = ?", keyString).First(&key).RecordNotFound() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无效的 KEY"))
+		DB.Create(&MinoDatabase.RechargeLog{
+			Model:   gorm.Model{},
+			UserID:  user.ID,
+			Code:    "FAILED_ByKEY_" + keyString + "_" + strconv.Itoa(int(user.Balance)),
+			Method:  "激活码",
+			Balance: 0,
+			Time:    time.Now().Format("2006-01-02 15:04:05"),
+			Status:  `<span class="label label-danger">无效的激活码</span>`,
+		})
 		return
 	}
 	/* valid post */
 	if err = DB.Model(&user).Update("balance", user.Balance+key.Balance).Error; err != nil {
+		DB.Create(&MinoDatabase.RechargeLog{
+			Model:   gorm.Model{},
+			UserID:  user.ID,
+			Code:    "FAILED_ByKEY_" + keyString + "_" + strconv.Itoa(int(user.Balance)),
+			Method:  "激活码",
+			Balance: 0,
+			Time:    time.Now().Format("2006-01-02_15:04:05"),
+			Status:  `<span class="label label-warning">请重试</span>`,
+		})
 		DB.Create(&MinoDatabase.RechargeKey{
 			Model:   gorm.Model{},
 			Key:     key.Key,
@@ -65,10 +94,15 @@ func (this *UserRechargeController) RechargeByKey() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("增加余额失败！"))
 		return
 	}
-	err = bm.Put("RECHARGE_DELAY", 0, 2*time.Second)
-	if err != nil {
-		beego.Error(err)
-	}
+	DB.Create(&MinoDatabase.RechargeLog{
+		Model:   gorm.Model{},
+		UserID:  user.ID,
+		Code:    "ByKEY_" + key.Key + "_" + strconv.Itoa(int(user.Balance-key.Balance)) + "_" + strconv.Itoa(int(user.Balance)),
+		Method:  "激活码",
+		Balance: key.Balance,
+		Time:    time.Now().Format("2006-01-02_15:04:05"),
+		Status:  `<span class="label label-success">已到账</span>`,
+	})
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
