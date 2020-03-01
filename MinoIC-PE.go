@@ -21,6 +21,7 @@ func main() {
 	beego.Router("/new-order", &controllers.OrderCreateController{})
 	beego.Router("/new-pack", &controllers.NewPackController{})
 	beego.Router("/order/:orderID", &controllers.OrderInfoController{})
+	beego.Router("/order/:orderID/pay-by-balance", &controllers.OrderInfoController{}, "get:PayByBalance")
 	beego.Router("/delay", &controllers.DelayController{})
 	beego.Router("/user-settings", &controllers.UserSettingsController{})
 	beego.Router("/user-settings/change-password", &controllers.UserSettingsController{}, "post:UpdateUserPassword")

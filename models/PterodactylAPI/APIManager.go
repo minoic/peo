@@ -454,6 +454,7 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		return errors.New("could not find any nodes satisfying the request")
 	}
 	if status != 201 {
+		beego.Error(body)
 		return errors.New("failed to create the server, received the error code: " + strconv.Itoa(status))
 	}
 	var dec struct {

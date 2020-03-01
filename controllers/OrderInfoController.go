@@ -101,6 +101,7 @@ func (this *OrderInfoController) Prepare() {
 	this.Data["discountPrice"] = order.OriginPrice - order.FinalPrice
 	this.Data["finalPrice"] = order.FinalPrice
 	this.Data["paid"] = order.Paid
+	this.Data["orderID"] = order.ID
 	allocations := PterodactylAPI.GetAllocations(PterodactylAPI.ConfGetParams(), spec.Node)
 	type IPInfo struct {
 		IP string
@@ -143,6 +144,47 @@ func (this *OrderInfoController) Post() {
 	} else {
 		this.Data["hasSuccess"] = true
 		this.Redirect(this.Ctx.Request.URL.String(), 302)
+	}
+}
+
+func (this *OrderInfoController) PayByBalance() {
+	if !this.CheckXSRFCookie() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
+		return
+	}
+	user, err := MinoSession.SessionGetUser(this.StartSession())
+	if err != nil || user == (MinoDatabase.User{}) {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		return
+	}
+	orderID, err := strconv.Atoi(this.Ctx.Input.Param(":orderID"))
+	if err != nil || orderID <= 0 {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取表单"))
+		return
+	}
+	var order MinoDatabase.Order
+	DB := MinoDatabase.GetDatabase()
+	if err = DB.Where("id = ?", orderID).First(&order).Error; err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取订单"))
+		return
+	}
+	selectedIP := this.GetString("selected_ip")
+	arr := strings.Fields(selectedIP)
+	id, err := strconv.Atoi(arr[0])
+	if err != nil || id < 0 {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新选择 IP"))
+		return
+	}
+	if order.Paid || order.Confirmed {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("订单已付款"))
+		return
+	}
+	/* valid post */
+	err = MinoOrder.SellPaymentCheckByBalance(&order, &user, id, arr[1])
+	if err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(err.Error()))
+	} else {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 	}
 }
 
