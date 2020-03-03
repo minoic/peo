@@ -166,7 +166,6 @@ func (this *UserConsoleController) Get() {
 	//beego.Info(servers)
 	this.Data["servers"] = servers
 	this.Data["infoTotalOnline"] = infoTotalOnline
-
 }
 
 func (this *UserConsoleController) Renew() {
