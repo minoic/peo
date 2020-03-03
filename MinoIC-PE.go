@@ -35,6 +35,7 @@ func main() {
 	beego.Router("/user-recharge", &controllers.UserRechargeController{})
 	beego.Router("/user-recharge/recharge_by_key", &controllers.UserRechargeController{}, "get:RechargeByKey")
 	beego.Router("/user-work-order", &controllers.UserWorkOrderController{})
+	beego.Router("/user-work-order/post", &controllers.UserWorkOrderController{}, "post:NewWorkOrder")
 	beego.Router("/user-terms", &controllers.UserTermsController{})
 	beego.Router("/forget-password", &controllers.ForgetPasswordController{})
 	beego.Router("/forget-password-mail/:email", &controllers.ForgetPasswordController{}, "get:SendMail")

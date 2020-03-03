@@ -17,6 +17,7 @@
         <div class="padding-md">
             <div class="panel panel-default">
                 <form id="work-order" data-validate="parsley" novalidate="">
+                    {{.xsrfData}}
                     <div class="panel-heading">
                         <h4>
                             <strong>工单系统</strong>
@@ -26,12 +27,12 @@
                         <div class="form-group">
                             <label class="control-label">标题</label>
                             <input type="text" placeholder="输入工单的标题"
-                                   class="form-control input parsley-validated" data-required="true">
+                                   class="form-control input parsley-validated" data-required="true" name="title">
                         </div>
                         <div class="form-group">
                             <label class="control-label">内容</label>
                             <textarea class="form-control input-lg parsley-validated"
-                                      placeholder="请详细描述问题，包括发生的问题、发生问题时的情况、期望的解决方式等信息" rows="7" data-required="true"></textarea>
+                                      placeholder="请详细描述问题，包括发生的问题、发生问题时的情况、期望的解决方式等信息" rows="7" data-required="true" name="text"></textarea>
                         </div>
                     </div>
                     <div class="row no-margin">
@@ -71,7 +72,15 @@
                         </div>
                     </div>
                     <div class="panel-footer text-right">
-                        <button class="btn btn-success" type="submit">提交</button>
+                        <button class="btn btn-success" type="button" onclick="$.post('/user-work-order/post', $('#work-order').serialize(),function(data) {
+                            console.log($('#work-order').serialize());
+                            if (data==='SUCCESS'){
+                                alert('提交成功！请等候处理');
+                                parent.location.reload();
+                            }else{
+                                alert('提交失败'+data);
+                            }
+                        })">提交</button>
                         <button class="btn btn-danger" type="reset">清空</button>
                     </div>
                 </form>

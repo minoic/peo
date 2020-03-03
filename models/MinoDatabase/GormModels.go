@@ -22,6 +22,7 @@ func init() {
 		&Pack{},
 		&RechargeLog{},
 		&RechargeKey{},
+		&WorkOrder{},
 	)
 	return
 }
@@ -142,4 +143,11 @@ type RechargeKey struct {
 	KeyString string
 	Balance   uint
 	Exp       time.Time
+}
+
+type WorkOrder struct {
+	gorm.Model
+	UserID     uint
+	OrderTitle string
+	OrderText  string
 }
