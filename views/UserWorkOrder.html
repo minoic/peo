@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -16,7 +15,67 @@
     <!-- main-container -->
     <div id="main-container">
         <div class="padding-md">
-
+            <div class="panel panel-default">
+                <form id="work-order" data-validate="parsley" novalidate="">
+                    <div class="panel-heading">
+                        <h4>
+                            <strong>工单系统</strong>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="control-label">标题</label>
+                            <input type="text" placeholder="输入工单的标题"
+                                   class="form-control input parsley-validated" data-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">内容</label>
+                            <textarea class="form-control input-lg parsley-validated"
+                                      placeholder="请详细描述问题，包括发生的问题、发生问题时的情况、期望的解决方式等信息" rows="7" data-required="true"></textarea>
+                        </div>
+                    </div>
+                    <div class="row no-margin">
+                        <div class="margin-md">
+                            <div class="col-md-12">
+                                <h6>
+                                    上传图片
+                                </h6>
+                                <p class="text-muted">
+                                    您可以前往 <a href="https://img.ntmc.tech/" target="_blank">img.ntmc.tech</a> 上传图片并复制链接给我们
+                                </p>
+                            </div>
+                            <div class="col-md-12">
+                                <h6>
+                                    服务器工单
+                                </h6>
+                                <p class="text-muted">
+                                    如果您的服务器出现问题难以解决，您可以将问题情况、发生问题的前提、问题报错截图（或文本复制）发给我们
+                                </p>
+                            </div>
+                            <div class="col-md-12">
+                                <h6>
+                                    导入控制台账户
+                                </h6>
+                                <p class="text-muted">
+                                    如果您想用旧的控制台账户，可以选择放弃当前绑定的账户（无论有无绑定）并绑定旧账户，只要向我们提供旧账户绑定的邮箱、截图或其它证明所有权的信息即可
+                                </p>
+                            </div>
+                            <div class="col-md-12">
+                                <h6>
+                                    售后工单ETA须知
+                                </h6>
+                                <p class="text-muted">
+                                    标准服务工单ETA&lt;8小时(9:00-00:00)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer text-right">
+                        <button class="btn btn-success" type="submit">提交</button>
+                        <button class="btn btn-danger" type="reset">清空</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     <!-- /main-container -->
