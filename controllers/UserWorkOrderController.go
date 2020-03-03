@@ -21,8 +21,8 @@ func (this *UserWorkOrderController) Prepare() {
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)
 	this.TplName = "UserWorkOrder.html"
-	this.Data["i"] = 2
-	this.Data["u"] = 4
+	this.Data["i"] = 4
+	this.Data["u"] = 3
 }
 
 func (this *UserWorkOrderController) Get() {

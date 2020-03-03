@@ -1,10 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
 
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>{{.webApplicationName}} 工单系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{template "tpls/perfectCSS.html" .}}
+</head>
+
+<body class="overflow-hidden">
+{{template "tpls/navbar.html" .}}
+<div id="overlay" class="transparent"></div>
+<div id="wrapper" class="preload sidebar-mini">
+    {{template "tpls/sidebar.html" .}}
+    <!-- main-container -->
+    <div id="main-container">
+        <div class="padding-md">
+
+        </div>
+    </div>
+    <!-- /main-container -->
+</div><!-- /wrapper -->
+
+<a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
+<!-- Logout confirmation -->
+
+{{template "tpls/perfectJS.html" .}}
+<script src='../static/perfect/js/jquery.cookie.min.js'></script>
 </body>
 </html>
