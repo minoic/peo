@@ -173,6 +173,11 @@ func (this *AdminConsoleController) Get() {
 		ValidDuration: "余额无有效期",
 	})
 	this.Data["keySpecs"] = keySpecs
+	/* show user work order*/
+	var WorkOrders []MinoDatabase.WorkOrder
+	DB.Find(&WorkOrders)
+	this.Data["WorkOrders"] = WorkOrders
+	/* end user work order*/
 }
 
 func (this *AdminConsoleController) DeleteConfirm() {

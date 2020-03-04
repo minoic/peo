@@ -12,7 +12,7 @@
     <div class="padding-md">
         <div class="row">
             <div class="col-lg-6 col-md-6">
-                <div class="row">
+                <div class="row fadeInDown animation-delay1">
                     <div class="col-md-4 col-sm-4 col-xs-6">
                         <a href="/new-ware">
                             <div class="panel panel-default panel-stat2 bg-warning" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击添加商品">
@@ -167,7 +167,7 @@
                     </div>
                 </div>
                 {{if .deleteServers}}
-                    <div class="panel-primary">
+                    <div class="panel-primary fadeInDown animation-delay3">
                         <div class="panel-heading">
                             <strong>待确认删除的过期服务器</strong>
                         </div>
@@ -197,7 +197,24 @@
                     </div><!-- /panel -->
                 {{end}}
             </div>
-            <div class="col-lg-6 col-md-6"></div>
+            <div class="col-lg-6 col-md-6">
+                <div class="row">
+                    {{range .WorkOrders}}
+                        <div class="col-md-12">
+                            <div class="panel panel-default fadeInDown animation-delay2">
+                                <div class="panel-heading">
+                                    <h5>{{.UserName}}</h5>
+                                    <div class="text-muted"> {{.CreatedAt}}</div>
+                                </div>
+                                <div class="panel-body">
+                                    <h6>{{.OrderTitle}}</h6>
+                                    <p>{{.OrderText}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {{end}}
+                </div>
+            </div>
         </div>
     </div>
 </div>

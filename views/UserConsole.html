@@ -15,14 +15,14 @@
     {{template "tpls/sidebar.html" .}}
 <div id="main-container">
     <!-- main-container -->
-    <div class="main-header clearfix">
+    <div class="main-header clearfix fadeInDown animation-delay1">
         <div class="page-title">
             <h3 class="no-margin">服务器信息</h3>
             <span>欢迎回来 {{.userName}}</span>
         </div><!-- /page-title -->
     </div>
-    <div class="padding-md">
-        <div class="row">
+    <div class="padding-md ">
+        <div class="row fadeInDown animation-delay2">
             <div class="col-sm-6 col-md-3">
                 <div class="panel-stat3 bg-danger">
                     <h2 class="m-top-none" id="userCount">{{.infoTotalOnline}}</h2>
@@ -72,7 +72,7 @@
                 </div>
             </div><!-- /.col -->
         </div>
-        <div class="row">
+        <div class="row fadeInUp animation-delay2">
             <div class="col-lg-9">
                 {{range .servers}}
                     {{template "tpls/serverinfo.html" .}}

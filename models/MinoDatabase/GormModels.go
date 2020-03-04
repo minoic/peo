@@ -148,6 +148,7 @@ type RechargeKey struct {
 type WorkOrder struct {
 	gorm.Model
 	UserID     uint
+	UserName   string
 	OrderTitle string
 	OrderText  string
 }
