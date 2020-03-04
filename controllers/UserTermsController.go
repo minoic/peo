@@ -21,13 +21,8 @@ func (this *UserTermsController) Get() {
 	this.Data["terms"] = []term{
 		{
 			Title: "使用服务与同意条款",
-			Text: "使用 " + MinoConfigure.WebApplicationName + " 提供的服务需同意下面列出的服务条款。" +
-				"请阅读以下主机服务条款和条件。订阅 " + MinoConfigure.WebApplicationName + " 的服务，即表示您同意受本协议（“协议”）的所有条款" +
-				"和条件的约束。如果您同意本协议的条款和条件，请单击“我接受”（或类似的语法），或选中相应的框以表明您的意图受这些条款和条件的约束" +
-				"，并继续进行帐户设置过程。您应打印或以其他方式保存本协议的副本以供将来参考。如果您不同意本协议的所有条款和条件，请单击浏览器上的" +
-				"“后退”按钮，并且不要订阅 " + MinoConfigure.WebApplicationName + " 的服务。" + MinoConfigure.WebApplicationName + " 同意仅在您同意接受" +
-				"此处包含的所有条款和条件约束的情况下才向您提供服务。",
-			Mute: "为了向您提供出色的服务，我们需要您同意本文​​档中的规则。",
+			Text:  "使用 " + MinoConfigure.WebApplicationName + " 提供的服务需同意下面列出的服务条款。请阅读以下主机服务条款和条件。订阅 " + MinoConfigure.WebApplicationName + " 的服务，即表示您同意受本协议（“协议”）的所有条款和条件的约束。如果您同意本协议的条款和条件，请单击“我接受”（或类似的语法），或选中相应的框以表明您的意图受这些条款和条件的约束，并继续进行帐户设置过程。您应打印或以其他方式保存本协议的副本以供将来参考。如果您不同意本协议的所有条款和条件，请单击浏览器上的“后退”按钮，并且不要订阅 " + MinoConfigure.WebApplicationName + " 的服务。" + MinoConfigure.WebApplicationName + " 同意仅在您同意接受此处包含的所有条款和条件约束的情况下才向您提供服务。",
+			Mute:  "为了向您提供出色的服务，我们需要您同意本文​​档中的规则。",
 		},
 		{
 			Title: "服务",
