@@ -191,7 +191,7 @@ func (this *UserSettingsController) GalleryPost() {
 		ItemName:        itemName,
 		ItemDescription: itemDescription,
 		Likes:           0,
-		ReviewPassed:    false,
+		ReviewPassed:    user.IsAdmin,
 		ImgSource:       template.URL(imgSource),
 	}).Error; err != nil {
 		beego.Error(err)
