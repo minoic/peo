@@ -3,6 +3,8 @@ package controllers
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
@@ -64,6 +66,19 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("发送工单时数据库出现问题"))
 		return
 	}
+	/* send messages to admin */
+	go func() {
+		var users []MinoDatabase.User
+		DB.Where("is_admin = ?", true).Find(&users)
+		for _, u := range users {
+			MinoMessage.Send("UserWorkOrderSystem", u.ID, "您有一个新的工单："+title)
+			err = MinoEmail.SendAnyEmail(user.Email, "您有一个新的工单："+title+" "+text)
+			if err != nil {
+				beego.Error(err)
+			}
+		}
+	}()
+	/* end of send messages*/
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 

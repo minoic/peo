@@ -1,0 +1,20 @@
+<div class="modal fade" id="{{.SpecID}}" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4>新订单</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    将为您建立一个新订单用于购买我们的产品，您可以在建立订单后选择取消或支付<br>
+                    在购买前请确认您已经成功创建了控制台账户以确保购买成功<br>
+                    如果购买出现问题请联系网站管理员或发工单解决<br>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a href="/new-order?specID={{.SpecID}}" class="btn btn-primary btn-sm">确认</a>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>

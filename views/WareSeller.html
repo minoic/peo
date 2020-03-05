@@ -8,12 +8,9 @@
 </head>
 
 <body class="vsc-initialized pace-done" style>
-
-<a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
 <!-- Overlay Div -->
-<div id="overlay" class="transparent"></div>
 <div id="main-container" class="no-margin">
-    <div id="wrapper">
+    <div id="wrapper" >
         {{template "tpls/navbar.html" .}}
         <div>
             <div class="section-header fadeInDown animation-delay1">
@@ -76,8 +73,8 @@
             <div class="col-md-3 col-sm-1"></div>
         </div>
         <div>
-            <div class="container">
-                <div class="tab-content fadeInUp animation-delay1">
+            <div class="container fadeInUp animation-delay1">
+                <div class="tab-content">
                     <div class="tab-pane fade active in" id="monthly">
                         <div class="row row-merge">
                             {{range .wares1}}
@@ -103,6 +100,15 @@
             </div><!-- /.padding-md -->
         </div>
     </div><!-- /main-container -->
+    {{range .wares1}}
+        {{template "tpls/wareModal.html" .}}
+    {{end}}
+    {{range .wares2}}
+        {{template "tpls/wareModal.html" .}}
+    {{end}}
+    {{range .wares3}}
+        {{template "tpls/wareModal.html" .}}
+    {{end}}
 </div>
 
 <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>

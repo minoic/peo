@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -13,81 +12,83 @@
 <div id="overlay" class="transparent"></div>
 <div id="wrapper" class="sidebar-mini">
     {{template "tpls/sidebar.html" .}}
-<div id="main-container">
-    <!-- main-container -->
-    <div class="main-header clearfix fadeInDown animation-delay1">
-        <div class="page-title">
-            <h3 class="no-margin">服务器信息</h3>
-            <span>欢迎回来 {{.userName}}</span>
-        </div><!-- /page-title -->
-    </div>
-    <div class="padding-md ">
-        <div class="row fadeInDown animation-delay2">
-            <div class="col-sm-6 col-md-3">
-                <div class="panel-stat3 bg-danger">
-                    <h2 class="m-top-none" id="userCount">{{.infoTotalOnline}}</h2>
-                    <h5>服务器总在线人数</h5>
-                    <div class="stat-icon">
-                        <i class="fa fa-user fa-3x"></i>
-                    </div>
-                    <div class="loading-overlay">
-                        <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
-                    </div>
-                </div>
-            </div><!-- /.col -->
-            <div class="col-sm-6 col-md-3">
-                <div class="panel-stat3 bg-info">
-                    <h2 class="m-top-none"><span id="serverloadCount">{{.infoServerCount}}</span></h2>
-                    <h5>服务器数量</h5>
-                    <div class="stat-icon">
-                        <i class="fa fa-hdd-o fa-3x"></i>
-                    </div>
-                    <div class="loading-overlay">
-                        <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
-                    </div>
-                </div>
-            </div><!-- /.col -->
-            <div class="col-sm-6 col-md-3">
-                <div class="panel-stat3 bg-warning">
-                    <h2 class="m-top-none" id="orderCount">{{.infoOrderCount}}</h2>
-                    <h5>订单数量</h5>
-                    <div class="stat-icon">
-                        <i class="fa fa-shopping-cart fa-3x"></i>
-                    </div>
-                    <div class="loading-overlay">
-                        <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
-                    </div>
-                </div>
-            </div><!-- /.col -->
-            <div class="col-sm-6 col-md-3">
-                <div class="panel-stat3 bg-success">
-                    <h2 class="m-top-none" id="visitorCount">{{.infoTotalUpTime}}</h2>
-                    <h5>服务器总运行时间</h5>
-                    <div class="stat-icon">
-                        <i class="fa fa-bar-chart-o fa-3x"></i>
-                    </div>
-                    <div class="loading-overlay">
-                        <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
-                    </div>
-                </div>
-            </div><!-- /.col -->
+    <div id="main-container">
+        <!-- main-container -->
+        <div class="main-header clearfix fadeInDown animation-delay1">
+            <div class="page-title">
+                <h3 class="no-margin">服务器信息</h3>
+                <span>欢迎回来 {{.userName}}</span>
+            </div><!-- /page-title -->
         </div>
-        <div class="row fadeInUp animation-delay2">
-            <div class="col-lg-9">
-                {{range .servers}}
-                    {{template "tpls/serverinfo.html" .}}
-                {{end}}
-            <div class="col-lg-3"></div>
+        <div class="padding-md ">
+            <div class="row fadeInDown animation-delay2">
+                <div class="col-sm-6 col-md-3">
+                    <div class="panel-stat3 bg-danger">
+                        <h2 class="m-top-none" id="userCount">{{.infoTotalOnline}}</h2>
+                        <h5>服务器总在线人数</h5>
+                        <div class="stat-icon">
+                            <i class="fa fa-user fa-3x"></i>
+                        </div>
+                        <div class="loading-overlay">
+                            <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                        </div>
+                    </div>
+                </div><!-- /.col -->
+                <div class="col-sm-6 col-md-3">
+                    <div class="panel-stat3 bg-info">
+                        <h2 class="m-top-none"><span id="serverloadCount">{{.infoServerCount}}</span></h2>
+                        <h5>服务器数量</h5>
+                        <div class="stat-icon">
+                            <i class="fa fa-hdd-o fa-3x"></i>
+                        </div>
+                        <div class="loading-overlay">
+                            <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                        </div>
+                    </div>
+                </div><!-- /.col -->
+                <div class="col-sm-6 col-md-3">
+                    <div class="panel-stat3 bg-warning">
+                        <h2 class="m-top-none" id="orderCount">{{.infoOrderCount}}</h2>
+                        <h5>订单数量</h5>
+                        <div class="stat-icon">
+                            <i class="fa fa-shopping-cart fa-3x"></i>
+                        </div>
+                        <div class="loading-overlay">
+                            <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                        </div>
+                    </div>
+                </div><!-- /.col -->
+                <div class="col-sm-6 col-md-3">
+                    <div class="panel-stat3 bg-success">
+                        <h2 class="m-top-none" id="visitorCount">{{.infoTotalUpTime}}</h2>
+                        <h5>服务器总运行时间</h5>
+                        <div class="stat-icon">
+                            <i class="fa fa-bar-chart-o fa-3x"></i>
+                        </div>
+                        <div class="loading-overlay">
+                            <i class="loading-icon fa fa-refresh fa-spin fa-lg"></i>
+                        </div>
+                    </div>
+                </div><!-- /.col -->
+            </div>
+            <div class="row fadeInUp animation-delay2">
+                <div class="col-lg-9">
+                    {{range .servers}}
+                        {{template "tpls/serverinfo.html" .}}
+                    {{end}}
+                    <div class="col-lg-3"></div>
+                </div>
+            </div>
+            <!-- /main-container -->
+            {{range .servers}}
+                {{template "tpls/serverinfoModal.html" .}}
+            {{end}}
         </div>
-    </div>
+    </div><!-- /wrapper -->
 
-    <!-- /main-container -->
-</div>
-</div><!-- /wrapper -->
-
-<a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
-<!-- Logout confirmation -->
-{{template "tpls/perfectJS.html" .}}
-<script src='../static/perfect/js/jquery.cookie.min.js'></script>
+    <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
+    <!-- Logout confirmation -->
+    {{template "tpls/perfectJS.html" .}}
+    <script src='../static/perfect/js/jquery.cookie.min.js'></script>
 </body>
 </html>

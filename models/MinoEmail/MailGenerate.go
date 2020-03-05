@@ -2,6 +2,7 @@ package MinoEmail
 
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
+	"github.com/astaxie/beego"
 	"github.com/matcornic/hermes"
 )
 
@@ -66,12 +67,39 @@ func genForgetPasswordEmail(key string) (string, string) {
 		}}
 	mailBody, err := h.GenerateHTML(email)
 	if err != nil {
-		panic(err)
+		beego.Error(err)
+		return "", ""
 	}
 	mailText, err := h.GeneratePlainText(email)
 	if err != nil {
-		panic(err)
+		beego.Error(err)
+		return "", ""
 	}
 	//beego.Info(mailBody,mailText)
+	return mailBody, mailText
+}
+
+func genAnyEmail(text string) (string, string) {
+	h := getProd()
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				text,
+			},
+			Outros: []string{
+				"请不要回复本邮件，如果这不是您想收到的邮件，请忽略。",
+			},
+		},
+	}
+	mailBody, err := h.GenerateHTML(email)
+	if err != nil {
+		beego.Error(err)
+		return "", ""
+	}
+	mailText, err := h.GeneratePlainText(email)
+	if err != nil {
+		beego.Error(err)
+		return "", ""
+	}
 	return mailBody, mailText
 }

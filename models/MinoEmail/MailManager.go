@@ -45,8 +45,27 @@ func SendCaptcha(receiver string) (string, error) {
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		return "", nil
-	} else {
-		beego.Info("mail sent successfully to: " + receiver)
 	}
+	beego.Info("mail sent successfully to: " + receiver)
 	return key, nil
+}
+
+func SendAnyEmail(receiveAddr string, text string) error {
+	conf := MinoConfigure.GetConf()
+	smtpServer := getSTMPClient()
+	smtpc, err := smtpServer.Connect()
+	if err != nil {
+		return err
+	}
+	mailHtml, _ := genAnyEmail(text)
+	email := mail.NewMSG()
+	email.SetFrom(conf.String("SMTPSendFrom")).
+		AddTo(receiveAddr).
+		SetSubject(MinoConfigure.WebApplicationName+" 邮件通知系统").
+		SetBody(mail.TextHTML, mailHtml)
+	if err := email.Send(smtpc); err != nil {
+		return err
+	}
+	beego.Info("mail sent successfully to: " + receiveAddr)
+	return nil
 }
