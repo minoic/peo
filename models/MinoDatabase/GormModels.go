@@ -23,6 +23,7 @@ func init() {
 		&RechargeLog{},
 		&RechargeKey{},
 		&WorkOrder{},
+		&GalleryItem{},
 	)
 	return
 }
@@ -151,4 +152,13 @@ type WorkOrder struct {
 	UserName   string
 	OrderTitle string
 	OrderText  string
+}
+
+type GalleryItem struct {
+	gorm.Model
+	UserID          uint
+	ItemName        string
+	ItemDescription string
+	Likes           uint
+	ImgSource       template.URL
 }

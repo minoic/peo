@@ -21,7 +21,7 @@
                     <div class="panel panel-default fadeInDown animation-delay1">
                         <form class="form-horizontal form-border no-margin" id="basic-constraint" data-validate="parsley" novalidate="" method="post" action="/user-settings/change-password">
                             <div class="panel-heading">
-                                修改密码
+                                <h5><strong>修改密码</strong></h5>
                             </div>
                             <div class="panel-body">
                                 {{.xsrfData}}
@@ -53,11 +53,11 @@
                     <div class="panel panel-default fadeInDown animation-delay2">
                         <form class="form-horizontal no-margin" data-validate="parsley" novalidate="">
                             <div class="panel-heading">
-                                翼龙面板用户<br>
-                                <small class="text-muted">
+                                <h5><strong>翼龙面板用户</strong></h5>
+                                <p class="text-muted">
                                     如果注册时没有创建成功，您需要手动点击创建按钮，创建成功后才可以购买服务器！<br>
                                     您不需要手动输入用户信息，我们会帮您使用注册时输入的信息自动创建！
-                                </small>
+                                </p>
                             </div>
                             <div class="panel-body">
                                 <div class="form-group">
@@ -108,7 +108,7 @@
                     <div class="panel panel-default fadeInDown animation-delay3">
                         <form class="form-horizontal form-border no-margin" id="type-constraint" data-validate="parsley" novalidate="" method="post" action="/user-settings/change-email">
                             <div class="panel-heading">
-                                修改绑定邮箱
+                                <h5><strong>修改绑定邮箱</strong></h5>
                             </div>
                             <div class="panel-body">
                                 {{.xsrfData}}
@@ -154,6 +154,54 @@
                             {{end}}
                             <div class="panel-footer">
                                 <button type="submit" class="btn btn-info">确认修改</button>
+                            </div>
+                        </form>
+                    </div><!-- /panel -->
+                </div><!-- /.col-->
+                <div class="col-md-6">
+                    <div class="panel panel-default fadeInDown animation-delay3">
+                        <form class="form-horizontal form-border no-margin" id="gallery-post">
+                            <div class="panel-heading">
+                                <h5><strong>上传图片到相册</strong></h5>
+                                如果您有游戏相关的图片想要分享，可以试着在这里上传
+                            </div>
+                            <div class="panel-body">
+                                {{.xsrfData}}
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">名称</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm" placeholder="输入给您图片起的名称" name="itemName" >
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">描述</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm" placeholder="简单介绍一下图片的描述" name="itemDescription">
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">地址</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control input-sm" placeholder="图片的链接" name="imgSource">
+                                        <div class="help-block">
+                                            您可以前往图床，比如 <a href="https://img.ntmc.tech/" target="_blank"><strong>img.ntmc.tech</strong></a> 上传图片并复制链接填入这里<br>
+                                            链接必须为到图片的直链，比如 https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png <br>（以图片格式结尾）
+                                        </div>
+                                    </div><!-- /.col -->
+
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <button type="button" class="btn btn-info" onclick="$.post('/user-settings/gallery-post',$('#gallery-post').serialize(),function(data) {
+                                            console.log($('#gallery-post').serialize());
+                                            if (data === 'SUCCESS'){
+                                                alert('上传成功！');
+                                            }else{
+                                                alert('上传失败！'+data);
+                                            }
+                                            parent.location.reload();
+                                          })
+                                        ">确认上传</button>
                             </div>
                         </form>
                     </div><!-- /panel -->

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>{{.webApplicationName}} 商品列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{template "tpls/perfectCSS.html" .}}
+</head>
+
+<body class="vsc-initialized pace-done" style>
+<!-- Overlay Div -->
+{{template "tpls/navbar.html" .}}
+<div id="main-container" class="no-margin">
+    <div class="padding-md">
+        <div class="gallery-container fadeInDown animation-delay1">
+            <!-- /gallery-item -->
+            {{range .items}}
+                <div class="gallery-item">
+                    <a class="image-wrapper gallery-zoom cboxElement" href="{{.ImgSource}}">
+                        <img src="{{.ImgSource}}" alt="gallery2">
+                        <div class="image-overlay">
+                            <div class="image-info">
+                                <div class="h3">{{.ItemName}}</div>
+                                <span>{{.ItemDescription}}</span>
+                                <div class="image-time">{{.CreatedAt}}</div>
+                                <div class="image-like">
+                                    <i class="fa fa-heart"></i>
+                                    {{.Likes}} 个赞
+                                </div>
+                            </div>
+                        </div>
+                    </a><!-- /image-wrapper -->
+                </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+
+<a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
+{{template "tpls/perfectJS.html" .}}
+<script>
+    $(function()	{
+        //Colorbox
+        $('.gallery-zoom').colorbox({
+            rel:'gallery',
+            maxWidth:'90%',
+            width:'800px'
+        });
+    });
+</script>
+</body>
+</html>

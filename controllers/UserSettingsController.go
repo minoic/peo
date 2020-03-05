@@ -168,6 +168,10 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
+func (this *UserSettingsController) GalleryPost() {
+
+}
+
 func (this *UserSettingsController) CheckXSRFCookie() bool {
 	if !this.EnableXSRF {
 		return true

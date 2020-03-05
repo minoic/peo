@@ -9,6 +9,7 @@ import (
 func main() {
 	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
 	beego.Router("/", &controllers.WareSellerController{})
+	beego.Router("/gallery-show", &controllers.GalleryShowController{})
 	beego.Router("/index", &controllers.IndexController{})
 	beego.Router("/reg", &controllers.RegController{})
 	beego.Router("/reg/confirm/:key", &controllers.RegController{}, "get:MailConfirm")
@@ -26,6 +27,7 @@ func main() {
 	beego.Router("/user-settings", &controllers.UserSettingsController{})
 	beego.Router("/user-settings/change-password", &controllers.UserSettingsController{}, "post:UpdateUserPassword")
 	beego.Router("/user-settings/change-email", &controllers.UserSettingsController{}, "post:UpdateUserEmail")
+	beego.Router("/user-settings/gallery-post", &controllers.UserSettingsController{}, "post:GalleryPost")
 	beego.Router("/user-settings/change-email/:email", &controllers.UserSettingsController{}, "get:SendCaptcha")
 	beego.Router("/user-settings/create-pterodactyl-user", &controllers.UserSettingsController{}, "get:CreatePterodactylUser")
 	beego.Router("/user-messages", &controllers.UserMessagesController{})

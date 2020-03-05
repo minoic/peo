@@ -12,6 +12,9 @@
                 <li class="{{if eq .u 1}}active{{end}}">
                     <a href="/"><i class="fa fa-shopping-cart fa-lg"></i> 商品列表</a>
                 </li>
+                <li class="{{if eq .u 5}}active{{end}}">
+                    <a href="/gallery-show"><i class="fa fa-picture-o fa-lg"></i> 相册</a>
+                </li>
                 {{if not .notLoggedIn}}
                     <li class="{{if eq .u 2}}active{{end}}">
                         <a href="/user-messages"><i class="fa fa-envelope fa-lg"></i> 消息
