@@ -60,6 +60,7 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 		OrderTitle: title,
 		OrderText:  text,
 		UserName:   user.Name,
+		Closed:     false,
 	}
 	if err = DB.Create(&wo).Error; err != nil {
 		beego.Error(err)

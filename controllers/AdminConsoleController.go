@@ -4,7 +4,9 @@ import (
 	"compress/flate"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoEmail"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoKey"
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
@@ -92,16 +94,17 @@ func (this *AdminConsoleController) Get() {
 	this.Data["deleteServers"] = deleteServers
 	/* panel stats*/
 	var (
-		specs    []MinoDatabase.WareSpec
-		entities []MinoDatabase.WareEntity
-		users    []MinoDatabase.User
-		packs    []MinoDatabase.Pack
-		keys     []MinoDatabase.WareKey
-		rkeys    []MinoDatabase.RechargeKey
-		orders   []MinoDatabase.Order
-		wg       sync.WaitGroup
+		specs      []MinoDatabase.WareSpec
+		entities   []MinoDatabase.WareEntity
+		users      []MinoDatabase.User
+		packs      []MinoDatabase.Pack
+		keys       []MinoDatabase.WareKey
+		rkeys      []MinoDatabase.RechargeKey
+		orders     []MinoDatabase.Order
+		WorkOrders []MinoDatabase.WorkOrder
+		wg         sync.WaitGroup
 	)
-	wg.Add(7)
+	wg.Add(8)
 	go func() {
 		DB.Find(&specs)
 		wg.Done()
@@ -130,7 +133,12 @@ func (this *AdminConsoleController) Get() {
 		DB.Find(&rkeys)
 		wg.Done()
 	}()
+	go func() {
+		DB.Where("closed = ?", false).Find(&WorkOrders)
+		wg.Done()
+	}()
 	wg.Wait()
+	this.Data["WorkOrders"] = WorkOrders
 	this.Data["specAmount"] = len(specs)
 	this.Data["entityAmount"] = len(entities)
 	this.Data["userAmount"] = len(users)
@@ -173,11 +181,6 @@ func (this *AdminConsoleController) Get() {
 		ValidDuration: "余额无有效期",
 	})
 	this.Data["keySpecs"] = keySpecs
-	/* show user work order*/
-	var WorkOrders []MinoDatabase.WorkOrder
-	DB.Find(&WorkOrders)
-	this.Data["WorkOrders"] = WorkOrders
-	/* end user work order*/
 }
 
 func (this *AdminConsoleController) DeleteConfirm() {
@@ -367,6 +370,40 @@ func (this *AdminConsoleController) GetKeys() {
 		beego.Error(err)
 	}
 	//_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *AdminConsoleController) CloseWorkOrder() {
+	if !this.CheckXSRFCookie() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
+		return
+	}
+	orderID, err := this.GetInt("workOrderID")
+	if err != nil || orderID < 0 {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取工单 ID 失败"))
+		return
+	}
+	closeInfo := this.GetString("closeInfo")
+	DB := MinoDatabase.GetDatabase()
+	var order MinoDatabase.WorkOrder
+	if err := DB.Where("id = ?", orderID).First(&order).Error; err != nil || order.Closed {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取工单失败或工单已经被解决"))
+		return
+	}
+	/* valid post */
+	if err := DB.Model(&order).Update("closed", true).Error; err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("更新工单状态失败"))
+		return
+	}
+	go func() {
+		MinoMessage.Send("WorkOrderSystem", order.UserID, "您的工单 #"+strconv.Itoa(int(orderID))+" 已被解决")
+		var user MinoDatabase.User
+		if !DB.Where("id = ?", order.UserID).First(&user).RecordNotFound() {
+			_ = MinoEmail.SendAnyEmail(user.Email, "您的工单 #"+strconv.Itoa(orderID)+" 已被解决："+closeInfo)
+		}
+	}()
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
 func (this *AdminConsoleController) CheckXSRFCookie() bool {

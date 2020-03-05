@@ -152,6 +152,7 @@ type WorkOrder struct {
 	UserName   string
 	OrderTitle string
 	OrderText  string
+	Closed     bool
 }
 
 type GalleryItem struct {
@@ -160,5 +161,6 @@ type GalleryItem struct {
 	ItemName        string
 	ItemDescription string
 	Likes           uint
+	ReviewPassed    bool
 	ImgSource       template.URL
 }

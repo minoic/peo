@@ -9,7 +9,7 @@
 <body>
 {{template "tpls/navbar.html" .}}
 <div id="main-container" class="no-margin">
-    <div class="padding-md">
+    <div class="padding-lg">
         <div class="row">
             <div class="col-lg-6 col-md-6">
                 <div class="row fadeInDown animation-delay1">
@@ -85,72 +85,6 @@
                                 </div>
                             </div><!-- /panel -->
                         </a>
-                        <div class="modal fade" id="formModal">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                        <h4>创建新的 KEY</h4>
-                                        <small>
-                                            创建的 KEY 用于激活指定的商品<br>
-                                            您可以选择在发卡平台或淘宝等平台售卖 KEY<br>
-                                            请点击按钮提交表单<br>
-                                            目前仅支持添加面额为 30 50 100 的余额激活码
-                                        </small>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="new-key" class="form-horizontal no-margin form-border">
-                                            {{.xsrfData}}
-                                            <div class="form-group">
-                                                <div class="col-lg-2 control-label">
-                                                    <label>数量</label>
-                                                </div>
-                                                <div class="col-lg-10">
-                                                    <input type="number" class="form-control input-sm" name="key_amount"
-                                                           placeholder="输入想生成 KEY 的数量 ( 1 - 99 的整数 ) 如果留空则为 1 个">
-                                                </div>
-                                                <div class="col-lg-2"></div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="col-lg-2 control-label">
-                                                    <label>KEY 有效期</label>
-                                                </div>
-                                                <div class="col-lg-10">
-                                                    <input type="number" class="form-control input-sm" name="valid_duration"
-                                                           placeholder="输入 KEY 有效期，如果留空则为 2 个月">
-                                                </div>
-                                                <div class="col-lg-2"></div>
-                                            </div>
-                                            <!-- choose -->
-                                            <div class="form-group">
-                                                <label class="col-lg-2 control-label">商品类型</label>
-                                                <div class="col-lg-10">
-                                                    <select class="form-control" name="spec_id">
-                                                        {{range .keySpecs}}
-                                                            <option value="{{.ID}}">{{.Name}} | {{.Description}} | {{.ValidDuration}}</option>
-                                                        {{end}}
-                                                    </select>
-                                                </div><!-- /.col -->
-                                            </div>
-                                            <!-- /choose -->
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-success btn-sm" type="button" onclick="window.location='/admin-console/get-keys'">导出 KEY</button>
-                                        <button class="btn btn-info btn-sm" type="button" onclick="$.get('/admin-console/new-key?'+$('#new-key').serialize(),function(data) {
-                                            console.log($('#new-key').serialize());
-                                            if (data === 'SUCCESS'){
-                                                alert('创建成功！');
-                                            }else{
-                                                alert('创建失败！'+data);
-                                            }
-                                            parent.location.reload();
-                                          })
-                                        ">确认添加</button>
-                                    </div>
-                                </div>
-                            </div><!-- /.modal-content -->
-                        </div><!-- /.modal-dialog -->
                     </div>
                     <div class="col-md-4 col-sm-4 col-xs-6">
                         <div class="panel panel-default panel-stat2 bg-info">
@@ -203,6 +137,9 @@
                         <div class="col-md-12">
                             <div class="panel panel-default fadeInDown animation-delay2">
                                 <div class="panel-heading">
+                                    <a href="#WO{{.ID}}" data-toggle="modal">
+                                        <button class="pull-right btn-success btn">完成</button>
+                                    </a>
                                     <h5>{{.UserName}}</h5>
                                     <div class="text-muted"> {{.CreatedAt}}</div>
                                 </div>
@@ -218,6 +155,113 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="formModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4>创建新的 KEY</h4>
+                <small>
+                    创建的 KEY 用于激活指定的商品<br>
+                    您可以选择在发卡平台或淘宝等平台售卖 KEY<br>
+                    请点击按钮提交表单<br>
+                    目前仅支持添加面额为 30 50 100 的余额激活码
+                </small>
+            </div>
+            <div class="modal-body">
+                <form id="new-key" class="form-horizontal no-margin form-border">
+                    {{.xsrfData}}
+                    <div class="form-group">
+                        <div class="col-lg-2 control-label">
+                            <label>数量</label>
+                        </div>
+                        <div class="col-lg-10">
+                            <input type="number" class="form-control input-sm" name="key_amount"
+                                   placeholder="输入想生成 KEY 的数量 ( 1 - 99 的整数 ) 如果留空则为 1 个">
+                        </div>
+                        <div class="col-lg-2"></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-2 control-label">
+                            <label>KEY 有效期</label>
+                        </div>
+                        <div class="col-lg-10">
+                            <input type="number" class="form-control input-sm" name="valid_duration"
+                                   placeholder="输入 KEY 有效期，如果留空则为 2 个月">
+                        </div>
+                        <div class="col-lg-2"></div>
+                    </div>
+                    <!-- choose -->
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">商品类型</label>
+                        <div class="col-lg-10">
+                            <select class="form-control" name="spec_id">
+                                {{range .keySpecs}}
+                                    <option value="{{.ID}}">{{.Name}} | {{.Description}} | {{.ValidDuration}}</option>
+                                {{end}}
+                            </select>
+                        </div><!-- /.col -->
+                    </div>
+                    <!-- /choose -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success btn-sm" type="button" onclick="window.location='/admin-console/get-keys'">导出 KEY</button>
+                <button class="btn btn-info btn-sm" type="button" onclick="$.get('/admin-console/new-key?'+$('#new-key').serialize(),function(data) {
+                                            console.log($('#new-key').serialize());
+                                            if (data === 'SUCCESS'){
+                                                alert('创建成功！');
+                                            }else{
+                                                alert('创建失败！'+data);
+                                            }
+                                            parent.location.reload();
+                                          })
+                                        ">确认添加</button>
+            </div>
+        </div>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+{{range .WorkOrders}}
+    <div class="modal fade" id="WO{{.ID}}">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4>完成工单</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="WOF{{.ID}}"  class="form-horizontal no-margin form-border">
+                        {{$.xsrfData}}
+                        <input type="hidden" name="workOrderID" value="{{.ID}}">
+                        <div class="form-group">
+                            <div class="col-lg-2 control-label">
+                                <label>消息</label>
+                            </div>
+                            <div class="col-lg-10">
+                                <input type="text" class="form-control input-sm" name="closeInfo"
+                                       placeholder="输入完成工单的提醒消息 将会发给用户">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info btn-sm" type="button" onclick="$.post('/admin-console/close-work-order',$('#WOF{{.ID}}').serialize(),function(data) {
+                                            console.log($('#WOF{{.ID}}').serialize());
+                                            if (data === 'SUCCESS'){
+                                                alert('完成成功！');
+                                            }else{
+                                                alert('完成失败！'+data);
+                                                console.log(data);
+                                            }
+                                            parent.location.reload();
+                                          })
+                                        ">确认</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
 {{template "tpls/perfectJS.html" .}}
 </body>
 </html>

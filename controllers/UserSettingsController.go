@@ -10,6 +10,8 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoSession"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
 	"github.com/astaxie/beego"
+	"github.com/jinzhu/gorm"
+	"html/template"
 	"time"
 )
 
@@ -169,7 +171,34 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 }
 
 func (this *UserSettingsController) GalleryPost() {
-
+	itemName := this.GetString("itemName")
+	itemDescription := this.GetString("itemDescription")
+	imgSource := this.GetString("imgSource")
+	user, err := MinoSession.SessionGetUser(this.StartSession())
+	if err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		return
+	}
+	if itemName == "" || imgSource == "" {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("图片名称或地址不能为空"))
+		return
+	}
+	DB := MinoDatabase.GetDatabase()
+	if err := DB.Create(&MinoDatabase.GalleryItem{
+		Model:           gorm.Model{},
+		UserID:          user.ID,
+		ItemName:        itemName,
+		ItemDescription: itemDescription,
+		Likes:           0,
+		ReviewPassed:    false,
+		ImgSource:       template.URL(imgSource),
+	}).Error; err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库错误"))
+		return
+	}
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
 func (this *UserSettingsController) CheckXSRFCookie() bool {

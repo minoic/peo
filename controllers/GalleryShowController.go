@@ -15,6 +15,6 @@ func (this *GalleryShowController) Get() {
 	this.Data["u"] = 5
 	DB := MinoDatabase.GetDatabase()
 	var items []MinoDatabase.GalleryItem
-	DB.Find(&items)
+	DB.Where("review_passed = ?", true).Find(&items)
 	this.Data["items"] = items
 }
