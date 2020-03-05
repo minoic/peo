@@ -35,6 +35,10 @@ func (this *UserRechargeController) Get() {
 	var logs []MinoDatabase.RechargeLog
 	DB.Where("user_id = ?", user.ID).Find(&logs)
 	this.Data["rechargeLogs"] = logs
+	/* reverse logs */
+	for i, j := 0, len(logs)-1; i < j; i, j = i+1, j-1 {
+		logs[i], logs[j] = logs[j], logs[i]
+	}
 	this.Data["balance"] = user.Balance
 	this.Data["rechargeTimes"] = len(logs)
 }
