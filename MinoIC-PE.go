@@ -19,6 +19,8 @@ func main() {
 	beego.Router("/admin-console/new-key", &controllers.AdminConsoleController{}, "get:NewKey")
 	beego.Router("/admin-console/get-keys", &controllers.AdminConsoleController{}, "get:GetKeys")
 	beego.Router("/admin-console/close-work-order", &controllers.AdminConsoleController{}, "post:CloseWorkOrder")
+	beego.Router("/admin-console/gallery-items/pass", &controllers.AdminConsoleController{}, "post:GalleryPass")
+	beego.Router("/admin-console/gallery-items/delete", &controllers.AdminConsoleController{}, "post:GalleryDelete")
 	beego.Router("/new-ware", &controllers.NewWareController{})
 	beego.Router("/new-order", &controllers.OrderCreateController{})
 	beego.Router("/new-pack", &controllers.NewPackController{})

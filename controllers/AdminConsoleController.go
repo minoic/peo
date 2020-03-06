@@ -94,17 +94,18 @@ func (this *AdminConsoleController) Get() {
 	this.Data["deleteServers"] = deleteServers
 	/* panel stats*/
 	var (
-		specs      []MinoDatabase.WareSpec
-		entities   []MinoDatabase.WareEntity
-		users      []MinoDatabase.User
-		packs      []MinoDatabase.Pack
-		keys       []MinoDatabase.WareKey
-		rkeys      []MinoDatabase.RechargeKey
-		orders     []MinoDatabase.Order
-		WorkOrders []MinoDatabase.WorkOrder
-		wg         sync.WaitGroup
+		specs        []MinoDatabase.WareSpec
+		entities     []MinoDatabase.WareEntity
+		users        []MinoDatabase.User
+		packs        []MinoDatabase.Pack
+		keys         []MinoDatabase.WareKey
+		rkeys        []MinoDatabase.RechargeKey
+		orders       []MinoDatabase.Order
+		WorkOrders   []MinoDatabase.WorkOrder
+		galleryItems []MinoDatabase.GalleryItem
+		wg           sync.WaitGroup
 	)
-	wg.Add(8)
+	wg.Add(9)
 	go func() {
 		DB.Find(&specs)
 		wg.Done()
@@ -137,6 +138,13 @@ func (this *AdminConsoleController) Get() {
 		DB.Where("closed = ?", false).Find(&WorkOrders)
 		wg.Done()
 	}()
+	go func() {
+		DB.Find(&galleryItems)
+		for i, j := 0, len(galleryItems)-1; i < j; i, j = i+1, j-1 {
+			galleryItems[i], galleryItems[j] = galleryItems[j], galleryItems[i]
+		}
+		wg.Done()
+	}()
 	wg.Wait()
 	this.Data["WorkOrders"] = WorkOrders
 	this.Data["specAmount"] = len(specs)
@@ -145,6 +153,7 @@ func (this *AdminConsoleController) Get() {
 	this.Data["packAmount"] = len(packs)
 	this.Data["keyAmount"] = len(keys) + len(rkeys)
 	this.Data["orderAmount"] = len(orders)
+	this.Data["galleryItems"] = galleryItems
 	type keySpec struct {
 		ID            uint
 		Name          string
@@ -403,6 +412,60 @@ func (this *AdminConsoleController) CloseWorkOrder() {
 			_ = MinoEmail.SendAnyEmail(user.Email, "您的工单 #"+strconv.Itoa(orderID)+" 已被解决："+closeInfo)
 		}
 	}()
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *AdminConsoleController) GalleryPass() {
+	if !this.CheckXSRFCookie() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
+		return
+	}
+	itemID, err := this.GetInt("itemID")
+	if err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取图片 ID 失败"))
+		return
+	}
+	var item MinoDatabase.GalleryItem
+	DB := MinoDatabase.GetDatabase()
+	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))
+		return
+	}
+	/* item found correctly*/
+	if err = DB.Model(&item).Update("review_passed", true).Error; err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库更新图片状态失败"))
+		return
+	}
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *AdminConsoleController) GalleryDelete() {
+	if !this.CheckXSRFCookie() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
+		return
+	}
+	itemID, err := this.GetInt("itemID")
+	if err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取图片 ID 失败"))
+		return
+	}
+	var item MinoDatabase.GalleryItem
+	DB := MinoDatabase.GetDatabase()
+	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))
+		return
+	}
+	/* item found correctly*/
+	if err = DB.Delete(&item).Error; err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库更新图片状态失败"))
+		return
+	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 

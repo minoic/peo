@@ -15,7 +15,8 @@
                 <div class="row fadeInDown animation-delay1">
                     <div class="col-md-4 col-sm-4 col-xs-6">
                         <a href="/new-ware">
-                            <div class="panel panel-default panel-stat2 bg-warning" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击添加商品">
+                            <div class="panel panel-default panel-stat2 bg-warning" data-toggle="tooltip"
+                                 data-placement="top" title="" data-original-title="点击添加商品">
                                 <div class="panel-body">
 								<span class="stat-icon">
 									<i class="fa fa-shopping-cart fa-lg"></i>
@@ -58,7 +59,8 @@
                     </div>
                     <div class="col-md-4 col-sm-4 col-xs-6">
                         <a href="/new-pack">
-                            <div class="panel panel-default panel-stat2" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击添加整合包">
+                            <div class="panel panel-default panel-stat2" data-toggle="tooltip" data-placement="top"
+                                 title="" data-original-title="点击添加整合包">
                                 <div class="panel-body">
 								<span class="stat-icon">
 									<i class="fa fa-briefcase fa-lg"></i>
@@ -73,7 +75,8 @@
                     </div>
                     <div class="col-md-4 col-sm-4 col-xs-6">
                         <a href="#formModal" data-toggle="modal">
-                            <div class="panel panel-default panel-stat2 bg-success" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击添加 KEY">
+                            <div class="panel panel-default panel-stat2 bg-success" data-toggle="tooltip"
+                                 data-placement="top" title="" data-original-title="点击添加 KEY">
                                 <div class="panel-body">
 								<span class="stat-icon">
 									<i class="fa fa-key fa-lg"></i>
@@ -130,6 +133,56 @@
                         </div>
                     </div><!-- /panel -->
                 {{end}}
+                <div class="row">
+                    {{range .galleryItems}}
+                        <div class="col-md-12">
+                            <div class="panel panel-default fadeInDown animation-delay2">
+                                <div class="panel-heading">
+                                    {{if not .ReviewPassed}}
+                                        <form id="GIPASS{{.ID}}">
+                                            {{$.xsrfData}}
+                                            <input name="itemID" value="{{.ID}}" type="hidden">
+                                        </form>
+                                        <button class="pull-right btn-success btn" onclick="$.post('/admin-console/gallery-items/pass',$('#GIPASS{{.ID}}').serialize(),function(data) {
+                                                console.log($('#GIPASS{{.ID}}').serialize());
+                                                if (data === 'SUCCESS'){
+                                                alert('通过成功！');
+                                                }else{
+                                                alert('通过失败！'+data);
+                                                console.log(data);
+                                                }
+                                                parent.location.reload();
+                                                })
+                                                ">通过</button>
+                                    {{end}}
+                                    <form id="GIDEL{{.ID}}">
+                                        {{$.xsrfData}}
+                                        <input name="itemID" value="{{.ID}}" type="hidden">
+                                    </form>
+                                    <button class="pull-right btn-danger btn" onclick="$.post('/admin-console/gallery-items/delete',$('#GIDEL{{.ID}}').serialize(),function(data) {
+                                            console.log($('#GIDEL{{.ID}}').serialize());
+                                            if (data === 'SUCCESS'){
+                                            alert('删除成功！');
+                                            }else{
+                                            alert('删除失败！'+data);
+                                            console.log(data);
+                                            }
+                                            parent.location.reload();
+                                            })
+                                            ">删除</button>
+                                    <h5>{{.ItemName}}</h5>
+                                    <div class="text-muted"> {{.CreatedAt}}</div>
+                                </div>
+                                <div class="panel-body">
+                                    <h6>{{.ItemDescription}}</h6>
+                                    <a href="{{.ImgSource}}">
+                                        <img src="{{.ImgSource}}" alt="{{.ImgSource}}">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {{end}}
+                </div>
             </div>
             <div class="col-lg-6 col-md-6">
                 <div class="row">
@@ -152,6 +205,7 @@
                     {{end}}
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -206,7 +260,9 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-success btn-sm" type="button" onclick="window.location='/admin-console/get-keys'">导出 KEY</button>
+                <button class="btn btn-success btn-sm" type="button"
+                        onclick="window.location='/admin-console/get-keys'">导出 KEY
+                </button>
                 <button class="btn btn-info btn-sm" type="button" onclick="$.get('/admin-console/new-key?'+$('#new-key').serialize(),function(data) {
                                             console.log($('#new-key').serialize());
                                             if (data === 'SUCCESS'){
@@ -216,7 +272,8 @@
                                             }
                                             parent.location.reload();
                                           })
-                                        ">确认添加</button>
+                                        ">确认添加
+                </button>
             </div>
         </div>
     </div><!-- /.modal-content -->
@@ -230,7 +287,7 @@
                     <h4>完成工单</h4>
                 </div>
                 <div class="modal-body">
-                    <form id="WOF{{.ID}}"  class="form-horizontal no-margin form-border">
+                    <form id="WOF{{.ID}}" class="form-horizontal no-margin form-border">
                         {{$.xsrfData}}
                         <input type="hidden" name="workOrderID" value="{{.ID}}">
                         <div class="form-group">
@@ -245,18 +302,19 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-info btn-sm" type="button" onclick="$.post('/admin-console/close-work-order',$('#WOF{{.ID}}').serialize(),function(data) {
-                                            console.log($('#WOF{{.ID}}').serialize());
-                                            if (data === 'SUCCESS'){
-                                                alert('完成成功！');
-                                            }else{
-                                                alert('完成失败！'+data);
-                                                console.log(data);
-                                            }
-                                            parent.location.reload();
-                                          })
-                                        ">确认</button>
-                </div>
+                    <button class="btn btn-info btn-sm" type="button"
+                            onclick="$.post('/admin-console/close-work-order',$('#WOF{{.ID}}').serialize(),function(data) {
+                                    console.log($('#WOF{{.ID}}').serialize());
+                                    if (data === 'SUCCESS'){
+                                    alert('完成成功！');
+                                    }else{
+                                    alert('完成失败！'+data);
+                                    console.log(data);
+                                    }
+                                    parent.location.reload();
+                                    })
+                                    ">确认
+                    </button>
                 </div>
             </div>
         </div>
