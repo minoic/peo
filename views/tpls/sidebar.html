@@ -68,22 +68,22 @@
 								</span>
                         <span class="menu-hover"></span>
                     </a>
+                    <div class="custom-popup width-100" id="logoutConfirm" style="display: none">
+                        <div class="padding-md">
+                            <h4 class="m-top-none"> 确定要登出吗？您将需要重新登录才能访问部分内容。</h4>
+                        </div>
+                        <div class="text-center">
+                            <a class="btn btn-danger m-right-sm" onclick="logout()" href="/">登出</a>
+                            <script type="text/javascript">
+                                function logout() {
+                                    $.removeCookie('tOZENDENoNOS');
+                                    parent.location.reload();
+                                }
+                            </script>
+                        </div>
+                    </div>
                 </li>
             </ul>
-            <div class="custom-popup width-100" id="logoutConfirm">
-                <div class="padding-md">
-                    <h4 class="m-top-none"> 确定要登出吗？您将需要重新登录才能访问部分内容。</h4>
-                </div>
-                <div class="text-center">
-                    <a class="btn btn-danger m-right-sm" onclick="logout()" href="/">登出</a>
-                    <script type="text/javascript">
-                        function logout() {
-                            $.removeCookie('tOZENDENoNOS');
-                            parent.location.reload();
-                        }
-                    </script>
-                </div>
-            </div>
         </div><!-- /main-menu -->
     </div><!-- /sidebar-inner -->
 </aside>

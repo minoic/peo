@@ -8,11 +8,13 @@ import (
 	"time"
 )
 
+/* set interval to refresh cache */
 const timeout = 3 * time.Minute
 
 var bm = MinoCache.GetCache()
 
 func ClearCache() {
+	/* force refresh cache */
 	err := bm.ClearAll()
 	if err != nil {
 		beego.Error(err)

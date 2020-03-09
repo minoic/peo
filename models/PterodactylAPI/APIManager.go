@@ -11,8 +11,11 @@ import (
 )
 
 type ParamsData struct {
+	/* Serverhostname = "xxx.example.com" */
 	Serverhostname string
-	Serversecure   bool
+	/* user SSL or not */
+	Serversecure bool
+	/* your application API */
 	Serverpassword string
 }
 
@@ -29,6 +32,7 @@ func PterodactylGethostname(params ParamsData) string {
 }
 
 func pterodactylApi(params ParamsData, data interface{}, endPoint string, method string) (string, int) {
+	/* Send requests to pterodactyl panel */
 	url := PterodactylGethostname(params) + "/api/application/" + endPoint
 	//beego.Info(url)
 	var res string
