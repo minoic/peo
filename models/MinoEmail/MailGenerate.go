@@ -3,7 +3,7 @@ package MinoEmail
 import (
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoConfigure"
 	"github.com/astaxie/beego"
-	"github.com/matcornic/hermes"
+	"github.com/matcornic/hermes/v2"
 )
 
 func getProd() hermes.Hermes {

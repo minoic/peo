@@ -21,7 +21,7 @@ func getSTMPClient() *mail.SMTPServer {
 		beego.Error("cant get SMTPPort")
 	}
 	return &mail.SMTPServer{
-		Authentication: mail.AuthPlain,
+		//Authentication: mail.AuthPlain,
 		Encryption:     encryption,
 		Username:       conf.String("SMTPUsername"),
 		Password:       conf.String("SMTPUserPassword"),
