@@ -18,7 +18,7 @@ func connect() {
 		DB, err := gorm.Open("sqlite3", "sqlite3.db")
 		if err != nil {
 			db = nil
-			panic(err.Error())
+			beego.Error(err.Error())
 		}
 		db = DB
 		return
@@ -32,7 +32,7 @@ func connect() {
 		DB, err := gorm.Open("mysql", DSN)
 		if err != nil {
 			db = nil
-			panic(err.Error())
+			beego.Error(err.Error())
 		}
 		db = DB
 		return
@@ -43,14 +43,13 @@ func connect() {
 
 func GetDatabase() *gorm.DB {
 	for db == nil {
-		connect()
 		beego.Warn("trying to connect to database!")
+		connect()
 	}
-	if err := db.DB().Ping(); err != nil {
-		connect()
+
+	for err := db.DB().Ping(); err != nil; err = db.DB().Ping() {
 		beego.Warn("trying to connect to database!")
+		connect()
 	}
 	return db
 }
-
-//todo: test MYSQL
