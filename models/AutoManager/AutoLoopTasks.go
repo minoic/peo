@@ -1,8 +1,10 @@
 package AutoManager
 
 import (
+	"git.ntmc.tech/root/MinoIC-PE/models/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/models/MinoKey"
 	"git.ntmc.tech/root/MinoIC-PE/models/PterodactylAPI"
+	"github.com/astaxie/beego"
 	"time"
 )
 
@@ -19,6 +21,11 @@ func LoopTasksManager() {
 				go PterodactylAPI.CacheNeededServers()
 			case <-ticker.C:
 				go MinoKey.DeleteOutdatedKeys()
+			case <-ticker.C:
+				go func() {
+					DB := MinoDatabase.GetDatabase()
+					beego.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, "(", DB.DB().Stats().WaitDuration, ")")
+				}()
 			}
 		}
 	}()
