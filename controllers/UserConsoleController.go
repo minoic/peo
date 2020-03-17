@@ -71,7 +71,11 @@ func (this *UserConsoleController) Get() {
 		wg              sync.WaitGroup
 		servers         []serverInfo
 	)
-	DB.Where("user_id = ?", user.ID).Find(&entities)
+	if !user.IsAdmin {
+		DB.Where("user_id = ?", user.ID).Find(&entities)
+	} else {
+		DB.Find(&entities)
+	}
 	DB.Where("user_id = ?", user.ID).Find(&orders)
 	this.Data["infoOrderCount"] = len(orders)
 	this.Data["infoServerCount"] = len(entities)
@@ -204,14 +208,17 @@ func (this *UserConsoleController) Renew() {
 	}
 	/* correct renew post */
 	if err = bm.Put("RENEW"+entityIDString, "", 10*time.Second); err != nil {
+		beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("缓存设置失败！"))
 		return
 	}
 	if DB.Delete(&key).Error != nil {
+		beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库处理失败！"))
 		return
 	}
 	if DB.Model(&entity).Update("valid_date", entity.ValidDate.Add(spec.ValidDuration)).Update("delete_status", 0).Error != nil {
+		beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		DB.Create(&key)
 		return
@@ -228,6 +235,7 @@ func (this *UserConsoleController) Renew() {
 		Description: "到期时间：" + entity.ValidDate.Format("2006-01-02"),
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
+		beego.Error(err)
 		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -248,7 +256,7 @@ func (this *UserConsoleController) Reinstall() {
 	packIDstring := this.Ctx.Input.Param(":packID")
 	packID, err := strconv.Atoi(packIDstring)
 	if err != nil {
-		//beego.Error(err)
+		beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入了无效的PackID"))
 		return
 	}
