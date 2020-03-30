@@ -2,6 +2,7 @@ package MinoOrder
 
 import (
 	"errors"
+	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/MinoMessage"
 	"git.ntmc.tech/root/MinoIC-PE/PterodactylAPI"
@@ -24,14 +25,26 @@ func SellCreate(SpecID uint, userID uint) uint {
 		originPrice = 1
 		finalPrice = 1
 	case 30 * 24 * time.Hour:
-		originPrice = uint(wareSpec.PricePerMonth)
-		finalPrice = uint(0.01 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
+		originPrice = wareSpec.PricePerMonth
+		if MinoConfigure.TotalDiscount {
+			finalPrice = uint(0.01 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
+		} else {
+			finalPrice = uint(0.01 * float32(100*wareSpec.PricePerMonth))
+		}
 	case 90 * 24 * time.Hour:
-		originPrice = uint(wareSpec.PricePerMonth * 3)
-		finalPrice = uint(0.03 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
+		originPrice = wareSpec.PricePerMonth * 3
+		if MinoConfigure.TotalDiscount {
+			finalPrice = uint(0.03 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
+		} else {
+			finalPrice = uint(0.03 * float32(100*wareSpec.PricePerMonth))
+		}
 	case 365 * 24 * time.Hour:
-		originPrice = uint(wareSpec.PricePerMonth * 12)
-		finalPrice = uint(0.12 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
+		originPrice = wareSpec.PricePerMonth * 12
+		if MinoConfigure.TotalDiscount {
+			finalPrice = uint(0.12 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
+		} else {
+			finalPrice = uint(0.12 * float32(100*wareSpec.PricePerMonth))
+		}
 	}
 	//beego.Debug(originPrice, finalPrice)
 	order := MinoDatabase.Order{

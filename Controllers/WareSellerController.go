@@ -27,20 +27,26 @@ type intro struct {
 	Second string
 }
 
-func (this *WareSellerController) Get() {
-	this.TplName = "WareSeller.html"
-	this.Data["wareTitle"] = template.HTML("MinoIC - Minecraft 面板服")
-	this.Data["wareDetail"] = template.HTML(``)
-	this.Data["u"] = 1
-	handleNavbar(&this.Controller)
-	this.Ctx.ResponseWriter.Flush()
+var (
+	wares1 []ware
+	wares2 []ware
+	wares3 []ware
+)
+
+func init() {
+	RefreshWareInfo()
+}
+
+func RefreshWareInfo() {
+	st := time.Now()
+	wares1 = []ware{}
+	wares2 = []ware{}
+	wares3 = []ware{}
 	var (
-		wares1    []ware
-		wares2    []ware
-		wares3    []ware
 		waresInDB []MinoDatabase.WareSpec
 		emailText string
 	)
+
 	DB := MinoDatabase.GetDatabase()
 	if MinoConfigure.SMTPEnabled {
 		emailText = "邮件提醒！"
@@ -49,125 +55,56 @@ func (this *WareSellerController) Get() {
 		for _, w := range waresInDB {
 			egg := PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), w.Nest, w.Egg)
 			//beego.Debug(w)
+			nw := ware{
+				WareName: w.WareName,
+				Intros: []intro{
+					{
+						First:  strconv.Itoa(w.Cpu / 100),
+						Second: "个CPU核心",
+					},
+					{
+						First:  strconv.Itoa(w.Memory),
+						Second: "MB物理内存",
+					},
+					{
+						First:  strconv.Itoa(w.Disk),
+						Second: "MB存储空间",
+					},
+					{
+						First:  egg.DockerImage,
+						Second: "虚拟化隔离",
+					},
+					{
+						First:  egg.Description,
+						Second: "",
+					},
+					{
+						First:  "到期后帮您保留" + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + "天",
+						Second: emailText,
+					},
+				},
+				SpecID:   w.ID,
+				Discount: w.Discount,
+			}
+			if !MinoConfigure.TotalDiscount {
+				nw.Discount = 0
+			}
+			if w.WareDescription != "" {
+				nw.Intros = append(nw.Intros, intro{
+					First:  w.WareDescription,
+					Second: "",
+				})
+			}
 			switch w.ValidDuration {
 			case 30 * 24 * time.Hour:
-				wares1 = append(wares1, ware{
-					WareName:          w.WareName,
-					WarePricePerMonth: strconv.Itoa(int(w.PricePerMonth)),
-					Intros: []intro{
-						{
-							First:  strconv.Itoa(w.Cpu / 100),
-							Second: "个CPU核心",
-						},
-						{
-							First:  strconv.Itoa(w.Memory),
-							Second: "MB物理内存",
-						},
-						{
-							First:  strconv.Itoa(w.Disk),
-							Second: "MB存储空间",
-						},
-						{
-							First:  egg.DockerImage,
-							Second: "虚拟化隔离",
-						},
-						{
-							First:  egg.Description,
-							Second: "",
-						},
-						{
-							First:  "到期后帮您保留" + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + "天",
-							Second: emailText,
-						},
-					},
-					SpecID:   w.ID,
-					Discount: w.Discount,
-				})
-				if w.WareDescription != "" {
-					wares1[len(wares1)-1].Intros = append(wares1[len(wares1)-1].Intros, intro{
-						First:  w.WareDescription,
-						Second: "",
-					})
-				}
+				nw.WarePricePerMonth = strconv.Itoa(int(w.PricePerMonth))
+				wares1 = append(wares1, nw)
 			case 90 * 24 * time.Hour:
-				wares2 = append(wares2, ware{
-					WareName:          w.WareName,
-					WarePricePerMonth: strconv.Itoa(int(w.PricePerMonth) * 3),
-					Intros: []intro{
-						{
-							First:  strconv.Itoa(w.Cpu / 100),
-							Second: "个CPU核心",
-						},
-						{
-							First:  strconv.Itoa(w.Memory),
-							Second: "MB物理内存",
-						},
-						{
-							First:  strconv.Itoa(w.Disk),
-							Second: "MB存储空间",
-						},
-						{
-							First:  egg.DockerImage,
-							Second: "虚拟化隔离",
-						},
-						{
-							First:  egg.Description,
-							Second: "",
-						},
-						{
-							First:  "到期后帮您保留" + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + "天",
-							Second: emailText,
-						},
-					},
-					SpecID:   w.ID,
-					Discount: w.Discount,
-				})
-				if w.WareDescription != "" {
-					wares2[len(wares2)-1].Intros = append(wares2[len(wares2)-1].Intros, intro{
-						First:  w.WareDescription,
-						Second: "",
-					})
-				}
+				nw.WarePricePerMonth = strconv.Itoa(int(w.PricePerMonth) * 3)
+				wares2 = append(wares2, nw)
 			case 365 * 24 * time.Hour:
-				wares3 = append(wares3, ware{
-					WareName:          w.WareName,
-					WarePricePerMonth: strconv.Itoa(int(w.PricePerMonth) * 12),
-					Intros: []intro{
-						{
-							First:  strconv.Itoa(w.Cpu / 100),
-							Second: "个CPU核心",
-						},
-						{
-							First:  strconv.Itoa(w.Memory),
-							Second: "MB物理内存",
-						},
-						{
-							First:  strconv.Itoa(w.Disk),
-							Second: "MB存储空间",
-						},
-						{
-							First:  egg.DockerImage,
-							Second: "虚拟化隔离",
-						},
-						{
-							First:  egg.Description,
-							Second: "",
-						},
-						{
-							First:  "到期后帮您保留" + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + "天",
-							Second: emailText,
-						},
-					},
-					SpecID:   w.ID,
-					Discount: w.Discount,
-				})
-				if w.WareDescription != "" {
-					wares3[len(wares3)-1].Intros = append(wares3[len(wares3)-1].Intros, intro{
-						First:  w.WareDescription,
-						Second: "",
-					})
-				}
-
+				nw.WarePricePerMonth = strconv.Itoa(int(w.PricePerMonth) * 12)
+				wares3 = append(wares3, nw)
 			}
 		}
 	} else {
@@ -181,6 +118,16 @@ func (this *WareSellerController) Get() {
 			},
 		})
 	}
+	beego.Info("Refreshed Ware Info - ", time.Now().Sub(st).String())
+}
+
+func (this *WareSellerController) Get() {
+	this.TplName = "WareSeller.html"
+	this.Data["wareTitle"] = template.HTML("MinoIC - Minecraft 面板服")
+	this.Data["wareDetail"] = template.HTML(``)
+	this.Data["u"] = 1
+	handleNavbar(&this.Controller)
+	this.Ctx.ResponseWriter.Flush()
 	//beego.Debug(wares)
 	this.Data["wares1"] = wares1
 	this.Data["wares2"] = wares2

@@ -8,6 +8,7 @@ var conf config.Configer
 
 var (
 	RechargeMode       bool
+	TotalDiscount      bool
 	SMTPEnabled        bool
 	WebApplicationName string
 	WebHostName        string
@@ -30,6 +31,10 @@ func ReloadConfig() {
 		panic(err)
 	}
 	SMTPEnabled, err = conf.Bool("SMTPEnabled")
+	if err != nil {
+		panic(err)
+	}
+	TotalDiscount, err = conf.Bool("TotalDiscount")
 	if err != nil {
 		panic(err)
 	}
