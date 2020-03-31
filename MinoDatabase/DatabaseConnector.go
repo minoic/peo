@@ -2,6 +2,8 @@ package MinoDatabase
 
 import (
 	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
+	"github.com/8treenet/gcache"
+	gcopt "github.com/8treenet/gcache/option"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -13,6 +15,9 @@ var db *gorm.DB
 func connect() {
 	conf := MinoConfigure.GetConf()
 	dialect := conf.String("Database")
+	opt := gcopt.DefaultOption{}
+	opt.PenetrationSafe = true
+	opt.Level = gcopt.LevelModel
 	switch dialect {
 	case "SQLITE":
 		DB, err := gorm.Open("sqlite3", "sqlite3.db")
@@ -21,6 +26,11 @@ func connect() {
 			beego.Error(err.Error())
 		}
 		db = DB
+		if MinoConfigure.UseGormCache {
+			gcache.AttachDB(db, &opt, &gcopt.RedisOption{
+				Addr: "localhost:6379",
+			})
+		}
 		return
 	case "MYSQL":
 		DSN := conf.String("MYSQLUsername") + ":" +
@@ -35,6 +45,11 @@ func connect() {
 			beego.Error(err.Error())
 		}
 		db = DB
+		if MinoConfigure.UseGormCache {
+			gcache.AttachDB(db, &opt, &gcopt.RedisOption{
+				Addr: "localhost:6379",
+			})
+		}
 		return
 	}
 	db = nil

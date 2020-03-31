@@ -9,6 +9,7 @@ var conf config.Configer
 var (
 	RechargeMode       bool
 	TotalDiscount      bool
+	UseGormCache       bool
 	SMTPEnabled        bool
 	WebApplicationName string
 	WebHostName        string
@@ -35,6 +36,10 @@ func ReloadConfig() {
 		panic(err)
 	}
 	TotalDiscount, err = conf.Bool("TotalDiscount")
+	if err != nil {
+		panic(err)
+	}
+	UseGormCache, err = conf.Bool("UseGormCache")
 	if err != nil {
 		panic(err)
 	}

@@ -3,8 +3,10 @@ module git.ntmc.tech/root/MinoIC-PE
 go 1.13
 
 require (
+	github.com/8treenet/gcache v1.1.4
 	github.com/astaxie/beego v1.12.1
 	github.com/dsnet/compress v0.0.1 // indirect
+	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/hako/durafmt v0.0.0-20191009132224-3f39dc1ed9f4
 	github.com/jinzhu/gorm v1.9.12
 	github.com/matcornic/hermes/v2 v2.1.0

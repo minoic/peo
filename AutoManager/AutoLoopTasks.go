@@ -11,7 +11,7 @@ import (
 
 func LoopTasksManager() {
 	go func() {
-		ticker := time.NewTicker(10 * time.Second)
+		ticker := time.NewTicker(1 * time.Second)
 		for {
 			select {
 			case <-ticker.C:
@@ -28,7 +28,7 @@ func LoopTasksManager() {
 				go func() {
 					DB := MinoDatabase.GetDatabase()
 					beego.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, " - ",
-						DB.DB().Stats().WaitDuration)
+						DB.DB().Stats().WaitCount)
 				}()
 			}
 		}
