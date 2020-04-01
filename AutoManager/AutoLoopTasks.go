@@ -2,6 +2,7 @@ package AutoManager
 
 import (
 	"git.ntmc.tech/root/MinoIC-PE/Controllers"
+	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/MinoKey"
 	"git.ntmc.tech/root/MinoIC-PE/PterodactylAPI"
@@ -11,7 +12,12 @@ import (
 
 func LoopTasksManager() {
 	go func() {
-		ticker := time.NewTicker(1 * time.Second)
+		interval, err := MinoConfigure.GetConf().Int("AutoTaskInterval")
+		if err != nil {
+			interval = 10
+			beego.Error("cant get AutoTaskInterval ,set it to 10sec as default")
+		}
+		ticker := time.NewTicker(time.Duration(interval) * time.Second)
 		for {
 			select {
 			case <-ticker.C:

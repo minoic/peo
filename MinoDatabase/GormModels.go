@@ -1,6 +1,7 @@
 package MinoDatabase
 
 import (
+	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 	"html/template"
@@ -9,6 +10,9 @@ import (
 
 func init() {
 	DB := GetDatabase()
+	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
+		return MinoConfigure.SqlTablePrefix + defaultTableName
+	}
 	DB.AutoMigrate(
 		&User{},
 		&WareKey{},

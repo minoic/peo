@@ -8,6 +8,7 @@ var conf config.Configer
 
 var (
 	RechargeMode       bool
+	SqlTablePrefix     string
 	TotalDiscount      bool
 	UseGormCache       bool
 	SMTPEnabled        bool
@@ -45,6 +46,7 @@ func ReloadConfig() {
 	}
 	WebApplicationName = conf.String("WebApplicationName")
 	AdminAddress = conf.String("WebAdminAddress")
+	SqlTablePrefix = conf.String("SqlTablePrefix")
 	secure, err := conf.Bool("WebSecure")
 	if err != nil {
 		panic(err)
