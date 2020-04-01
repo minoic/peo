@@ -45,11 +45,7 @@ type serverInfo struct {
 
 func (this *UserConsoleController) Prepare() {
 	if !MinoSession.SessionIslogged(this.StartSession()) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName + "/login",
-			Detail: "正在跳转至登录页面",
-			Title:  "您还没有登录！",
-		}, &this.Controller)
+		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)

@@ -1,7 +1,6 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/MinoOrder"
 	"git.ntmc.tech/root/MinoIC-PE/MinoSession"
@@ -16,11 +15,7 @@ type OrderCreateController struct {
 func (this *OrderCreateController) Prepare() {
 	this.TplName = "Loading.html"
 	if !MinoSession.SessionIslogged(this.StartSession()) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName + "/login",
-			Detail: "正在跳转至登陆页面",
-			Title:  "您还没有登录！",
-		}, &this.Controller)
+		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
 }
@@ -28,29 +23,17 @@ func (this *OrderCreateController) Prepare() {
 func (this *OrderCreateController) Get() {
 	specID, err := this.GetUint32("specID", 0)
 	if err != nil {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName,
-			Detail: "正在跳转到主页",
-			Title:  "参数错误",
-		}, &this.Controller)
+		this.Abort("400")
 	}
 	var spec MinoDatabase.WareSpec
 	DB := MinoDatabase.GetDatabase()
 	if DB.Where("id = ?", specID).First(&spec).RecordNotFound() {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName,
-			Detail: "正在跳转到主页",
-			Title:  "找不到此商品",
-		}, &this.Controller)
+		this.Abort("404")
 	}
 	sess := this.StartSession()
 	user, err := MinoSession.SessionGetUser(sess)
 	if err != nil {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName + "/login",
-			Detail: "正在跳转到登录页面",
-			Title:  "请重新登录",
-		}, &this.Controller)
+		this.Abort("401")
 		return
 	}
 	orderID := MinoOrder.SellCreate(uint(specID), user.ID)

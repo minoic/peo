@@ -66,17 +66,9 @@ func (this *NewPackController) Prepare() {
 	this.TplName = "NewPack.html"
 	sess := this.StartSession()
 	if !MinoSession.SessionIslogged(sess) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName + "/login",
-			Detail: "正在跳转至登录页面",
-			Title:  "您还没有登录！",
-		}, &this.Controller)
+		this.Abort("401")
 	} else if !MinoSession.SessionIsAdmin(sess) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName,
-			Detail: "正在跳转至主页",
-			Title:  "您不是管理员！",
-		}, &this.Controller)
+		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
 	//beego.Info(wareInfo)

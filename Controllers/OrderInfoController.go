@@ -20,11 +20,7 @@ func (this *OrderInfoController) Prepare() {
 	this.TplName = "Order.html"
 	this.Data["u"] = 0
 	if !MinoSession.SessionIslogged(this.StartSession()) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName + "/login",
-			Detail: "正在跳转至登陆页面",
-			Title:  "您还没有登录！",
-		}, &this.Controller)
+		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
 	orderIDstring := this.Ctx.Input.Param(":orderID")
@@ -35,11 +31,7 @@ func (this *OrderInfoController) Prepare() {
 		order MinoDatabase.Order
 	)
 	if DB.Where("id = ?", orderID).First(&order).RecordNotFound() {
-		DelayRedirect(DelayInfo{
-			URL:    this.Ctx.Request.Referer(),
-			Detail: "正在跳转到之前的页面",
-			Title:  "找不到此订单",
-		}, &this.Controller)
+		this.Abort("404")
 	}
 	/*	order=MinoDatabase.Order{
 		Model:        gorm.Model{
@@ -57,28 +49,16 @@ func (this *OrderInfoController) Prepare() {
 		Confirmed:    false,
 	}*/
 	if DB.Where("id = ?", order.SpecID).First(&spec).RecordNotFound() {
-		DelayRedirect(DelayInfo{
-			URL:    this.Ctx.Request.Referer(),
-			Detail: "正在跳转到之前的页面",
-			Title:  "找不到指定商品！",
-		}, &this.Controller)
+		this.Abort("404")
 	}
 	sess := this.StartSession()
 	user, err := MinoSession.SessionGetUser(sess)
 	if err != nil || user == (MinoDatabase.User{}) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName + "/login",
-			Detail: "正在跳转到登录页面",
-			Title:  "请重新登录",
-		}, &this.Controller)
+		this.Abort("401")
 		return
 	}
 	if user.ID != order.UserID {
-		DelayRedirect(DelayInfo{
-			URL:    this.Ctx.Request.Referer(),
-			Detail: "正在跳转到之前的页面",
-			Title:  "您无权访问此订单",
-		}, &this.Controller)
+		this.Abort("401")
 	}
 	this.Data["userName"] = user.Name
 	this.Data["userEmail"] = user.Email

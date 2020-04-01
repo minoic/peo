@@ -1,7 +1,6 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
 	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/MinoSession"
 	"github.com/astaxie/beego"
@@ -16,11 +15,7 @@ type UserRechargeController struct {
 
 func (this *UserRechargeController) Prepare() {
 	if !MinoSession.SessionIslogged(this.StartSession()) {
-		DelayRedirect(DelayInfo{
-			URL:    MinoConfigure.WebHostName + "/login",
-			Detail: "正在跳转至登录页面",
-			Title:  "您还没有登录！",
-		}, &this.Controller)
+		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)
