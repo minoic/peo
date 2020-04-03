@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -19,7 +18,9 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="panel panel-default fadeInDown animation-delay1">
-                        <form class="form-horizontal form-border no-margin" id="basic-constraint" data-validate="parsley" novalidate="" method="post" action="/user-settings/change-password">
+                        <form class="form-horizontal form-border no-margin" id="basic-constraint"
+                              data-validate="parsley" novalidate="" method="post"
+                              action="/user-settings/change-password">
                             <div class="panel-heading">
                                 <h5><strong>修改密码</strong></h5>
                             </div>
@@ -28,15 +29,18 @@
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">旧密码</label>
                                     <div class="col-lg-8">
-                                        <input type="password" class="form-control input-sm parsley-validated" placeholder="输入您账号原来的密码" name="oldPassword">
+                                        <input type="password" class="form-control input-sm parsley-validated"
+                                               placeholder="输入您账号原来的密码" name="oldPassword">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">新密码</label>
                                     <div class="col-lg-8">
-                                        <input type="password" placeholder="输入新密码" class="form-control input-sm" name="newPassword">
+                                        <input type="password" placeholder="输入新密码" class="form-control input-sm"
+                                               name="newPassword">
                                         <div class="seperator"></div>
-                                        <input type="password" placeholder="确认新密码" class="form-control input-sm" name="confirmPassword">
+                                        <input type="password" placeholder="确认新密码" class="form-control input-sm"
+                                               name="confirmPassword">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>
@@ -63,35 +67,40 @@
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">UUID</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserUUID}}" class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="text" placeholder="{{.pteUserUUID}}" class="form-control input-sm"
+                                               name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">用户名</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserName}}" class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="text" placeholder="{{.pteUserName}}" class="form-control input-sm"
+                                               name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">邮箱</label>
                                     <div class="col-lg-8">
-                                        <input type="password" placeholder="{{.pteUserEmail}}" class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="password" placeholder="{{.pteUserEmail}}"
+                                               class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">两步验证</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{if .pteUser2FA}}已开启{{else}}未开启{{end}}" class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="text" placeholder="{{if .pteUser2FA}}已开启{{else}}未开启{{end}}"
+                                               class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">创建日期</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserCreatedAt}}" class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="text" placeholder="{{.pteUserCreatedAt}}"
+                                               class="form-control input-sm" name="newPassword" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>
-                            <div class="panel-footer" >
+                            <div class="panel-footer">
                                 <button type="button" class="btn btn-info" onclick="$.get('{{.pteUserCreateURL}}',
                                         function(data) {
                                         if (data==='SUCCESS')
@@ -99,14 +108,16 @@
                                         else {alert('创建失败！');}
                                         parent.location.reload();
                                         })
-                                " {{if .userCreated}}disabled{{end}}>{{if .userCreated}}已创建{{else}}创建翼龙面板用户{{end}}</button>
+                                        "
+                                        {{if .userCreated}}disabled{{end}}>{{if .userCreated}}已创建{{else}}创建翼龙面板用户{{end}}</button>
                             </div>
                         </form>
                     </div><!-- /panel -->
                 </div><!-- /.col-->
                 <div class="col-md-6">
                     <div class="panel panel-default fadeInDown animation-delay3">
-                        <form class="form-horizontal form-border no-margin" id="type-constraint" data-validate="parsley" novalidate="" method="post" action="/user-settings/change-email">
+                        <form class="form-horizontal form-border no-margin" id="type-constraint" data-validate="parsley"
+                              novalidate="" method="post" action="/user-settings/change-email">
                             <div class="panel-heading">
                                 <h5><strong>修改绑定邮箱</strong></h5>
                             </div>
@@ -115,35 +126,40 @@
                                 <div>
                                     <label class="control-label col-lg-3">新邮箱</label>
                                     <div class="col-lg-8 input-group">
-                                        <input id="email" name="email" type="text" class="form-control" placeholder="输入您要修改的新邮箱">
+                                        <input id="email" name="email" type="text" class="form-control"
+                                               placeholder="输入您要修改的新邮箱">
                                         <span class="input-group-btn">
-                                            <button id="send_email" class="btn btn-default tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="每六十秒只能发送一次" type="button" onclick="send()"><small id="cooldown">发送验证码👍</small></button>
+                                            <button id="send_email" class="btn btn-default tooltip-test"
+                                                    data-toggle="tooltip" data-placement="top"
+                                                    data-original-title="每六十秒只能发送一次" type="button"
+                                                    onclick="send()"><small id="cooldown">发送验证码👍</small></button>
                                             </span>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <script type="text/javascript" async="async">
                                     function send() {
-                                        $.get({{.webHostName}}+"/user-settings/change-email/"+$("#email").val());
-                                        $("#send_email").attr("disabled","disabled");
+                                        $.get({{.webHostName}}+"/user-settings/change-email/" + $("#email").val());
+                                        $("#send_email").attr("disabled", "disabled");
                                         var second = 60;
                                         var origin_text = $("#cooldown").text()
                                         var intervalObj = setInterval(
                                             function () {
-                                                $("#cooldown").text(origin_text+ "(" + second + ")");
-                                                if(second==0){
+                                                $("#cooldown").text(origin_text + "(" + second + ")");
+                                                if (second == 0) {
                                                     $("#cooldown").text(origin_text);
                                                     $("#send_email").removeAttr("disabled")
                                                     clearInterval(intervalObj);
                                                 }
                                                 second--;
-                                            },1000
+                                            }, 1000
                                         )
                                     }
                                 </script>
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">验证码</label>
                                     <div class="col-lg-7">
-                                        <input type="text" class="form-control input-sm parsley-validated" placeholder="输入发送到您新邮箱里的验证码" name="captcha">
+                                        <input type="text" class="form-control input-sm parsley-validated"
+                                               placeholder="输入发送到您新邮箱里的验证码" name="captcha">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>
@@ -170,22 +186,27 @@
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">名称</label>
                                     <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm" placeholder="输入给您图片起的名称 | 必填" name="itemName" required>
+                                        <input type="text" class="form-control input-sm" placeholder="输入给您图片起的名称 | 必填"
+                                               name="itemName" required>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">描述</label>
                                     <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm" placeholder="简单介绍一下图片的描述 | 选填" name="itemDescription">
+                                        <input type="text" class="form-control input-sm" placeholder="简单介绍一下图片的描述 | 选填"
+                                               name="itemDescription">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">地址</label>
                                     <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm" placeholder="图片的链接 | 必填" name="imgSource" required>
+                                        <input type="text" class="form-control input-sm" placeholder="图片的链接 | 必填"
+                                               name="imgSource" required>
                                         <div class="help-block">
-                                            您可以前往图床，比如 <a href="https://img.ntmc.tech/" target="_blank"><strong>img.ntmc.tech</strong></a> 上传图片并复制链接填入这里<br>
-                                            链接必须为到图片的直链，比如 https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png <br>（以图片格式结尾，我们会审核图片内容）
+                                            您可以前往图床，比如 <a href="https://img.ntmc.tech/" target="_blank"><strong>img.ntmc.tech</strong></a>
+                                            上传图片并复制链接填入这里<br>
+                                            链接必须为到图片的直链，比如 https://img.ntmc.tech/images/2019/12/28/NX8HnUQpzzonZ77u.png
+                                            <br>（以图片格式结尾，我们会审核图片内容）
                                         </div>
                                     </div><!-- /.col -->
 
@@ -201,7 +222,8 @@
                                             }
                                             parent.location.reload();
                                           })
-                                        ">确认上传</button>
+                                        ">确认上传
+                                </button>
                             </div>
                         </form>
                     </div><!-- /panel -->

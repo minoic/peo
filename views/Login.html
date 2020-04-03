@@ -11,7 +11,9 @@
 <div class="login-wrapper">
     <div class="text-center" title="点击返回首页">
         <h2 class="fadeInUp animation-delay6" style="font-weight:bold">
-            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="点击返回主页" ><i class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span style="color:#ccc; text-shadow:0 1px #fff"> 账户</span></a>
+            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="点击返回主页"><i
+                        class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span
+                        style="color:#ccc; text-shadow:0 1px #fff"> 账户</span></a>
         </h2>
     </div>
     <div class="login-widget animation-delay1">
@@ -40,12 +42,14 @@
                         <input type="password" placeholder="输入密码"
                                class="form-control input-sm bounceIn animation-delay4" name="loginPass">
                     </div>
-                    <div class="form-group" >
+                    <div class="form-group">
                         <label class="label-checkbox inline">
-                            <input type="checkbox" class="regular-checkbox chk-delete" name="loginRemember" value="true"/>
+                            <input type="checkbox" class="regular-checkbox chk-delete" name="loginRemember"
+                                   value="true"/>
                             <span class="custom-checkbox info bounceIn animation-delay4"></span>
-                        </label >
-                        <label class="tooltip-test" data-toggle="tooltip" data-placement="bottom" data-original-title="选中后2个月内不需要登录">记住我的登录</label>
+                        </label>
+                        <label class="tooltip-test" data-toggle="tooltip" data-placement="bottom"
+                               data-original-title="选中后2个月内不需要登录">记住我的登录</label>
                     </div>
                     <hr/>
                     {{if .hasError}}
@@ -55,7 +59,8 @@
                     {{end}}
                     <div class="row">
                         <div class="col-lg-8">
-                                <a href="/forget-password"  class="tooltip-test" data-toggle="tooltip" data-placement="bottom" data-original-title="点击找回密码😀" >忘记密码？</a>
+                            <a href="/forget-password" class="tooltip-test" data-toggle="tooltip"
+                               data-placement="bottom" data-original-title="点击找回密码😀">忘记密码？</a>
                         </div>
                         <div class="col-lg-4">
                             <button class="btn btn-success btn-sm bounceIn animation-delay5 pull-right" type="submit"><i

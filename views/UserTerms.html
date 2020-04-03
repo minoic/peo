@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="utf-8">
     <title>{{.webApplicationName}} 服务条款</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{{template "tpls/perfectCSS.html" .}}
+    {{template "tpls/perfectCSS.html" .}}
 </head>
 
 <body class="overflow-hidden">
@@ -16,35 +15,35 @@
     <div class="padding-md">
         <div class="row">
             <div class="col-lg-2"></div>
-        <div class="col-lg-8">
-            <h4>{{.webApplicationName}} 服务条款</h4>
-            <!-- content Div -->
-            <div class="padding-md">
-                {{range .terms}}
-                    <div class="panel-group">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4 class="panel-title">
-                                    {{.Title}}
-                                </h4>
-                            </div>
-                            <div >
-                                <div class="panel-body">
-                                    {{.Text}}
-                                    {{if .Mute}}
-                                        <div class="bg-grey padding-sm m-top-md">
-                                            {{.Mute}}
-                                        </div>
-                                    {{end}}
+            <div class="col-lg-8">
+                <h4>{{.webApplicationName}} 服务条款</h4>
+                <!-- content Div -->
+                <div class="padding-md">
+                    {{range .terms}}
+                        <div class="panel-group">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        {{.Title}}
+                                    </h4>
                                 </div>
-                            </div>
-                        </div><!-- /panel -->
-                    </div>
-                {{end}}
+                                <div>
+                                    <div class="panel-body">
+                                        {{.Text}}
+                                        {{if .Mute}}
+                                            <div class="bg-grey padding-sm m-top-md">
+                                                {{.Mute}}
+                                            </div>
+                                        {{end}}
+                                    </div>
+                                </div>
+                            </div><!-- /panel -->
+                        </div>
+                    {{end}}
+                </div>
             </div>
+            <div class="col-lg-2"></div>
         </div>
-        <div class="col-lg-2"></div>
-    </div>
     </div>
 </div>
 

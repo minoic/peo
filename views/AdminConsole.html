@@ -143,33 +143,37 @@
                                             {{$.xsrfData}}
                                             <input name="itemID" value="{{.ID}}" type="hidden">
                                         </form>
-                                        <button class="pull-right btn-success btn" onclick="$.post('/admin-console/gallery-items/pass',$('#GIPASS{{.ID}}').serialize(),function(data) {
-                                                console.log($('#GIPASS{{.ID}}').serialize());
-                                                if (data === 'SUCCESS'){
-                                                alert('通过成功！');
-                                                }else{
-                                                alert('通过失败！'+data);
-                                                console.log(data);
-                                                }
-                                                parent.location.reload();
-                                                })
-                                                ">通过</button>
+                                        <button class="pull-right btn-success btn"
+                                                onclick="$.post('/admin-console/gallery-items/pass',$('#GIPASS{{.ID}}').serialize(),function(data) {
+                                                        console.log($('#GIPASS{{.ID}}').serialize());
+                                                        if (data === 'SUCCESS'){
+                                                        alert('通过成功！');
+                                                        }else{
+                                                        alert('通过失败！'+data);
+                                                        console.log(data);
+                                                        }
+                                                        parent.location.reload();
+                                                        })
+                                                        ">通过
+                                        </button>
                                     {{end}}
                                     <form id="GIDEL{{.ID}}">
                                         {{$.xsrfData}}
                                         <input name="itemID" value="{{.ID}}" type="hidden">
                                     </form>
-                                    <button class="pull-right btn-danger btn" onclick="$.post('/admin-console/gallery-items/delete',$('#GIDEL{{.ID}}').serialize(),function(data) {
-                                            console.log($('#GIDEL{{.ID}}').serialize());
-                                            if (data === 'SUCCESS'){
-                                            alert('删除成功！');
-                                            }else{
-                                            alert('删除失败！'+data);
-                                            console.log(data);
-                                            }
-                                            parent.location.reload();
-                                            })
-                                            ">删除</button>
+                                    <button class="pull-right btn-danger btn"
+                                            onclick="$.post('/admin-console/gallery-items/delete',$('#GIDEL{{.ID}}').serialize(),function(data) {
+                                                    console.log($('#GIDEL{{.ID}}').serialize());
+                                                    if (data === 'SUCCESS'){
+                                                    alert('删除成功！');
+                                                    }else{
+                                                    alert('删除失败！'+data);
+                                                    console.log(data);
+                                                    }
+                                                    parent.location.reload();
+                                                    })
+                                                    ">删除
+                                    </button>
                                     <h5>{{.ItemName}}</h5>
                                     <div class="text-muted"> {{.CreatedAt}}</div>
                                 </div>

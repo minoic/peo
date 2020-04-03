@@ -34,7 +34,11 @@
                                 <a href="#RechargeByKey" data-toggle="tab">
                                     <div class="panel-body text-white">
                                         <div class="value">
-                                            <svg t="1582901509056" class="icon" viewBox="0 0 1496 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="14312" width="48" height="48"><path d="M409.915077 269.312a78.532923 78.532923 0 0 0 0-110.355692l-1.024-1.024a76.8 76.8 0 0 0-109.331692 0L22.685538 437.405538a78.611692 78.611692 0 0 0 0 110.434462l276.873847 279.473231a76.8 76.8 0 0 0 109.331692 0l1.024-1.024a78.532923 78.532923 0 0 0 0-110.355693L243.396923 547.84a78.611692 78.611692 0 0 1 0-110.434462l166.518154-168.093538z m1064.014769 168.093538l-276.873846-279.47323a76.8 76.8 0 0 0-109.331692 0l-1.024 1.024a78.532923 78.532923 0 0 0 0 110.355692l166.596923 168.093538a78.611692 78.611692 0 0 1 0 110.434462l-166.596923 168.093538a78.532923 78.532923 0 0 0 0 110.355693l1.024 1.024a76.8 76.8 0 0 0 109.331692 0l276.873846-279.473231a78.611692 78.611692 0 0 0 0-110.434462zM1009.033846 110.907077l-398.729846 853.070769c-12.918154 26.860308-35.603692 60.022154-64.827077 60.022154h-1.575385c-56.792615 0-93.892923-77.193846-68.765538-129.260308L871.502769 49.624615c12.918154-26.781538 60.809846-47.734154 60.809846-47.734153V0c77.351385 0 101.769846 58.840615 76.642462 110.907077z" p-id="14313" fill="#ffffff"></path></svg>
+                                            <svg t="1582901509056" class="icon" viewBox="0 0 1496 1024" version="1.1"
+                                                 xmlns="http://www.w3.org/2000/svg" p-id="14312" width="48" height="48">
+                                                <path d="M409.915077 269.312a78.532923 78.532923 0 0 0 0-110.355692l-1.024-1.024a76.8 76.8 0 0 0-109.331692 0L22.685538 437.405538a78.611692 78.611692 0 0 0 0 110.434462l276.873847 279.473231a76.8 76.8 0 0 0 109.331692 0l1.024-1.024a78.532923 78.532923 0 0 0 0-110.355693L243.396923 547.84a78.611692 78.611692 0 0 1 0-110.434462l166.518154-168.093538z m1064.014769 168.093538l-276.873846-279.47323a76.8 76.8 0 0 0-109.331692 0l-1.024 1.024a78.532923 78.532923 0 0 0 0 110.355692l166.596923 168.093538a78.611692 78.611692 0 0 1 0 110.434462l-166.596923 168.093538a78.532923 78.532923 0 0 0 0 110.355693l1.024 1.024a76.8 76.8 0 0 0 109.331692 0l276.873846-279.473231a78.611692 78.611692 0 0 0 0-110.434462zM1009.033846 110.907077l-398.729846 853.070769c-12.918154 26.860308-35.603692 60.022154-64.827077 60.022154h-1.575385c-56.792615 0-93.892923-77.193846-68.765538-129.260308L871.502769 49.624615c12.918154-26.781538 60.809846-47.734154 60.809846-47.734153V0c77.351385 0 101.769846 58.840615 76.642462 110.907077z"
+                                                      p-id="14313" fill="#ffffff"></path>
+                                            </svg>
                                         </div>
                                         <div class="title">
                                             <span class="m-left-xs"><strong>激活码</strong></span>
@@ -46,7 +50,8 @@
                         <div class="col-md-5  padding-md">
                             <div class="tab-content">
                                 <div class="tab-pane fade active in" id="RechargeByKey">
-                                    <form class="no-margin" data-validate="parsley" novalidate="" method="post" id="FormByKey">
+                                    <form class="no-margin" data-validate="parsley" novalidate="" method="post"
+                                          id="FormByKey">
                                         {{.xsrfData}}
                                         <div class="panel-heading">
                                             <h4>用激活码充值</h4>
@@ -55,7 +60,10 @@
                                         </div>
                                         <div class="panel-body">
                                             <div class="form-group">
-                                                <input id="keyString" name="keyString" type="text" placeholder="输入您购买到的激活码" class="form-control input-lg parsley-validated" data-required="true" autocomplete="off">
+                                                <input id="keyString" name="keyString" type="text"
+                                                       placeholder="输入您购买到的激活码"
+                                                       class="form-control input-lg parsley-validated"
+                                                       data-required="true" autocomplete="off">
                                             </div><!-- /form-group -->
                                         </div>
                                         <div class="panel-footer text-right">
@@ -68,7 +76,8 @@
                                             }
                                             parent.location.reload();
                                           })
-                                        "><i class="fa fa-heart"></i> 充值</button>
+                                        "><i class="fa fa-heart"></i> 充值
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
