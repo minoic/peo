@@ -245,7 +245,7 @@ func (this *UserConsoleController) Reinstall() {
 		return
 	}
 	if bm.IsExist("REINSTALL" + user.Name) {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("您每分钟只能重装一次服务器"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("您每 10 秒只能重装一次服务器"))
 		return
 	}
 	entityID := this.Ctx.Input.Param(":entityID")
@@ -275,6 +275,6 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
 		return
 	}
-	_ = bm.Put("REINSTALL"+user.Name, "", time.Minute)
+	_ = bm.Put("REINSTALL"+user.Name, "", 10*time.Second)
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
