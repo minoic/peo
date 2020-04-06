@@ -94,6 +94,7 @@ func (this *RegController) Post() {
 		DB.Create(&newUser)
 		MinoMessage.Send("ADMIN", newUser.ID, "这是您的第一条消息")
 		if MinoConfigure.SMTPEnabled {
+			MinoMessage.Send("Admin", newUser.ID, "您已成功注册账号，请前往邮箱确认注册，确认时会自动帮您创建翼龙面板用户，或请您在用户设置页面手动创建")
 			if err := MinoEmail.ConfirmRegister(newUser); err != nil {
 				beego.Error(err)
 				DelayRedirect(DelayInfo{
