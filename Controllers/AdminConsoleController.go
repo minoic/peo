@@ -82,7 +82,7 @@ func (this *AdminConsoleController) Get() {
 			}
 		}
 	}
-	//beego.Debug(deleteServers )
+	// beego.Debug(deleteServers )
 	this.Data["deleteServers"] = deleteServers
 	/* panel stats*/
 	var (
@@ -303,7 +303,7 @@ func (this *AdminConsoleController) GetKeys() {
 		beego.Error(err)
 	}
 	for _, s := range specs {
-		//beego.Debug(s)
+		// beego.Debug(s)
 		wg.Add(1)
 		go func(spec MinoDatabase.WareSpec) {
 			defer wg.Done()
@@ -312,7 +312,7 @@ func (this *AdminConsoleController) GetKeys() {
 				beego.Error(err)
 				failed = true
 			}
-			//beego.Debug(spec,txt.Name())
+			// beego.Debug(spec,txt.Name())
 			var keys []MinoDatabase.WareKey
 			DB.Where("spec_id = ?", spec.ID).Find(&keys)
 			for _, k := range keys {
@@ -348,7 +348,7 @@ func (this *AdminConsoleController) GetKeys() {
 	}
 	wg.Wait()
 	if failed {
-		//_, _ = this.Ctx.ResponseWriter.Write([]byte("生成文件失败！"))
+		// _, _ = this.Ctx.ResponseWriter.Write([]byte("生成文件失败！"))
 		return
 	}
 	arc := archiver.Zip{
@@ -362,7 +362,7 @@ func (this *AdminConsoleController) GetKeys() {
 	err = arc.Archive([]string{"tmp/download/keys"}, "tmp/download/keys.zip")
 	if err != nil {
 		beego.Error(err)
-		//_, _ = this.Ctx.ResponseWriter.Write([]byte("生成文件失败！"+err.Error()))
+		// _, _ = this.Ctx.ResponseWriter.Write([]byte("生成文件失败！"+err.Error()))
 		return
 	}
 	this.Ctx.Output.Download("tmp/download/keys.zip", "keys_"+time.Now().Format("2006-01-02 15:04:05")+".zip")
@@ -370,7 +370,7 @@ func (this *AdminConsoleController) GetKeys() {
 	if err != nil {
 		beego.Error(err)
 	}
-	//_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+	// _, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
 
 func (this *AdminConsoleController) CloseWorkOrder() {

@@ -6,11 +6,13 @@ import (
 	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
 	"git.ntmc.tech/root/MinoIC-PE/MinoKey"
 	"git.ntmc.tech/root/MinoIC-PE/PterodactylAPI"
+	"git.ntmc.tech/root/MinoIC-PE/ServerStatus"
 	"github.com/astaxie/beego"
 	"time"
 )
 
 func LoopTasksManager() {
+	// random task
 	go func() {
 		interval, err := MinoConfigure.GetConf().Int("AutoTaskInterval")
 		if err != nil {
@@ -35,6 +37,38 @@ func LoopTasksManager() {
 					DB := MinoDatabase.GetDatabase()
 					beego.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, " - ",
 						DB.DB().Stats().WaitCount)
+				}()
+			}
+		}
+	}()
+	// always go task
+	go func() {
+		interval, err := MinoConfigure.GetConf().Int("AutoTaskInterval")
+		if err != nil {
+			interval = 10
+			beego.Error("cant get AutoTaskInterval ,set it to 10sec as default")
+		}
+		ticker := time.NewTicker(time.Duration(interval) * time.Second)
+		for {
+			select {
+			case <-ticker.C:
+				go func() {
+					DB := MinoDatabase.GetDatabase()
+					var (
+						entities []MinoDatabase.WareEntity
+						count    int
+					)
+					DB.Find(&entities)
+					for _, e := range entities {
+						pong, err := ServerStatus.Ping(e.HostName)
+						if err == nil && pong.Version.Protocol != 0 {
+							var user MinoDatabase.User
+							DB.Model(&MinoDatabase.User{}).Where("id = ?", e.UserID).First(&user)
+							DB.Model(&user).Update("total_up_time", user.TotalUpTime+time.Duration(interval)*time.Second)
+							count++
+						}
+					}
+					// beego.Info("Servers Online - ",count)
 				}()
 			}
 		}

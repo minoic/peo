@@ -49,5 +49,5 @@ func main() {
 	beego.Run()
 }
 
-//todo: add alipay/wxpay or more payment method
-//todo: add code comments
+// todo: add alipay/wxpay or more payment method
+// todo: add code comments

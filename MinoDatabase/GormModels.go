@@ -41,6 +41,7 @@ type User struct {
 	IsAdmin        bool
 	EmailConfirmed bool
 	PteUserCreated bool
+	TotalUpTime    time.Duration
 	UUID           uuid.UUID `gorm:"not null;unique"`
 }
 
@@ -85,7 +86,7 @@ type WareEntity struct {
 	ServerExternalID string
 	UserExternalID   string
 	HostName         string
-	//DeleteStatus = 0 : Dont need to be deleted | = 1 : Delete Email Sent
+	// DeleteStatus = 0 : Dont need to be deleted | = 1 : Delete Email Sent
 	DeleteStatus int
 	ValidDate    time.Time
 }

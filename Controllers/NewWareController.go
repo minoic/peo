@@ -187,20 +187,20 @@ func (this *NewWareController) Prepare() {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
-	//beego.Info(wareInfo)
+	// beego.Info(wareInfo)
 	this.Data["options"] = wareInfo
 	this.Data["u"] = 0
 }
 func (this *NewWareController) Get() {}
 
-//todo: add nest/egg select instead of input ID
+// todo: add nest/egg select instead of input ID
 func (this *NewWareController) Post() {
 	if !this.CheckXSRFCookie() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
 		return
 	}
-	//formText,_:=template.ParseFiles("tpls/forms/formgroup.html")
+	// formText,_:=template.ParseFiles("tpls/forms/formgroup.html")
 	ware := MinoDatabase.WareSpec{
 		Model:           gorm.Model{},
 		WareName:        this.GetString("ware_name"),
@@ -333,14 +333,14 @@ func (this *NewWareController) Post() {
 		ware.PricePerMonth = uint(price)
 		ware.OomDisabled = true
 		ware.StartOnCompletion = true
-		//todo: handle database number
+		// todo: handle database number
 		DB := MinoDatabase.GetDatabase()
 		for i, d := range []time.Duration{
 			30 * 24 * time.Hour,
 			90 * 24 * time.Hour,
 			365 * 24 * time.Hour,
 		} {
-			//beego.Debug(d)
+			// beego.Debug(d)
 			wareTemp := ware
 			wareTemp.ValidDuration = d
 			wareTemp.Discount = discount[i]

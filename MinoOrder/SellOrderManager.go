@@ -46,7 +46,7 @@ func SellCreate(SpecID uint, userID uint) uint {
 			finalPrice = uint(0.12 * float32(100*wareSpec.PricePerMonth))
 		}
 	}
-	//beego.Debug(originPrice, finalPrice)
+	// beego.Debug(originPrice, finalPrice)
 	order := MinoDatabase.Order{
 		Model:       gorm.Model{},
 		SpecID:      SpecID,

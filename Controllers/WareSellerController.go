@@ -54,7 +54,7 @@ func RefreshWareInfo() {
 	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
 		for _, w := range waresInDB {
 			egg := PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), w.Nest, w.Egg)
-			//beego.Debug(w)
+			// beego.Debug(w)
 			nw := ware{
 				WareName: w.WareName,
 				Intros: []intro{
@@ -128,7 +128,7 @@ func (this *WareSellerController) Get() {
 	this.Data["u"] = 1
 	handleNavbar(&this.Controller)
 	this.Ctx.ResponseWriter.Flush()
-	//beego.Debug(wares)
+	// beego.Debug(wares)
 	this.Data["wares1"] = wares1
 	this.Data["wares2"] = wares2
 	this.Data["wares3"] = wares3

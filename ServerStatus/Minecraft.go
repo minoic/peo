@@ -62,9 +62,9 @@ func Ping(host string) (Pong, error) {
 		return Pong{}, err
 	}
 	pong, err := readPong(conn)
-	//beego.Debug(pong.FavIcon)
+	// beego.Debug(pong.FavIcon)
 	if err != nil {
-		//beego.Error(err)
+		// beego.Error(err)
 		return Pong{}, err
 	}
 	return *pong, nil
@@ -161,7 +161,7 @@ func readPong(rd io.Reader) (*Pong, error) {
 	if n2 <= 0 {
 		return nil, errors.New("could not read string varint")
 	}
-	//beego.Debug(string(pl[n+n2:]))
+	// beego.Debug(string(pl[n+n2:]))
 	var pong Pong
 	if err := json.Unmarshal(pl[n+n2:], &pong); err != nil {
 		return nil, errors.New("could not read pong json")

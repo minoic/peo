@@ -49,7 +49,7 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 	if err != nil {
 		panic(err)
 	}
-	//beego.Info(mailBody,mailText)
+	// beego.Info(mailBody,mailText)
 	return mailBody, mailText
 }
 
@@ -75,7 +75,7 @@ func genForgetPasswordEmail(key string) (string, string) {
 		beego.Error(err)
 		return "", ""
 	}
-	//beego.Info(mailBody,mailText)
+	// beego.Info(mailBody,mailText)
 	return mailBody, mailText
 }
 

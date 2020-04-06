@@ -34,7 +34,7 @@ func PterodactylGethostname(params ParamsData) string {
 func pterodactylApi(params ParamsData, data interface{}, endPoint string, method string) (string, int) {
 	/* Send requests to pterodactyl panel */
 	url := PterodactylGethostname(params) + "/api/application/" + endPoint
-	//beego.Info(url)
+	// beego.Info(url)
 	var res string
 	var status int
 	if method == "POST" || method == "PATCH" {
@@ -42,7 +42,7 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		if err != nil {
 			beego.Error("cant marshal data:" + err.Error())
 		}
-		//beego.Info("ujson: ", string(ujson))
+		// beego.Info("ujson: ", string(ujson))
 		ubody := bytes.NewReader(ujson)
 		req, _ := http.NewRequest(method, url, ubody)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
@@ -58,12 +58,12 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		//beego.Info("Pterodactyl Post status:" + resp.Status + " body: " + string(body))
+		// beego.Info("Pterodactyl Post status:" + resp.Status + " body: " + string(body))
 	} else {
 		req, _ := http.NewRequest(method, url, nil)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
 		req.Header.Set("Accept", "Application/vnd.pterodactyl.v1+json")
-		//beego.Info(req.Header.Get("Authorization"))
+		// beego.Info(req.Header.Get("Authorization"))
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			panic("cant Do req: " + err.Error())
@@ -72,7 +72,7 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		//beego.Info("status: " + resp.Status)
+		// beego.Info("status: " + resp.Status)
 	}
 	return res, status
 }
@@ -309,7 +309,7 @@ func PterodactylReinstallServer(data ParamsData, serverExternalID string) error 
 		return errors.New("reinstall failed because server not found: " + strconv.Itoa(serverID))
 	}
 	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/reinstall", "POST")
-	//beego.Debug(body)
+	// beego.Debug(body)
 	if status != 204 {
 		return errors.New("cant reinstall server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
 	}
@@ -375,7 +375,7 @@ func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 		} `json:"attributes"`
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		//beego.Info(dec.Attributes.Relationships.Variables.Data)
+		// beego.Info(dec.Attributes.Relationships.Variables.Data)
 		for _, v := range dec.Attributes.Relationships.Variables.Data {
 			keys := v["attributes"].(map[string]interface{})
 			key := keys["env_variable"].(string)
@@ -453,7 +453,7 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		},
 	}
 	body, status := pterodactylApi(data, postData, "servers", "POST")
-	//beego.Debug("body:",body)
+	// beego.Debug("body:",body)
 	if status == 400 {
 		return errors.New("could not find any nodes satisfying the request")
 	}
@@ -472,7 +472,7 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 	if dec.Server == (PterodactylServer{}) {
 		return errors.New("Pterodactyl API returns empty struct: " + body)
 	}
-	//beego.Info(dec.Server)
+	// beego.Info(dec.Server)
 	return nil
 }
 
@@ -485,7 +485,7 @@ func PterodactylUpdateServerDetail(data ParamsData, externalID string, details P
 		"external_id": details.ExternalID,
 	}
 	_, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(serverID)+"/details", "PATCH")
-	//beego.Debug(body)
+	// beego.Debug(body)
 	if status != 200 {
 		return errors.New("cant update server details data: " + externalID)
 	}
@@ -526,9 +526,9 @@ func PterodactylUpdateServerStartup(data ParamsData, externalID string, packID i
 		"image":        eggInfo.DockerImage,
 		"skip_scripts": false,
 	}
-	//beego.Debug(patchData)
+	// beego.Debug(patchData)
 	_, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(server.Id)+"/startup", "PATCH")
-	//beego.Debug(body)
+	// beego.Debug(body)
 	if status != 200 {
 		return errors.New("cant update server startup data: " + externalID)
 	}

@@ -25,7 +25,7 @@ func GeneToken(username string, remember bool) string {
 		beego.Error("cant GeneToken for " + username)
 		return ""
 	} else {
-		//beego.Info("user:" + username + "`s token:" + token)
+		// beego.Info("user:" + username + "`s token:" + token)
 		return token
 	}
 }
@@ -35,7 +35,7 @@ func ValidateToken(utoken string, username string) bool {
 		return false
 	}
 	claims, err := AuthAlgo.Decode(utoken)
-	//beego.Debug(claims)
+	// beego.Debug(claims)
 	if err != nil {
 		beego.Error(err.Error())
 		return false
@@ -46,7 +46,7 @@ func ValidateToken(utoken string, username string) bool {
 		beego.Error(username + "`s tokenName is not a string!")
 	}
 	tokenTime, _ := claims.GetTime("exp")
-	//beego.Info(tokenTime)
+	// beego.Info(tokenTime)
 	if tokenName == username && time.Now().Before(tokenTime) {
 		return true
 	}

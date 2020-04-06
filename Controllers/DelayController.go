@@ -21,7 +21,7 @@ func (this *DelayController) Get() {
 	this.Data["detail"] = this.GetString("detail")
 	this.Data["URL"] = this.GetString("URL")
 	this.Data["title"] = this.GetString("title")
-	//code,_:=this.GetInt("code",200)
+	// code,_:=this.GetInt("code",200)
 }
 
 func DelayRedirect(info DelayInfo, c *beego.Controller, code ...int) {

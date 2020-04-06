@@ -62,11 +62,11 @@ func (this *UserConsoleController) Get() {
 	var (
 		entities        []MinoDatabase.WareEntity
 		orders          []MinoDatabase.Order
-		infoTotalUpTime time.Duration
 		infoTotalOnline int
 		wg              sync.WaitGroup
 		servers         []serverInfo
 	)
+	infoTotalUpTime := user.TotalUpTime
 	if !user.IsAdmin {
 		DB.Where("user_id = ?", user.ID).Find(&entities)
 	} else {
@@ -80,20 +80,19 @@ func (this *UserConsoleController) Get() {
 	}
 	pongsSync.pongs = make([]ServerStatus.Pong, len(entities))
 	for i, e := range entities {
-		infoTotalUpTime += time.Now().Sub(e.CreatedAt)
 		wg.Add(1)
 		go func(host string, index int) {
 			pongTemp, _ := ServerStatus.Ping(host)
-			//beego.Info(pongTemp,host)
+			// beego.Info(pongTemp,host)
 			/* different index dont need Lock*/
 			pongsSync.pongs[index] = pongTemp
-			//beego.Info(len(pongsSync.pongs))
+			// beego.Info(len(pongsSync.pongs))
 			wg.Done()
 		}(e.HostName, i)
-		//beego.Debug(pong.Players.Online,pong.Players.Max)
+		// beego.Debug(pong.Players.Online,pong.Players.Max)
 	}
 	wg.Wait()
-	//beego.Debug(pongs)
+	// beego.Debug(pongs)
 	this.Data["infoTotalUpTime"] = durafmt.Parse(infoTotalUpTime).LimitFirstN(2).String()
 	for i, p := range pongsSync.pongs {
 		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
@@ -163,7 +162,7 @@ func (this *UserConsoleController) Get() {
 			})
 		}
 	}
-	//beego.Info(servers)
+	// beego.Info(servers)
 	this.Data["servers"] = servers
 	this.Data["infoTotalOnline"] = infoTotalOnline
 }
@@ -240,7 +239,7 @@ func (this *UserConsoleController) Renew() {
 func (this *UserConsoleController) Reinstall() {
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
-		//beego.Error(err)
+		// beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}

@@ -85,12 +85,12 @@ func (this *UserSettingsController) UpdateUserPassword() {
 		} else {
 			this.Data["hasError"] = true
 			this.Data["hasErrorText"] = "两次输入的新密码不一致"
-			//this.Redirect("/user-settings",302)
+			// this.Redirect("/user-settings",302)
 		}
 	} else {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "旧密码输入错误"
-		//this.Redirect("/user-settings",302)
+		// this.Redirect("/user-settings",302)
 	}
 }
 
@@ -110,7 +110,7 @@ func (this *UserSettingsController) UpdateUserEmail() {
 		this.Data["hasErrorText2"] = err.Error() + " 获取用户信息失败，请重新登录！"
 		return
 	}
-	//beego.Info(newEmail,cpt,cptInput)
+	// beego.Info(newEmail,cpt,cptInput)
 	if cpt == cptInput {
 		DB.Model(&user).Update("email", newEmail)
 		MinoMessage.Send("ADMIN", user.ID, "您刚刚将绑定的邮箱修改到了 "+newEmail)

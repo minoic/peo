@@ -48,7 +48,7 @@ func (this *UserRechargeController) RechargeByKey() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
-	//beego.Debug(bm.Get("RECHARGE_DELAY"+user.Name))
+	// beego.Debug(bm.Get("RECHARGE_DELAY"+user.Name))
 	if bm.IsExist("RECHARGE_DELAY" + user.Name) {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 3 秒钟内只能充值一次"))
 		return

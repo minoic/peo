@@ -71,7 +71,7 @@ func (this *NewPackController) Prepare() {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
-	//beego.Info(wareInfo)
+	// beego.Info(wareInfo)
 	this.Data["options"] = packInfo
 	this.Data["u"] = 0
 }

@@ -43,7 +43,7 @@ func (this *RegController) Post() {
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
 		return
 	}
-	//beego.Info("user posted!")
+	// beego.Info("user posted!")
 	registerEmail := this.GetString("registerEmail")
 	registerPassword := this.GetString("registerPassword")
 	registerPasswordConfirm := this.GetString("registerPasswordConfirm")
@@ -197,7 +197,7 @@ func (this *RegController) MailConfirm() {
 func checkUserName(userName string) bool {
 	const validChar = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
 	for i := 0; i < len(userName); i++ {
-		//beego.Info(string(userName[i]))
+		// beego.Info(string(userName[i]))
 		if !strings.ContainsAny(validChar, string(userName[i])) {
 			return false
 		}
