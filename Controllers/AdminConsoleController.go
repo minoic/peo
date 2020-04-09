@@ -53,7 +53,7 @@ func (this *AdminConsoleController) Get() {
 	DB.Find(&dib)
 	for i, d := range dib {
 		var entity MinoDatabase.WareEntity
-		if DB.Where("id = ?", d.WareID).First(&entity).RecordNotFound() {
+		if DB.Where("id = ?", d.WareID).First(&entity).RecordNotFound() || entity.DeleteStatus != 1 {
 			DB.Delete(&d)
 		} else {
 			pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entity.ServerExternalID)
@@ -66,7 +66,7 @@ func (this *AdminConsoleController) Get() {
 				ServerEXP             string
 				ServerHostName        string
 			}{
-				ServerName:            pteServer.Name,
+				ServerName:            entity.ServerExternalID,
 				ServerConsoleHostName: template.URL(PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()) + "/server/" + pteServer.Identifier),
 				ServerIdentifier:      pteServer.Identifier,
 				DeleteURL:             template.URL(MinoConfigure.WebHostName + "/admin-console/delete-confirm/" + strconv.Itoa(int(entity.ID))),
@@ -74,9 +74,6 @@ func (this *AdminConsoleController) Get() {
 				ServerEXP:             entity.ValidDate.Format("2006-01-02"),
 				ServerHostName:        entity.HostName,
 			})
-			if deleteServers[i].ServerName == "" {
-				deleteServers[i].ServerName = "无法获取服务器名称"
-			}
 			if deleteServers[i].ServerIdentifier == "" {
 				deleteServers[i].ServerIdentifier = "无法获取编号"
 			}
