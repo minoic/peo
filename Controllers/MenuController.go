@@ -25,9 +25,7 @@ func handleNavbar(this *beego.Controller) {
 			beego.Error(err)
 		}
 		this.Data["unReadNum"] = MinoMessage.UnReadNum(user.ID)
-		if user.IsAdmin {
-			this.Data["isAdmin"] = true
-		}
+		this.Data["isAdmin"] = user.IsAdmin
 	}
 }
 
