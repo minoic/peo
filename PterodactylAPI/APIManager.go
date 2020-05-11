@@ -52,7 +52,8 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			panic("cant Do req:" + err.Error())
+			beego.Error("cant Do req:" + err.Error())
+			return "", 500
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
@@ -66,7 +67,8 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		// beego.Info(req.Header.Get("Authorization"))
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			panic("cant Do req: " + err.Error())
+			beego.Error("cant Do req:" + err.Error())
+			return "", 500
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
