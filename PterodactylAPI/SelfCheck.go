@@ -48,16 +48,6 @@ func CheckServers() {
 					DB.Delete(&entity)
 				}
 			}
-		} else if pterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true) == (PterodactylServer{}) {
-			if entity.DeleteStatus == 0 {
-				addConfirmWareEntity(entity)
-				DB.Model(&entity).Update("delete_status", 1)
-				beego.Info("server added to delete confirm list because cant get info from pte panel: ",
-					entity.ServerExternalID)
-			} else if entity.DeleteStatus == 2 {
-				beego.Info("deleted", entity)
-				DB.Delete(&entity)
-			}
 		}
 	}
 }
