@@ -36,6 +36,7 @@ func main() {
 	beego.Router("/user-messages", &Controllers.UserMessagesController{})
 	beego.Router("/user-console", &Controllers.UserConsoleController{})
 	beego.Router("/user-console/renew/:entityID/:key", &Controllers.UserConsoleController{}, "get:Renew")
+	beego.Router("/user-console/renew2/:entity", &Controllers.UserConsoleController{}, "get:Renew2")
 	beego.Router("/user-console/reinstall/:entityID/:packID", &Controllers.UserConsoleController{}, "get:Reinstall")
 	beego.Router("/user-recharge", &Controllers.UserRechargeController{})
 	beego.Router("/user-recharge/recharge_by_key", &Controllers.UserRechargeController{}, "get:RechargeByKey")

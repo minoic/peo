@@ -20,6 +20,8 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <h4>使用预购买的KEY续费服务器</h4>
                 <small>您可以在淘宝店或发卡平台购买KEY，每个KEY只能使用一次。<br>如果KEY失效不能使用请联系网站管理员！</small>
+                <h4>使用余额续费服务器</h4>
+                <small>当确保余额足够时，点击下方“余额支付”，每点击一次续费一个月，自动扣除一个月的标价。</small>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal no-margin form-border">
@@ -37,9 +39,19 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <a class="btn btn-danger btn-sm" onclick="
+                        $.get('{{.ServerRenew2URL}}',function(data) {
+                        if (data==='SUCCESS'){
+                        alert('续费成功！');
+                        parent.location.reload();
+                        }else{
+                        alert('续费失败：'+data);
+                        }
+                        })
+                        ">余额续费</a>
                 <a class="btn btn-info btn-sm" onclick="
                         $.get('{{.ServerRenewURL}}/'+$('#{{.ServerIdentifier}}{{.ServerIndex}}KEY').val(),function(data) {
-                        if (data==='SUCCESS'){nn
+                        if (data==='SUCCESS'){
                         alert('续费成功！');
                         parent.location.reload();
                         }else{

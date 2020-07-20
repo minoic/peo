@@ -136,6 +136,7 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 			UserExternalID:   user.Name,
 			HostName:         hostName,
 			DeleteStatus:     0,
+			SpecID:           spec.ID,
 			ValidDate:        time.Now().Add(spec.ValidDuration),
 		}
 		if err := DB.Create(&entity).Error; err != nil {

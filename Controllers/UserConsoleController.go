@@ -35,6 +35,7 @@ type serverInfo struct {
 	ServerVersion      string
 	ServerIndex        string
 	ServerRenewURL     template.URL
+	ServerRenew2URL    template.URL
 	ServerReinstallURL template.URL
 	ServerModList      []struct {
 		ModText string
@@ -111,6 +112,7 @@ func (this *UserConsoleController) Get() {
 				ServerIdentifier:   pteServer.Identifier,
 				ServerIndex:        strconv.Itoa(i),
 				ServerRenewURL:     template.URL(MinoConfigure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
+				ServerRenew2URL:    template.URL(MinoConfigure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
 				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
 			})
@@ -140,6 +142,7 @@ func (this *UserConsoleController) Get() {
 				ServerVersion:      p.Version.Name,
 				ServerIndex:        strconv.Itoa(i),
 				ServerRenewURL:     template.URL(MinoConfigure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
+				ServerRenew2URL:    template.URL(MinoConfigure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
 				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 			})
 			if servers[i].ServerFMLType != "" {
@@ -216,6 +219,62 @@ func (this *UserConsoleController) Renew() {
 		beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		DB.Create(&key)
+		return
+	}
+	pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entity.ServerExternalID)
+	if pteServer == (PterodactylAPI.PterodactylServer{}) {
+		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+		return
+	}
+	if err := PterodactylAPI.PterodactylUpdateServerDetail(PterodactylAPI.ConfGetParams(), entity.ServerExternalID, PterodactylAPI.PostUpdateDetails{
+		UserID:      pteServer.UserId,
+		ServerName:  pteServer.Name,
+		Description: "到期时间：" + entity.ValidDate.Format("2006-01-02"),
+		ExternalID:  pteServer.ExternalId,
+	}); err != nil {
+		beego.Error(err)
+		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+	}
+	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *UserConsoleController) Renew2() {
+	entityID := this.Ctx.Input.Param(":entity")
+	eid, err := strconv.Atoi(entityID)
+	if err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取服务器编号"))
+		return
+	}
+	DB := MinoDatabase.GetDatabase()
+	user, err := MinoSession.SessionGetUser(this.StartSession())
+	if err != nil {
+		beego.Warn(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取用户信息失败"))
+		return
+	}
+	var entity MinoDatabase.WareEntity
+	if DB.Where("id = ?", eid).First(&entity).RecordNotFound() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("找不到指定服务器"))
+		return
+	}
+	var spec MinoDatabase.WareSpec
+	if DB.Where("id = ?", entity.SpecID).First(&spec).RecordNotFound() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取对应商品"))
+		return
+	}
+	cost := spec.PricePerMonth * uint(100-spec.Discount) / 100
+	if cost > user.Balance {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("余额不足"))
+		return
+	}
+	if err := DB.Model(&user).Update("balance", user.Balance-cost).Error; err != nil {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库错误"))
+		return
+	}
+	if DB.Model(&entity).Update("valid_date", entity.ValidDate.AddDate(0, 1, 0)).Update("delete_status", 0).Error != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		return
 	}
 	pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entity.ServerExternalID)
