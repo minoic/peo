@@ -40,7 +40,7 @@ func (this *UserSettingsController) Prepare() {
 			this.Data["pteUserCreatedAt"] = "获取用户信息失败"
 		} else {
 			this.Data["pteUserUUID"] = pteUser.Uuid
-			this.Data["pteUserName"] = pteUser.UserName
+			this.Data["pteUserName"] = pteUser.ExternalId
 			this.Data["pteUserEmail"] = pteUser.Email
 			this.Data["pteUser2FA"] = pteUser.TwoFA
 			this.Data["pteUserCreatedAt"] = pteUser.CreatedAt
@@ -53,7 +53,7 @@ func (this *UserSettingsController) Prepare() {
 		this.Data["pteUserCreatedAt"] = "请先创建用户"
 		this.Data["pteUserCreateURL"] = MinoConfigure.WebHostName + "/user-settings/create-pterodactyl-user"
 	}
-
+	this.Data["pteUserPassword"] = "默认密码为注册时输入的用户名"
 }
 
 func (this *UserSettingsController) Get() {}

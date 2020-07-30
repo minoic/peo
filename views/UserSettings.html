@@ -67,36 +67,37 @@
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">UUID</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserUUID}}" class="form-control input-sm"
-                                               name="newPassword" disabled>
+                                        <input type="text" placeholder="{{.pteUserUUID}}" class="form-control input-sm" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">用户名</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserName}}" class="form-control input-sm"
-                                               name="newPassword" disabled>
+                                        <input type="text" placeholder="{{.pteUserName}}" class="form-control input-sm" disabled>
+                                    </div><!-- /.col -->
+                                </div><!-- /form-group -->
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">密码</label>
+                                    <div class="col-lg-8">
+                                        <input type="text" placeholder="默认密码是您注册时输入的用户名" class="form-control input-sm" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">邮箱</label>
                                     <div class="col-lg-8">
-                                        <input type="password" placeholder="{{.pteUserEmail}}"
-                                               class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="password" placeholder="{{.pteUserEmail}}" class="form-control input-sm"  disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">两步验证</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{if .pteUser2FA}}已开启{{else}}未开启{{end}}"
-                                               class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="text" placeholder="{{if .pteUser2FA}}已开启{{else}}未开启{{end}}" class="form-control input-sm" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">创建日期</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder="{{.pteUserCreatedAt}}"
-                                               class="form-control input-sm" name="newPassword" disabled>
+                                        <input type="text" placeholder="{{.pteUserCreatedAt}}" class="form-control input-sm"  disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>

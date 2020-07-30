@@ -43,12 +43,7 @@ func LoopTasksManager() {
 	}()
 	// always go task
 	go func() {
-		interval, err := MinoConfigure.GetConf().Int("AutoTaskInterval")
-		if err != nil {
-			interval = 10
-			beego.Error("cant get AutoTaskInterval ,set it to 10sec as default")
-		}
-		ticker := time.NewTicker(time.Duration(interval) * time.Second)
+		ticker := time.NewTicker(5 * time.Minute)
 		for {
 			select {
 			case <-ticker.C:
@@ -64,7 +59,7 @@ func LoopTasksManager() {
 						if err == nil && pong.Version.Protocol != 0 {
 							var user MinoDatabase.User
 							DB.Model(&MinoDatabase.User{}).Where("id = ?", e.UserID).First(&user)
-							DB.Model(&user).Update("total_up_time", user.TotalUpTime+time.Duration(interval)*time.Second)
+							DB.Model(&user).Update("total_up_time", user.TotalUpTime+5*time.Minute)
 							count++
 						}
 					}

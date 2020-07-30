@@ -47,27 +47,28 @@ type Pong struct {
 }
 */
 
-func Ping(host string) (Pong, error) {
+func Ping(host string) (*Pong, error) {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		beego.Error(err)
-		return Pong{}, err
+		return nil, err
 	}
 	if err := sendHandshake(conn, host); err != nil {
 		beego.Error(err)
-		return Pong{}, err
+		return nil, err
 	}
 	if err := sendStatusRequest(conn); err != nil {
 		beego.Error(err)
-		return Pong{}, err
+		return nil, err
 	}
 	pong, err := readPong(conn)
 	// beego.Debug(pong.FavIcon)
+	conn.Close()
 	if err != nil {
 		// beego.Error(err)
-		return Pong{}, err
+		return nil, err
 	}
-	return *pong, nil
+	return pong, nil
 }
 
 func makePacket(pl *bytes.Buffer) *bytes.Buffer {

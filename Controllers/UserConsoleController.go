@@ -83,10 +83,15 @@ func (this *UserConsoleController) Get() {
 	for i, e := range entities {
 		wg.Add(1)
 		go func(host string, index int) {
-			pongTemp, _ := ServerStatus.Ping(host)
+			pongTemp, err := ServerStatus.Ping(host)
+			if err != nil {
+				pongsSync.pongs[index] = ServerStatus.Pong{}
+			} else {
+				pongsSync.pongs[index] = *pongTemp
+			}
 			// beego.Info(pongTemp,host)
 			/* different index dont need Lock*/
-			pongsSync.pongs[index] = pongTemp
+
 			// beego.Info(len(pongsSync.pongs))
 			wg.Done()
 		}(e.HostName, i)
