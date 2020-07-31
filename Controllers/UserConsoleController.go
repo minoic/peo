@@ -77,17 +77,18 @@ func (this *UserConsoleController) Get() {
 	this.Data["infoOrderCount"] = len(orders)
 	this.Data["infoServerCount"] = len(entities)
 	var pongsSync struct {
-		pongs []ServerStatus.Pong
+		pongs []*ServerStatus.Pong
 	}
-	pongsSync.pongs = make([]ServerStatus.Pong, len(entities))
+	pongsSync.pongs = make([]*ServerStatus.Pong, len(entities))
 	for i, e := range entities {
 		wg.Add(1)
 		go func(host string, index int) {
 			pongTemp, err := ServerStatus.Ping(host)
 			if err != nil {
-				pongsSync.pongs[index] = ServerStatus.Pong{}
+				beego.Error(err)
+				pongsSync.pongs[index] = &ServerStatus.Pong{}
 			} else {
-				pongsSync.pongs[index] = *pongTemp
+				pongsSync.pongs[index] = pongTemp
 			}
 			// beego.Info(pongTemp,host)
 			/* different index dont need Lock*/

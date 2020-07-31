@@ -9,6 +9,7 @@ require (
 	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/hako/durafmt v0.0.0-20191009132224-3f39dc1ed9f4
 	github.com/jinzhu/gorm v1.9.12
+	github.com/json-iterator/go v1.1.10
 	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.1.0 // indirect
