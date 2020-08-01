@@ -48,6 +48,13 @@ func CheckServers() {
 					DB.Delete(&entity)
 				}
 			}
+		} else if entity.ValidDate.After(time.Now()) {
+			DB.Model(&entity).Update("delete_status", 0)
+			DB.Delete(&MinoDatabase.DeleteConfirm{}, "ware_id = ?", entity.ID)
+			err := PterodactylUnsuspendServer(ConfGetParams(), entity.ServerExternalID)
+			if err != nil {
+				beego.Error(err)
+			}
 		}
 	}
 }
