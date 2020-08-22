@@ -3,10 +3,10 @@ package Controllers
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"git.ntmc.tech/root/MinoIC-PE/MinoCache"
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoEmail"
+	"github.com/MinoIC/MinoIC-PE/MinoCache"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoEmail"
 	"github.com/astaxie/beego"
 	"time"
 )

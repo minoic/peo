@@ -1,8 +1,8 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoMessage"
-	"git.ntmc.tech/root/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/MinoIC-PE/MinoMessage"
+	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/astaxie/beego"
 )
 

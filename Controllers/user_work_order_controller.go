@@ -1,10 +1,10 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoEmail"
-	"git.ntmc.tech/root/MinoIC-PE/MinoMessage"
-	"git.ntmc.tech/root/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoEmail"
+	"github.com/MinoIC/MinoIC-PE/MinoMessage"
+	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"time"

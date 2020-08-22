@@ -2,10 +2,10 @@ package MinoOrder
 
 import (
 	"errors"
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoMessage"
-	"git.ntmc.tech/root/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoMessage"
+	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"strconv"

@@ -1,9 +1,9 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoOrder"
-	"git.ntmc.tech/root/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoOrder"
+	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/astaxie/beego"
 	"strconv"
 )

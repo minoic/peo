@@ -1,7 +1,7 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/astaxie/beego"
 	"strconv"
 )

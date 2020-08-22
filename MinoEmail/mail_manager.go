@@ -1,9 +1,9 @@
 package MinoEmail
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoKey"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoKey"
 	"github.com/astaxie/beego"
 	"github.com/xhit/go-simple-mail"
 )

@@ -2,7 +2,7 @@ package MinoSession
 
 import (
 	"errors"
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/session"
 	_ "github.com/astaxie/beego/session/memcache"

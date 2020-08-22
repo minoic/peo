@@ -1,7 +1,7 @@
 package MinoCache
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/astaxie/beego/cache"
 	_ "github.com/astaxie/beego/cache/memcache"
 	_ "github.com/astaxie/beego/cache/redis"

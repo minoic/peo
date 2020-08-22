@@ -1,10 +1,11 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
+	_ "github.com/smartwalle/alipay/v3"
 	"strconv"
 	"time"
 )

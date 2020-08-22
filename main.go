@@ -1,8 +1,8 @@
 package main
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/AutoManager"
-	"git.ntmc.tech/root/MinoIC-PE/Controllers"
+	"github.com/MinoIC/MinoIC-PE/AutoManager"
+	"github.com/MinoIC/MinoIC-PE/Controllers"
 	"github.com/astaxie/beego"
 )
 

@@ -2,8 +2,8 @@ package MinoEmail
 
 import (
 	"errors"
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoKey"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoKey"
 	"github.com/jinzhu/gorm"
 	"time"
 )

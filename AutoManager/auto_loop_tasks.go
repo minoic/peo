@@ -1,12 +1,12 @@
 package AutoManager
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/Controllers"
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
-	"git.ntmc.tech/root/MinoIC-PE/MinoKey"
-	"git.ntmc.tech/root/MinoIC-PE/PterodactylAPI"
-	"git.ntmc.tech/root/MinoIC-PE/ServerStatus"
+	"github.com/MinoIC/MinoIC-PE/Controllers"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoKey"
+	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/MinoIC-PE/ServerStatus"
 	"github.com/astaxie/beego"
 	"time"
 )

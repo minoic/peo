@@ -1,13 +1,12 @@
 package MinoDatabase
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
 	"github.com/8treenet/gcache"
 	gcopt "github.com/8treenet/gcache/option"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 var db *gorm.DB

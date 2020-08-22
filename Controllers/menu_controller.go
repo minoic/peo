@@ -1,10 +1,10 @@
 package Controllers
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
-	"git.ntmc.tech/root/MinoIC-PE/MinoMessage"
-	"git.ntmc.tech/root/MinoIC-PE/MinoSession"
-	"git.ntmc.tech/root/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoMessage"
+	"github.com/MinoIC/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
 	"github.com/astaxie/beego"
 	"html/template"
 )

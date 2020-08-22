@@ -2,7 +2,7 @@ package PterodactylAPI
 
 import (
 	"errors"
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"strconv"

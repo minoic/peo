@@ -1,7 +1,7 @@
 package MinoMessage
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/jinzhu/gorm"
 )
 

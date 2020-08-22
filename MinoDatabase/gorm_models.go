@@ -1,7 +1,7 @@
 package MinoDatabase
 
 import (
-	"git.ntmc.tech/root/MinoIC-PE/MinoConfigure"
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 	"html/template"
