@@ -1,10 +1,13 @@
 package Controllers
 
 import (
+	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
+	"github.com/MinoIC/MinoIC-PE/MinoKey"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
+	"github.com/smartwalle/alipay/v3"
 	_ "github.com/smartwalle/alipay/v3"
 	"strconv"
 	"time"
@@ -118,6 +121,29 @@ func (this *UserRechargeController) RechargeByKey() {
 		Status:  `<span class="label label-success">已到账</span>`,
 	})
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
+}
+
+func (this *UserRechargeController) CreateZFB() {
+	if !this.CheckXSRFCookie() {
+		this.Abort("401")
+		return
+	}
+	amount, err := this.GetInt("amount")
+	if amount <= 0 || err != nil {
+		this.Abort("400")
+	}
+	tradeNo := MinoKey.RandNumKey(16)
+	p := alipay.TradePreCreate{}
+	p.NotifyURL = "https://order.ntmc.tech/zfb/" + tradeNo
+	p.Subject = "MinoIC-PE 充值"
+	p.OutTradeNo = tradeNo
+	p.TotalAmount = strconv.Itoa(amount)
+	resp, err := MinoConfigure.AliClient.TradePreCreate(p)
+	if err != nil {
+		this.Abort("500")
+		return
+	}
+	_, _ = this.Ctx.ResponseWriter.Write([]byte(resp.Content.QRCode))
 }
 
 func (this *UserRechargeController) CheckXSRFCookie() bool {

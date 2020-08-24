@@ -24,6 +24,9 @@ func SessionIslogged(sess session.Store) bool {
 	}
 	lsToken := cookie1.(string)
 	unToken := cookie2.(string)
+	if MinoDatabase.GetDatabase().First(&MinoDatabase.User{}, "name = ?", unToken).RecordNotFound() {
+		return false
+	}
 	// beego.Debug(lsToken, unToken)
 	if len(lsToken) == 0 || !ValidateToken(lsToken, unToken) {
 		beego.Warn(unToken + " is not logged in!")

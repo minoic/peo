@@ -1,3 +1,4 @@
-/tmp/
-/dist/
+tmp
+dist
 .idea/dataSources/
+conf
