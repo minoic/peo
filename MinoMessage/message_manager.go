@@ -1,21 +1,43 @@
 package MinoMessage
 
 import (
+	"fmt"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
-	"github.com/jinzhu/gorm"
+	"github.com/astaxie/beego"
 )
 
-func Send(senderName string, receiverID uint, text string) {
+var adminID uint
+
+func init() {
+	var user MinoDatabase.User
+	MinoDatabase.GetDatabase().First(&user, "is_admin")
+	adminID = user.ID
+}
+
+func Send(senderName string, receiverID uint, text ...interface{}) {
 	message := MinoDatabase.Message{
-		Model:      gorm.Model{},
 		SenderName: senderName,
 		ReceiverID: receiverID,
-		Text:       text,
+		Text:       fmt.Sprint(text...),
 		TimeText:   "",
 	}
-	DB := MinoDatabase.GetDatabase()
-	if err := DB.Create(&message).Error; err != nil {
-		panic(err)
+	if err := MinoDatabase.GetDatabase().Create(&message).Error; err != nil {
+		beego.Error(err)
+	}
+}
+
+func SendAdmin(text ...interface{}) {
+	if adminID == 0 {
+		return
+	}
+	message := MinoDatabase.Message{
+		SenderName: "SYSTEM",
+		ReceiverID: adminID,
+		Text:       fmt.Sprint(text...),
+		TimeText:   "",
+	}
+	if err := MinoDatabase.GetDatabase().Create(&message).Error; err != nil {
+		beego.Error(err)
 	}
 }
 
