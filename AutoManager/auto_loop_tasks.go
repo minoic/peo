@@ -8,7 +8,6 @@ import (
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
 	"github.com/MinoIC/MinoIC-PE/ServerStatus"
 	"github.com/astaxie/beego"
-	"strings"
 	"time"
 )
 
@@ -43,8 +42,9 @@ func LoopTasksManager() {
 		}
 	}()
 	// always go task
+	time2 := 5 * time.Minute
 	go func() {
-		ticker := time.NewTicker(10 * time.Minute)
+		ticker := time.NewTicker(time2)
 		for {
 			select {
 			case <-ticker.C:
@@ -60,24 +60,47 @@ func LoopTasksManager() {
 						if err == nil && pong.Version.Protocol != 0 {
 							var user MinoDatabase.User
 							DB.Model(&MinoDatabase.User{}).Where("id = ?", e.UserID).First(&user)
-							DB.Model(&user).Update("total_up_time", user.TotalUpTime+5*time.Minute)
+							DB.Model(&user).Update("total_up_time", user.TotalUpTime+time2)
 							count++
 						}
 					}
 					// beego.Info("Servers Online - ",count)
 				}()
-				go func() {
-					var rlogs []MinoDatabase.RechargeLog
-					DB.Find(&rlogs, "method = ?", "支付宝")
-					for i := range rlogs {
-						if strings.Contains(rlogs[i].Code, "Waiting") && rlogs[i].CreatedAt.Add(10*time.Minute).Before(time.Now()) {
-							DB.Model(&rlogs[i]).Update(&MinoDatabase.RechargeLog{
-								Code:   rlogs[i].Code[:23] + "OutOfTime",
-								Status: `<span class="label">已超时</span>`,
-							})
-						}
-					}
-				}()
+				// go func() {
+				//	var rlogs []MinoDatabase.RechargeLog
+				//	DB.Find(&rlogs, "method = ?", "支付宝")
+				//	for i := range rlogs {
+				//		if strings.Contains(rlogs[i].Code, "Waiting") {
+				//			if rlogs[i].CreatedAt.Add(25*time.Hour).Before(time.Now()) {
+				//				DB.Model(&rlogs[i]).Update(&MinoDatabase.RechargeLog{
+				//					Code:   rlogs[i].Code[:23] + "OutOfTime",
+				//					Status: `<span class="label">已超时</span>`,
+				//				})
+				//			}
+				//			p:=alipay.TradeQuery{}
+				//			p.OutTradeNo="1316548716"
+				//			resp,err:=MinoConfigure.AliClient.TradeQuery(p)
+				//			if err != nil {
+				//				beego.Error(err)
+				//			}
+				//			if resp.IsSuccess(){
+				//				var user MinoDatabase.User
+				//				DB.First(&user,"id = ?",rlogs[i].UserID)
+				//				if err=DB.Model(&user).Update("balance",user.Balance+rlogs[i].Balance).Error;err!=nil{
+				//					beego.Error(err)
+				//					continue
+				//				}
+				//
+				//				DB.Model(&rlogs[i]).Update(&MinoDatabase.RechargeLog{
+				//					Code:   rlogs[i].Code[:23] + fmt.Sprintf("%d_%d_Finished",user.Balance-rlogs[i].Balance,user.Balance),
+				//					Status:  `<span class="label label-success">已到账</span>`,
+				//				})
+				//				beego.Info("user",user.Name,user.Email,"has recharged ",rlogs[i].Balance)
+				//				MinoMessage.SendAdmin("user",user.Name,user.Email,"has recharged ",rlogs[i].Balance)
+				//			}
+				//		}
+				//	}
+				//}()
 			}
 		}
 	}()

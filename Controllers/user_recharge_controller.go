@@ -143,24 +143,25 @@ func (this *UserRechargeController) CreateZFB() {
 	}
 	tradeNo := MinoKey.RandNumKey(16)
 	p := alipay.TradePreCreate{}
-	p.NotifyURL = MinoConfigure.WebHostName + tradeNo
+	p.NotifyURL = MinoConfigure.WebHostName + "/alipay"
 	p.Subject = "MinoIC-PE 充值"
 	p.OutTradeNo = tradeNo
 	p.TotalAmount = strconv.Itoa(amount)
-	p.TimeExpire = "10m"
 	resp, err := MinoConfigure.AliClient.TradePreCreate(p)
+	beego.Debug(resp)
 	if err != nil {
 		beego.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}
 	rlog := MinoDatabase.RechargeLog{
-		UserID:  user.ID,
-		Code:    "ByZFB_" + tradeNo + "_Waiting",
-		Method:  "支付宝",
-		Balance: uint(amount),
-		Time:    time.Now().Format("2006-01-02_15:04:05"),
-		Status:  `<span class="label label-warning">未支付</span>`,
+		UserID:     user.ID,
+		Code:       "ByZFB_" + tradeNo + "_Waiting",
+		Method:     "支付宝",
+		Balance:    uint(amount),
+		OutTradeNo: tradeNo,
+		Time:       time.Now().Format("2006-01-02_15:04:05"),
+		Status:     `<span class="label label-warning">未支付</span>`,
 	}
 	MinoDatabase.GetDatabase().Create(&rlog)
 	img, err := qrcode.Encode(resp.Content.QRCode, qrcode.High, 256)

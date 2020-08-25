@@ -136,12 +136,13 @@ type Pack struct {
 
 type RechargeLog struct {
 	gorm.Model
-	UserID  uint `gorm:"index"`
-	Code    string
-	Method  string
-	Balance uint
-	Time    string
-	Status  template.HTML
+	UserID     uint `gorm:"index"`
+	Code       string
+	Method     string
+	Balance    uint
+	Time       string
+	OutTradeNo string `gorm:"index"`
+	Status     template.HTML
 }
 
 type RechargeKey struct {
