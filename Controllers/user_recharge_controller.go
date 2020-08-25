@@ -1,12 +1,14 @@
 package Controllers
 
 import (
+	"encoding/base64"
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoKey"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
+	qrcode "github.com/skip2/go-qrcode"
 	"github.com/smartwalle/alipay/v3"
 	_ "github.com/smartwalle/alipay/v3"
 	"strconv"
@@ -125,25 +127,49 @@ func (this *UserRechargeController) RechargeByKey() {
 
 func (this *UserRechargeController) CreateZFB() {
 	if !this.CheckXSRFCookie() {
-		this.Abort("401")
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
+		return
+	}
+	user, err := MinoSession.SessionGetUser(this.StartSession())
+	if err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}
 	amount, err := this.GetInt("amount")
 	if amount <= 0 || err != nil {
-		this.Abort("400")
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 	}
 	tradeNo := MinoKey.RandNumKey(16)
 	p := alipay.TradePreCreate{}
-	p.NotifyURL = "https://order.ntmc.tech/zfb/" + tradeNo
+	p.NotifyURL = MinoConfigure.WebHostName + tradeNo
 	p.Subject = "MinoIC-PE 充值"
 	p.OutTradeNo = tradeNo
 	p.TotalAmount = strconv.Itoa(amount)
+	p.TimeExpire = "10m"
 	resp, err := MinoConfigure.AliClient.TradePreCreate(p)
 	if err != nil {
-		this.Abort("500")
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}
-	_, _ = this.Ctx.ResponseWriter.Write([]byte(resp.Content.QRCode))
+	rlog := MinoDatabase.RechargeLog{
+		UserID:  user.ID,
+		Code:    "ByZFB_" + tradeNo + "_Waiting",
+		Method:  "支付宝",
+		Balance: uint(amount),
+		Time:    time.Now().Format("2006-01-02_15:04:05"),
+		Status:  `<span class="label label-warning">未支付</span>`,
+	}
+	MinoDatabase.GetDatabase().Create(&rlog)
+	img, err := qrcode.Encode(resp.Content.QRCode, qrcode.High, 256)
+	if err != nil {
+		beego.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
+		return
+	}
+	_, _ = this.Ctx.ResponseWriter.Write([]byte(base64.StdEncoding.EncodeToString(img)))
 }
 
 func (this *UserRechargeController) CheckXSRFCookie() bool {

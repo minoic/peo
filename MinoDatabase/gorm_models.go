@@ -34,8 +34,8 @@ func init() {
 
 type User struct {
 	gorm.Model
-	Name           string
-	Email          string
+	Name           string `gorm:"index"`
+	Email          string `gorm:"index"`
 	Password       string
 	Balance        uint
 	IsAdmin        bool
@@ -103,7 +103,7 @@ type RegConfirmKey struct {
 type Message struct {
 	gorm.Model
 	SenderName string
-	ReceiverID uint
+	ReceiverID uint `gorm:"index"`
 	Text       string
 	TimeText   string
 	HaveRead   bool
@@ -136,7 +136,7 @@ type Pack struct {
 
 type RechargeLog struct {
 	gorm.Model
-	UserID  uint
+	UserID  uint `gorm:"index"`
 	Code    string
 	Method  string
 	Balance uint

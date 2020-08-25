@@ -100,6 +100,7 @@
                                         <div class="panel-heading">
                                             <h4>用支付宝充值</h4>
                                             <p>输入要充值的金额后支付宝APP扫描二维码付款</p>
+                                            <p>目前仅能充值大于零的整数金额</p>
                                             <p>若充值后等待一分钟扔未到账，请联系网站管理员为您解决</p>
                                         </div>
                                         <div class="panel-body">
@@ -111,10 +112,16 @@
                                             </div><!-- /form-group -->
                                         </div>
                                         <div class="panel-footer text-right">
-                                            <button type="button" class="btn btn-info btn-lg" onclick="$.get('/user-recharge/create-zfb?'+$('#FormByZFB').serialize(),function(data) {
+                                            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" href="#zfb" onclick="$.get('/user-recharge/create-zfb?'+$('#FormByZFB').serialize(),function(data) {
                                             console.log($('#FormByZFB').serialize());
                                             console.log(data)
-                                            alert(data)
+                                            if (data.length<=5){
+                                                $('#qrtext').text('获取二维码失败，请重新生成。')
+                                                $('#qrimg').attr('src','')
+                                            }else{
+                                                $('#qrtext').text('请用支付宝App扫码支付')
+                                                $('#qrimg').attr('src','data:image/png;base64,'+data)
+                                            }
                                           })
                                         "><i class="fa fa-heart"></i> 充值
                                             </button>
@@ -207,12 +214,28 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="zfb" aria-hidden="true" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4>支付宝充值</h4>
+                    </div>
+                    <div class="modal-body">
+                        <h3 id="qrtext">
+                            请用支付宝App扫码支付
+                        </h3>
+                        <img src="" alt="" id="qrimg">
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div>
         <!-- /main-container -->
     </div><!-- /wrapper -->
-
     <a href="" id="scroll-to-top" class="hidden-print"><i class="fa fa-chevron-up"></i></a>
     <!-- Logout confirmation -->
     {{template "tpls/perfectJS.html" .}}
+    <script src="../static/js/qrcode.min.js"></script>
     <script src='../static/perfect/js/jquery.cookie.min.js'></script>
 </body>
 </html>

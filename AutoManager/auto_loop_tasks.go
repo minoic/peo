@@ -8,6 +8,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
 	"github.com/MinoIC/MinoIC-PE/ServerStatus"
 	"github.com/astaxie/beego"
+	"strings"
 	"time"
 )
 
@@ -43,12 +44,12 @@ func LoopTasksManager() {
 	}()
 	// always go task
 	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
+		ticker := time.NewTicker(10 * time.Minute)
 		for {
 			select {
 			case <-ticker.C:
+				DB := MinoDatabase.GetDatabase()
 				go func() {
-					DB := MinoDatabase.GetDatabase()
 					var (
 						entities []MinoDatabase.WareEntity
 						count    int
@@ -64,6 +65,18 @@ func LoopTasksManager() {
 						}
 					}
 					// beego.Info("Servers Online - ",count)
+				}()
+				go func() {
+					var rlogs []MinoDatabase.RechargeLog
+					DB.Find(&rlogs, "method = ?", "支付宝")
+					for i := range rlogs {
+						if strings.Contains(rlogs[i].Code, "Waiting") && rlogs[i].CreatedAt.Add(10*time.Minute).Before(time.Now()) {
+							DB.Model(&rlogs[i]).Update(&MinoDatabase.RechargeLog{
+								Code:   rlogs[i].Code[:23] + "OutOfTime",
+								Status: `<span class="label">已超时</span>`,
+							})
+						}
+					}
 				}()
 			}
 		}
