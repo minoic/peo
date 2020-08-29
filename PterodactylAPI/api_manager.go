@@ -49,7 +49,6 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		req.Header.Set("Accept", "Application/vnd.pterodactyl.v1+json")
 		req.ContentLength = int64(len(ujson))
 		req.Header.Set("Content-Type", "application/json")
-
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			beego.Error("cant Do req:" + err.Error())

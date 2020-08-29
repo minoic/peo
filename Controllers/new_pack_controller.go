@@ -33,8 +33,8 @@ func init() {
 		},
 		{
 			Name:           "nest_id",
-			FriendlyName:   "NEST ID",
-			Description:    "输入包所在的 NEST 的 ID 在翼龙面板中可以清晰的看到",
+			FriendlyName:   "nest ID",
+			Description:    "输入包所在的 nest 的 ID 在翼龙面板中可以清晰的看到",
 			Type:           "number",
 			AdditionalTags: "required",
 		},

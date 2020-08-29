@@ -75,9 +75,10 @@ func RefreshServerInfo() {
 	)
 	DB.Find(&entities)
 	pongsSync.pongs = make([]*ServerStatus.Pong, len(entities))
+	wg.Add(len(entities))
 	for i, e := range entities {
-		wg.Add(1)
 		go func(host string, index int) {
+			defer wg.Done()
 			pongTemp, err := ServerStatus.Ping(host)
 			if err != nil {
 				beego.Error(err)
@@ -87,9 +88,7 @@ func RefreshServerInfo() {
 			}
 			// beego.Info(pongTemp,host)
 			/* different index dont need Lock*/
-
 			// beego.Info(len(pongsSync.pongs))
-			wg.Done()
 		}(e.HostName, i)
 		// beego.Debug(pong.Players.Online,pong.Players.Max)
 	}
@@ -102,12 +101,9 @@ func RefreshServerInfo() {
 			/* server is offline*/
 			server = serverInfo{
 				ServerIsOnline:     false,
-				ServerIconData:     "",
 				ServerName:         pteServer.Name,
 				ServerEXP:          entities[i].ValidDate.Format("2006-01-02 15:04:05"),
 				ServerDescription:  "服务器已离线",
-				ServerPlayerOnline: 0,
-				ServerPlayerMax:    0,
 				ServerHostName:     entities[i].HostName,
 				ServerIdentifier:   pteServer.Identifier,
 				ServerIndex:        strconv.Itoa(i),
@@ -116,7 +112,6 @@ func RefreshServerInfo() {
 				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
 			}
-
 		} else {
 			/* server is online*/
 			icon := template.URL(p.FavIcon)
