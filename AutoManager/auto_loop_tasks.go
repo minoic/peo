@@ -23,21 +23,18 @@ func LoopTasksManager() {
 		for {
 			select {
 			case <-ticker.C:
-				go PterodactylAPI.CheckServers()
-			case <-ticker.C:
-				go PterodactylAPI.CacheNeededEggs()
-			case <-ticker.C:
-				go PterodactylAPI.CacheNeededServers()
-			case <-ticker.C:
-				go Controllers.RefreshWareInfo()
-			case <-ticker.C:
-				go MinoKey.DeleteOutdatedKeys()
-			case <-ticker.C:
 				go func() {
-					DB := MinoDatabase.GetDatabase()
-					beego.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, " - ",
-						DB.DB().Stats().WaitCount)
+					PterodactylAPI.CheckServers()
+					PterodactylAPI.CacheNeededEggs()
+					PterodactylAPI.CacheNeededServers()
 				}()
+				go Controllers.RefreshWareInfo()
+				go Controllers.RefreshServerInfo()
+				go MinoKey.DeleteOutdatedKeys()
+				DB := MinoDatabase.GetDatabase()
+				beego.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, " - ",
+					DB.DB().Stats().WaitCount)
+
 			}
 		}
 	}()

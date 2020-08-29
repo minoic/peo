@@ -54,31 +54,26 @@ func (this *UserConsoleController) Prepare() {
 	this.Data["u"] = 3
 }
 
-func (this *UserConsoleController) Get() {
-	this.TplName = "UserConsole.html"
-	sess := this.StartSession()
-	user, _ := MinoSession.SessionGetUser(sess)
-	this.Data["userName"] = user.Name
+var (
+	entityMap sync.Map
+	waiting   = serverInfo{
+		ServerIsOnline:    false,
+		ServerIconData:    "",
+		ServerName:        "正在加载",
+		ServerDescription: "后台正在等待第一次获取信息",
+	}
+)
+
+func RefreshServerInfo() {
 	DB := MinoDatabase.GetDatabase()
 	var (
-		entities        []MinoDatabase.WareEntity
-		orders          []MinoDatabase.Order
-		infoTotalOnline int
-		wg              sync.WaitGroup
-		servers         []serverInfo
+		pongsSync struct {
+			pongs []*ServerStatus.Pong
+		}
+		wg       sync.WaitGroup
+		entities []MinoDatabase.WareEntity
 	)
-	infoTotalUpTime := user.TotalUpTime
-	if !user.IsAdmin {
-		DB.Where("user_id = ?", user.ID).Find(&entities)
-	} else {
-		DB.Find(&entities)
-	}
-	DB.Where("user_id = ?", user.ID).Find(&orders)
-	this.Data["infoOrderCount"] = len(orders)
-	this.Data["infoServerCount"] = len(entities)
-	var pongsSync struct {
-		pongs []*ServerStatus.Pong
-	}
+	DB.Find(&entities)
 	pongsSync.pongs = make([]*ServerStatus.Pong, len(entities))
 	for i, e := range entities {
 		wg.Add(1)
@@ -100,13 +95,12 @@ func (this *UserConsoleController) Get() {
 	}
 	wg.Wait()
 	// beego.Debug(pongs)
-	this.Data["infoTotalUpTime"] = durafmt.Parse(infoTotalUpTime).LimitFirstN(2).String()
 	for i, p := range pongsSync.pongs {
 		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
-		infoTotalOnline += p.Players.Online
+		var server serverInfo
 		if p.Version.Protocol == 0 {
 			/* server is offline*/
-			servers = append(servers, serverInfo{
+			server = serverInfo{
 				ServerIsOnline:     false,
 				ServerIconData:     "",
 				ServerName:         pteServer.Name,
@@ -121,24 +115,17 @@ func (this *UserConsoleController) Get() {
 				ServerRenew2URL:    template.URL(MinoConfigure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
 				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
-			})
+			}
+
 		} else {
 			/* server is online*/
-			var des string
-			if p.Description.Text != "" {
-				des = p.Description.Text
-			} else if p.Description.Translate != "" {
-				des = p.Description.Translate
-			} else {
-				des = "暂时无法解析这种 MOTD 😭"
-			}
 			icon := template.URL(p.FavIcon)
-			servers = append(servers, serverInfo{
+			server = serverInfo{
 				ServerIsOnline:     true,
 				ServerIconData:     icon,
 				ServerName:         pteServer.Name,
 				ServerEXP:          entities[i].ValidDate.Format("2006-01-02"),
-				ServerDescription:  des,
+				ServerDescription:  p.Description.Des,
 				ServerPlayerOnline: p.Players.Online,
 				ServerPlayerMax:    p.Players.Max,
 				ServerHostName:     entities[i].HostName,
@@ -150,18 +137,18 @@ func (this *UserConsoleController) Get() {
 				ServerRenewURL:     template.URL(MinoConfigure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
 				ServerRenew2URL:    template.URL(MinoConfigure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
 				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
-			})
-			if servers[i].ServerFMLType != "" {
+			}
+			if server.ServerFMLType != "" {
 				for _, f := range p.ModInfo.ModList {
-					servers[i].ServerModList = append(servers[i].ServerModList, struct{ ModText string }{ModText: f.ModID + " " + f.ModVersion})
+					server.ServerModList = append(server.ServerModList, struct{ ModText string }{ModText: f.ModID + " " + f.ModVersion})
 				}
-				servers[i].ServerModCount = len(servers[i].ServerModList)
+				server.ServerModCount = len(server.ServerModList)
 			}
 		}
 		/* no matter server is online or offline*/
-		DB.Where("nest_id = ? AND egg_id = ?", pteServer.NestId, pteServer.EggId).Find(&servers[i].ServerPacks)
-		if len(servers[i].ServerPacks) == 0 {
-			servers[i].ServerPacks = append(servers[i].ServerPacks, MinoDatabase.Pack{
+		DB.Where("nest_id = ? AND egg_id = ?", pteServer.NestId, pteServer.EggId).Find(&server.ServerPacks)
+		if len(server.ServerPacks) == 0 {
+			server.ServerPacks = append(server.ServerPacks, MinoDatabase.Pack{
 				Model:           gorm.Model{},
 				PackName:        "没有可以安装的包",
 				NestID:          0,
@@ -170,8 +157,42 @@ func (this *UserConsoleController) Get() {
 				PackDescription: "",
 			})
 		}
+		entityMap.Store(entities[i].ID, server)
 	}
+
+}
+
+func (this *UserConsoleController) Get() {
+	this.TplName = "UserConsole.html"
+	sess := this.StartSession()
+	user, _ := MinoSession.SessionGetUser(sess)
+	this.Data["userName"] = user.Name
+	DB := MinoDatabase.GetDatabase()
+	this.Data["infoTotalUpTime"] = durafmt.Parse(user.TotalUpTime).LimitFirstN(2).String()
+	var (
+		orders          []MinoDatabase.Order
+		entities        []MinoDatabase.WareEntity
+		infoTotalOnline int
+	)
+	if !user.IsAdmin {
+		DB.Where("user_id = ?", user.ID).Find(&entities)
+	} else {
+		DB.Find(&entities)
+	}
+	DB.Where("user_id = ?", user.ID).Find(&orders)
+	this.Data["infoOrderCount"] = len(orders)
+	this.Data["infoServerCount"] = len(entities)
 	// beego.Info(servers)
+	servers := make([]serverInfo, len(entities))
+	for i := range entities {
+		tmp, ok := entityMap.Load(entities[i].ID)
+		if ok {
+			servers[i] = tmp.(serverInfo)
+			infoTotalOnline += servers[i].ServerPlayerOnline
+		} else {
+			servers[i] = waiting
+		}
+	}
 	this.Data["servers"] = servers
 	this.Data["infoTotalOnline"] = infoTotalOnline
 }
