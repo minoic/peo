@@ -6,6 +6,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoKey"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	qrcode "github.com/skip2/go-qrcode"
@@ -54,14 +55,14 @@ func (this *UserRechargeController) RechargeByKey() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
-	// beego.Debug(bm.Get("RECHARGE_DELAY"+user.Name))
+	// glgf.Debug(bm.Get("RECHARGE_DELAY"+user.Name))
 	if bm.IsExist("RECHARGE_DELAY" + user.Name) {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 3 秒钟内只能充值一次"))
 		return
 	}
 	err = bm.Put("RECHARGE_DELAY"+user.Name, 1, 3*time.Second)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	}
 	keyString := this.GetString("keyString")
 	DB := MinoDatabase.GetDatabase()
@@ -132,13 +133,13 @@ func (this *UserRechargeController) CreateZFB() {
 	}
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}
 	amount, err := this.GetInt("amount")
 	if amount <= 0 || err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 	}
 	tradeNo := MinoKey.RandNumKey(16)
@@ -148,9 +149,9 @@ func (this *UserRechargeController) CreateZFB() {
 	p.OutTradeNo = tradeNo
 	p.TotalAmount = strconv.Itoa(amount)
 	resp, err := MinoConfigure.AliClient.TradePreCreate(p)
-	beego.Debug(resp)
+	glgf.Debug(resp)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}
@@ -166,7 +167,7 @@ func (this *UserRechargeController) CreateZFB() {
 	MinoDatabase.GetDatabase().Create(&rlog)
 	img, err := qrcode.Encode(resp.Content.QRCode, qrcode.High, 256)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}

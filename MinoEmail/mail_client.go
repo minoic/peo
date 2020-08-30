@@ -2,7 +2,7 @@ package MinoEmail
 
 import (
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"github.com/xhit/go-simple-mail"
 	"time"
 )
@@ -14,11 +14,11 @@ func getSTMPClient() *mail.SMTPServer {
 	if temp == "SSL" {
 		encryption = mail.EncryptionSSL
 	} else if temp != "TLS" && temp != "SSL" {
-		beego.Error("wrong SMTP encryption")
+		glgf.Error("wrong SMTP encryption")
 	}
 	port, err := conf.Int("SMTPPort")
 	if err != nil {
-		beego.Error("cant get SMTPPort")
+		glgf.Error("cant get SMTPPort")
 	}
 	return &mail.SMTPServer{
 		// Authentication: mail.AuthPlain,

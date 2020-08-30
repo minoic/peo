@@ -88,7 +88,7 @@ func (this *OrderInfoController) Prepare() {
 		ID int
 	}
 	var IPInfos []IPInfo
-	// beego.Info(allocations)
+	// glgf.Info(allocations)
 	for _, a := range allocations {
 		IPInfos = append(IPInfos, IPInfo{
 			IP: a.Alias + ":" + strconv.Itoa(a.Port),
@@ -113,7 +113,7 @@ func (this *OrderInfoController) Post() {
 	selectedIP := this.GetString("selected_ip")
 	arr := strings.Fields(selectedIP)
 	id, err := strconv.Atoi(arr[0])
-	// beego.Info(id, arr[1])
+	// glgf.Info(id, arr[1])
 	if err != nil {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "选取服务器地址失败！"

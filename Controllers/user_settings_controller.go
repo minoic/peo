@@ -9,6 +9,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoMessage"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"html/template"
@@ -110,7 +111,7 @@ func (this *UserSettingsController) UpdateUserEmail() {
 		this.Data["hasErrorText2"] = err.Error() + " 获取用户信息失败，请重新登录！"
 		return
 	}
-	// beego.Info(newEmail,cpt,cptInput)
+	// glgf.Info(newEmail,cpt,cptInput)
 	if cpt == cptInput {
 		DB.Model(&user).Update("email", newEmail)
 		MinoMessage.Send("ADMIN", user.ID, "您刚刚将绑定的邮箱修改到了 "+newEmail)
@@ -130,11 +131,11 @@ func (this *UserSettingsController) SendCaptcha() {
 	}
 	key, err := MinoEmail.SendCaptcha(userEmail)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	} else {
 		err := bm.Put("CHANGE_EMAIL"+userEmail, key, 1*time.Minute)
 		if err != nil {
-			beego.Error(err)
+			glgf.Error(err)
 		}
 	}
 }
@@ -143,7 +144,7 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 	sess := this.StartSession()
 	user, err := MinoSession.SessionGetUser(sess)
 	if err != nil || user == (MinoDatabase.User{}) {
-		beego.Debug("cant get user")
+		glgf.Debug("cant get user")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
 		return
 	}
@@ -157,7 +158,7 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 		FirstName:  user.Name,
 		LastName:   "_",
 	}); err != nil {
-		beego.Debug(err)
+		glgf.Debug(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
 		return
 	}
@@ -172,7 +173,7 @@ func (this *UserSettingsController) GalleryPost() {
 	imgSource := this.GetString("imgSource")
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
@@ -190,7 +191,7 @@ func (this *UserSettingsController) GalleryPost() {
 		ReviewPassed:    user.IsAdmin,
 		ImgSource:       template.URL(imgSource),
 	}).Error; err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库错误"))
 		return
 	}

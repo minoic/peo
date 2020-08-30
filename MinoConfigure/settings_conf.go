@@ -1,7 +1,9 @@
 package MinoConfigure
 
 import (
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego/config"
+	"os"
 )
 
 var conf config.Configer
@@ -24,6 +26,17 @@ func init() {
 		panic("cant get settings.conf: " + err.Error())
 	}
 	ReloadConfig()
+	d, err := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	e, err := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	glgf.Get().SetMode(glgf.BOTH).
+		SetWriter(d).
+		AddLevelWriter(glgf.ERR, e)
 }
 
 func ReloadConfig() {

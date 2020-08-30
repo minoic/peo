@@ -3,6 +3,7 @@ package Controllers
 import (
 	"github.com/MinoIC/MinoIC-PE/MinoMessage"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 )
 
@@ -22,11 +23,11 @@ func (this *UserMessagesController) Prepare() {
 func (this *UserMessagesController) Get() {
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	}
 	messages := MinoMessage.GetMessages(user.ID)
 	this.Data["messages"] = messages
-	// beego.Info(messages)
+	// glgf.Info(messages)
 	MinoMessage.ReadAll(user.ID)
 	this.Data["unReadNum"] = 0
 }

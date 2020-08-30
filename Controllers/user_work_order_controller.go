@@ -5,6 +5,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoEmail"
 	"github.com/MinoIC/MinoIC-PE/MinoMessage"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"time"
@@ -32,7 +33,7 @@ func (this *UserWorkOrderController) Get() {
 func (this *UserWorkOrderController) NewWorkOrder() {
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil || user == (MinoDatabase.User{}) {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
@@ -58,7 +59,7 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 		Closed:     false,
 	}
 	if err = DB.Create(&wo).Error; err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("发送工单时数据库出现问题"))
 		return
 	}
@@ -70,7 +71,7 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 			MinoMessage.Send("UserWorkOrderSystem", u.ID, "您有一个新的工单："+title)
 			err = MinoEmail.SendAnyEmail(user.Email, "您有一个新的工单："+title+" "+text)
 			if err != nil {
-				beego.Error(err)
+				glgf.Error(err)
 			}
 		}
 	}()

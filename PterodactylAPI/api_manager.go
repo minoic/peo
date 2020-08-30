@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -34,15 +34,15 @@ func PterodactylGethostname(params ParamsData) string {
 func pterodactylApi(params ParamsData, data interface{}, endPoint string, method string) (string, int) {
 	/* Send requests to pterodactyl panel */
 	url := PterodactylGethostname(params) + "/api/application/" + endPoint
-	// beego.Info(url)
+	// glgf.Info(url)
 	var res string
 	var status int
 	if method == "POST" || method == "PATCH" {
 		ujson, err := json.Marshal(data)
 		if err != nil {
-			beego.Error("cant marshal data:" + err.Error())
+			glgf.Error("cant marshal data:" + err.Error())
 		}
-		// beego.Info("ujson: ", string(ujson))
+		// glgf.Info("ujson: ", string(ujson))
 		ubody := bytes.NewReader(ujson)
 		req, _ := http.NewRequest(method, url, ubody)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
@@ -51,36 +51,36 @@ func pterodactylApi(params ParamsData, data interface{}, endPoint string, method
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			beego.Error("cant Do req:" + err.Error())
+			glgf.Error("cant Do req:" + err.Error())
 			return "", 500
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		// beego.Info("Pterodactyl Post status:" + resp.Status + " body: " + string(body))
+		// glgf.Info("Pterodactyl Post status:" + resp.Status + " body: " + string(body))
 	} else {
 		req, _ := http.NewRequest(method, url, nil)
 		req.Header.Set("Authorization", "Bearer "+params.Serverpassword)
 		req.Header.Set("Accept", "Application/vnd.pterodactyl.v1+json")
-		// beego.Info(req.Header.Get("Authorization"))
+		// glgf.Info(req.Header.Get("Authorization"))
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			beego.Error("cant Do req:" + err.Error())
+			glgf.Error("cant Do req:" + err.Error())
 			return "", 500
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
 		res = string(body)
 		status = resp.StatusCode
-		// beego.Info("status: " + resp.Status)
+		// glgf.Info("status: " + resp.Status)
 	}
 	return res, status
 }
 
 func PterodactylTestConnection(params ParamsData) {
 	test, _ := pterodactylApi(params, "", "nodes", "GET")
-	beego.Debug("PterodactylAPI returns: ", test)
+	glgf.Debug("PterodactylAPI returns: ", test)
 }
 
 func pterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
@@ -107,7 +107,7 @@ func pterodactylGetUser(params ParamsData, ID interface{}, isExternal bool) (Pte
 func PterodactylGetAllUsers(params ParamsData) []PterodactylUser {
 	body, status := pterodactylApi(params, "", "users/", "GET")
 	if status != 200 {
-		beego.Error("cant get all users: " + strconv.Itoa(status))
+		glgf.Error("cant get all users: " + strconv.Itoa(status))
 		return []PterodactylUser{}
 	}
 	dec := struct {
@@ -127,7 +127,7 @@ func PterodactylGetAllUsers(params ParamsData) []PterodactylUser {
 func pterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID), "GET")
 	if status != 200 {
-		beego.Error("cant get nest: " + strconv.Itoa(nestID) + " with status code: " + strconv.Itoa(status))
+		glgf.Error("cant get nest: " + strconv.Itoa(nestID) + " with status code: " + strconv.Itoa(status))
 		return PterodactylNest{}
 	}
 	dec := struct {
@@ -142,7 +142,7 @@ func pterodactylGetNest(data ParamsData, nestID int) PterodactylNest {
 func pterodactylGetAllNests(data ParamsData) []PterodactylNest {
 	body, status := pterodactylApi(data, "", "nests/", "GET")
 	if status != 200 {
-		beego.Error("cant get all nests: " + strconv.Itoa(status))
+		glgf.Error("cant get all nests: " + strconv.Itoa(status))
 		return []PterodactylNest{}
 	}
 	var ret []PterodactylNest
@@ -177,7 +177,7 @@ func pterodactylGetEgg(params ParamsData, nestID int, eggID int) PterodactylEgg 
 func pterodactylGetAllEggs(data ParamsData, nestID int) []PterodactylEgg {
 	body, status := pterodactylApi(data, "", "nests/"+strconv.Itoa(nestID)+"/eggs/", "GET")
 	if status != 200 {
-		beego.Error("cant get all eggs: " + strconv.Itoa(status))
+		glgf.Error("cant get all eggs: " + strconv.Itoa(status))
 		return []PterodactylEgg{}
 	}
 	var ret []PterodactylEgg
@@ -212,7 +212,7 @@ func pterodactylGetNode(data ParamsData, nodeID int) PterodactylNode {
 func pterodactylGetAllocations(data ParamsData, nodeID int) []PterodactylAllocation {
 	body, status := pterodactylApi(data, "", "nodes/"+strconv.Itoa(nodeID)+"/allocations", "GET")
 	if status != 200 {
-		beego.Error("cant get allocations with status code: " + strconv.Itoa(status))
+		glgf.Error("cant get allocations with status code: " + strconv.Itoa(status))
 		return []PterodactylAllocation{}
 	}
 	dec := struct {
@@ -248,7 +248,7 @@ func pterodactylGetServer(data ParamsData, ID interface{}, isExternal bool) Pter
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
 		return dec.Attributes
 	} else {
-		beego.Error(err.Error())
+		glgf.Error(err.Error())
 	}
 	return PterodactylServer{}
 }
@@ -310,7 +310,7 @@ func PterodactylReinstallServer(data ParamsData, serverExternalID string) error 
 		return errors.New("reinstall failed because server not found: " + strconv.Itoa(serverID))
 	}
 	_, status := pterodactylApi(data, "", "servers/"+strconv.Itoa(serverID)+"/reinstall", "POST")
-	// beego.Debug(body)
+	// glgf.Debug(body)
 	if status != 204 {
 		return errors.New("cant reinstall server: " + strconv.Itoa(serverID) + " with status code: " + strconv.Itoa(status))
 	}
@@ -376,7 +376,7 @@ func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 		} `json:"attributes"`
 	}{}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		// beego.Info(dec.Attributes.Relationships.Variables.Data)
+		// glgf.Info(dec.Attributes.Relationships.Variables.Data)
 		for _, v := range dec.Attributes.Relationships.Variables.Data {
 			keys := v["attributes"].(map[string]interface{})
 			key := keys["env_variable"].(string)
@@ -386,7 +386,7 @@ func pterodactylGetEnv(data ParamsData, nestID int, eggID int) map[string]string
 			}
 		}
 	} else {
-		beego.Error(err.Error())
+		glgf.Error(err.Error())
 	}
 	return ret
 }
@@ -396,7 +396,7 @@ func Test() {
 	PterodactylTestConnection(params)
 	ret := pterodactylGetAllocations(params, 6)
 	for k, v := range ret {
-		beego.Debug(k, v)
+		glgf.Debug(k, v)
 	}
 }
 
@@ -454,26 +454,26 @@ func PterodactylCreateServer(data ParamsData, serverInfo PterodactylServer) erro
 		},
 	}
 	body, status := pterodactylApi(data, postData, "servers", "POST")
-	// beego.Debug("body:",body)
+	// glgf.Debug("body:",body)
 	if status == 400 {
 		return errors.New("could not find any nodes satisfying the request")
 	}
 	if status != 201 {
-		beego.Error(body)
+		glgf.Error(body)
 		return errors.New("failed to create the server, received the error code: " + strconv.Itoa(status))
 	}
 	var dec struct {
 		Server PterodactylServer `json:"attributes"`
 	}
 	if err := json.Unmarshal([]byte(body), &dec); err == nil {
-		beego.Info("New server created: ", dec.Server)
+		glgf.Info("New server created: ", dec.Server)
 	} else {
 		return err
 	}
 	if dec.Server == (PterodactylServer{}) {
 		return errors.New("Pterodactyl API returns empty struct: " + body)
 	}
-	// beego.Info(dec.Server)
+	// glgf.Info(dec.Server)
 	return nil
 }
 
@@ -486,7 +486,7 @@ func PterodactylUpdateServerDetail(data ParamsData, externalID string, details P
 		"external_id": details.ExternalID,
 	}
 	_, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(serverID)+"/details", "PATCH")
-	// beego.Debug(body)
+	// glgf.Debug(body)
 	if status != 200 {
 		return errors.New("cant update server details data: " + externalID)
 	}
@@ -509,7 +509,7 @@ func PterodactylUpdateServerBuild(data ParamsData, externalID string, build Post
 		},
 	}
 	body, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(serverID)+"/build", "PATCH")
-	beego.Debug(body)
+	glgf.Debug(body)
 	if status != 200 {
 		return errors.New("cant update server build data: " + externalID)
 	}
@@ -527,9 +527,9 @@ func PterodactylUpdateServerStartup(data ParamsData, externalID string, packID i
 		"image":        eggInfo.DockerImage,
 		"skip_scripts": false,
 	}
-	// beego.Debug(patchData)
+	// glgf.Debug(patchData)
 	_, status := pterodactylApi(data, patchData, "servers/"+strconv.Itoa(server.Id)+"/startup", "PATCH")
-	// beego.Debug(body)
+	// glgf.Debug(body)
 	if status != 200 {
 		return errors.New("cant update server startup data: " + externalID)
 	}

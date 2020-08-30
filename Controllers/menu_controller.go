@@ -5,6 +5,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoMessage"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"html/template"
 )
@@ -22,7 +23,7 @@ func handleNavbar(this *beego.Controller) {
 	} else {
 		user, err := MinoSession.SessionGetUser(sess)
 		if err != nil {
-			beego.Error(err)
+			glgf.Error(err)
 		}
 		this.Data["unReadNum"] = MinoMessage.UnReadNum(user.ID)
 		this.Data["isAdmin"] = user.IsAdmin

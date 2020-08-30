@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/8treenet/gcache v1.1.4
+	github.com/MinoIC/glgf v0.0.1
 	github.com/astaxie/beego v1.12.1
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
@@ -18,7 +19,6 @@ require (
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smartwalle/alipay/v3 v3.1.5
-	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xhit/go-simple-mail v2.2.2+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect

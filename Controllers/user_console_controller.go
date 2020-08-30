@@ -7,6 +7,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
 	"github.com/MinoIC/MinoIC-PE/ServerStatus"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
 	"github.com/jinzhu/gorm"
@@ -81,19 +82,18 @@ func RefreshServerInfo() {
 			defer wg.Done()
 			pongTemp, err := ServerStatus.Ping(host)
 			if err != nil {
-				beego.Error(err)
 				pongsSync.pongs[index] = &ServerStatus.Pong{}
 			} else {
 				pongsSync.pongs[index] = pongTemp
 			}
-			// beego.Info(pongTemp,host)
+			// glgf.Info(pongTemp,host)
 			/* different index dont need Lock*/
-			// beego.Info(len(pongsSync.pongs))
+			// glgf.Info(len(pongsSync.pongs))
 		}(e.HostName, i)
-		// beego.Debug(pong.Players.Online,pong.Players.Max)
+		// glgf.Debug(pong.Players.Online,pong.Players.Max)
 	}
 	wg.Wait()
-	// beego.Debug(pongs)
+	// glgf.Debug(pongs)
 	for i, p := range pongsSync.pongs {
 		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
 		var server serverInfo
@@ -177,7 +177,7 @@ func (this *UserConsoleController) Get() {
 	DB.Where("user_id = ?", user.ID).Find(&orders)
 	this.Data["infoOrderCount"] = len(orders)
 	this.Data["infoServerCount"] = len(entities)
-	// beego.Info(servers)
+	// glgf.Info(servers)
 	servers := make([]serverInfo, len(entities))
 	for i := range entities {
 		tmp, ok := entityMap.Load(entities[i].ID)
@@ -228,17 +228,17 @@ func (this *UserConsoleController) Renew() {
 	}
 	/* correct renew post */
 	if err = bm.Put("RENEW"+entityIDString, "", 10*time.Second); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("缓存设置失败！"))
 		return
 	}
 	if DB.Delete(&key).Error != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库处理失败！"))
 		return
 	}
 	if DB.Model(&entity).Update("valid_date", entity.ValidDate.Add(spec.ValidDuration)).Update("delete_status", 0).Error != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		DB.Create(&key)
 		return
@@ -255,7 +255,7 @@ func (this *UserConsoleController) Renew() {
 		Description: "到期时间：" + entity.ValidDate.Format("2006-01-02"),
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -271,7 +271,7 @@ func (this *UserConsoleController) Renew2() {
 	DB := MinoDatabase.GetDatabase()
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
-		beego.Warn(err)
+		glgf.Warn(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取用户信息失败"))
 		return
 	}
@@ -295,7 +295,7 @@ func (this *UserConsoleController) Renew2() {
 		return
 	}
 	if DB.Model(&entity).Update("valid_date", entity.ValidDate.AddDate(0, 1, 0)).Update("delete_status", 0).Error != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		return
 	}
@@ -311,7 +311,7 @@ func (this *UserConsoleController) Renew2() {
 		Description: "到期时间：" + entity.ValidDate.Format("2006-01-02"),
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -320,7 +320,7 @@ func (this *UserConsoleController) Renew2() {
 func (this *UserConsoleController) Reinstall() {
 	user, err := MinoSession.SessionGetUser(this.StartSession())
 	if err != nil {
-		// beego.Error(err)
+		// glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
@@ -332,7 +332,7 @@ func (this *UserConsoleController) Reinstall() {
 	packIDstring := this.Ctx.Input.Param(":packID")
 	packID, err := strconv.Atoi(packIDstring)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入了无效的PackID"))
 		return
 	}
@@ -351,7 +351,7 @@ func (this *UserConsoleController) Reinstall() {
 		return
 	}
 	if err = PterodactylAPI.PterodactylUpdateServerStartup(PterodactylAPI.ConfGetParams(), entity.ServerExternalID, packID); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
 		return
 	}

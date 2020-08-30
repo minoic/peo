@@ -5,6 +5,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"strings"
 )
@@ -71,7 +72,7 @@ func (this *NewPackController) Prepare() {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
-	// beego.Info(wareInfo)
+	// glgf.Info(wareInfo)
 	this.Data["options"] = packInfo
 	this.Data["u"] = 0
 }
@@ -94,13 +95,13 @@ func (this *NewPackController) Post() {
 	pack.PackDescription = this.GetString("pack_description")
 	pack.NestID, err = this.GetInt("nest_id")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 nest_id " + err.Error()
 	}
 	pack.EggID, err = this.GetInt("egg_id")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 egg_id " + err.Error()
 	}

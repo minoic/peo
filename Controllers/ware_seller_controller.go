@@ -4,6 +4,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"html/template"
 	"strconv"
@@ -54,7 +55,7 @@ func RefreshWareInfo() {
 	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
 		for _, w := range waresInDB {
 			egg := PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), w.Nest, w.Egg)
-			// beego.Debug(w)
+			// glgf.Debug(w)
 			nw := ware{
 				WareName: w.WareName,
 				Intros: []intro{
@@ -118,7 +119,7 @@ func RefreshWareInfo() {
 			},
 		})
 	}
-	beego.Info("Refreshed Ware Info - ", time.Now().Sub(st).String())
+	glgf.Info("Refreshed Ware Info - ", time.Now().Sub(st).String())
 }
 
 func (this *WareSellerController) Get() {
@@ -128,7 +129,7 @@ func (this *WareSellerController) Get() {
 	this.Data["u"] = 1
 	handleNavbar(&this.Controller)
 	this.Ctx.ResponseWriter.Flush()
-	// beego.Debug(wares)
+	// glgf.Debug(wares)
 	this.Data["wares1"] = wares1
 	this.Data["wares2"] = wares2
 	this.Data["wares3"] = wares3

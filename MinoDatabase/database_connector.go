@@ -4,7 +4,7 @@ import (
 	"github.com/8treenet/gcache"
 	gcopt "github.com/8treenet/gcache/option"
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -22,7 +22,7 @@ func connect() {
 		DB, err := gorm.Open("sqlite3", "sqlite3.db")
 		if err != nil {
 			db = nil
-			beego.Error(err.Error())
+			glgf.Error(err.Error())
 		}
 		db = DB
 		if MinoConfigure.UseGormCache {
@@ -37,11 +37,11 @@ func connect() {
 			conf.String("MYSQLHost") + ")/" +
 			conf.String("MYSQLDatabaseName") +
 			"?charset=utf8&parseTime=True&loc=Local"
-		beego.Info("DSN: " + DSN)
+		glgf.Info("DSN: " + DSN)
 		DB, err := gorm.Open("mysql", DSN)
 		if err != nil {
 			db = nil
-			beego.Error(err.Error())
+			glgf.Error(err.Error())
 		}
 		db = DB
 		if MinoConfigure.UseGormCache {
@@ -57,12 +57,12 @@ func connect() {
 
 func GetDatabase() *gorm.DB {
 	for db == nil {
-		beego.Warn("trying to connect to database!")
+		glgf.Warn("trying to connect to database!")
 		connect()
 	}
 
 	for err := db.DB().Ping(); err != nil; err = db.DB().Ping() {
-		beego.Warn("trying to connect to database!")
+		glgf.Warn("trying to connect to database!")
 		connect()
 	}
 	return db

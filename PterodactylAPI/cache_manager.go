@@ -3,7 +3,7 @@ package PterodactylAPI
 import (
 	"github.com/MinoIC/MinoIC-PE/MinoCache"
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"strconv"
 	"time"
 )
@@ -17,7 +17,7 @@ func ClearCache() {
 	/* force refresh cache */
 	err := bm.ClearAll()
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	}
 }
 
@@ -25,7 +25,7 @@ func ConfGetParams() ParamsData {
 	conf := MinoConfigure.GetConf()
 	sec, err := conf.Bool("Serversecure")
 	if err != nil {
-		beego.Error(err.Error())
+		glgf.Error(err.Error())
 	}
 	data := ParamsData{
 		Serverhostname: conf.String("Serverhostname"),
@@ -111,7 +111,7 @@ func get(data ParamsData, key string, mode int, id []int, ExternalID string) int
 		}
 		err := bm.Put(key, ret, timeout)
 		if err != nil {
-			beego.Error(err)
+			glgf.Error(err)
 		}
 		<-pool
 		return ret

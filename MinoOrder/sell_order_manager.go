@@ -6,7 +6,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoMessage"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"github.com/jinzhu/gorm"
 	"strconv"
 	"time"
@@ -46,7 +46,7 @@ func SellCreate(SpecID uint, userID uint) uint {
 			finalPrice = uint(0.12 * float32(100*wareSpec.PricePerMonth))
 		}
 	}
-	// beego.Debug(originPrice, finalPrice)
+	// glgf.Debug(originPrice, finalPrice)
 	order := MinoDatabase.Order{
 		Model:       gorm.Model{},
 		SpecID:      SpecID,
@@ -164,11 +164,11 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 			DB.Model(&order).Update("paid", false)
 			return err
 		}
-		beego.Info("KeyString used: " + key.KeyString)
+		glgf.Info("KeyString used: " + key.KeyString)
 		MinoMessage.Send("ADMIN", user.ID, "您的订单 #"+strconv.Itoa(int(order.ID))+" 已成功创建对应服务器，请前往控制台确认")
-		beego.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
+		glgf.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
 	} else {
-		beego.Error("cant create server for order id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())
+		glgf.Error("cant create server for order id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())
 		return err
 	}
 	return nil

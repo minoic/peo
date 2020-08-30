@@ -8,6 +8,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoEmail"
 	"github.com/MinoIC/MinoIC-PE/MinoMessage"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/utils/captcha"
@@ -43,7 +44,7 @@ func (this *RegController) Post() {
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
 		return
 	}
-	// beego.Info("user posted!")
+	// glgf.Info("user posted!")
 	registerEmail := this.GetString("registerEmail")
 	registerPassword := this.GetString("registerPassword")
 	registerPasswordConfirm := this.GetString("registerPasswordConfirm")
@@ -51,7 +52,7 @@ func (this *RegController) Post() {
 	cptSuccess := cpt.VerifyReq(this.Ctx.Request)
 	agreement, err := this.GetBool("agreement", false)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	}
 	DB := MinoDatabase.GetDatabase()
 	if !cptSuccess {
@@ -90,13 +91,13 @@ func (this *RegController) Post() {
 			IsAdmin:        false,
 			EmailConfirmed: false,
 		}
-		beego.Info(newUser)
+		glgf.Info(newUser)
 		DB.Create(&newUser)
 		MinoMessage.Send("ADMIN", newUser.ID, "这是您的第一条消息")
 		if MinoConfigure.SMTPEnabled {
 			MinoMessage.Send("Admin", newUser.ID, "您已成功注册账号，请前往邮箱确认注册，确认时会自动帮您创建翼龙面板用户，或请您在用户设置页面手动创建")
 			if err := MinoEmail.ConfirmRegister(newUser); err != nil {
-				beego.Error(err)
+				glgf.Error(err)
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/reg",
 					Detail: "即将跳转到注册页面",
@@ -121,7 +122,7 @@ func (this *RegController) Post() {
 				LastName:   "_",
 			})
 			if err != nil {
-				beego.Error("cant create pterodactyl user for " + newUser.Name)
+				glgf.Error("cant create pterodactyl user for " + newUser.Name)
 				MinoMessage.Send("ADMIN", newUser.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/login",
@@ -159,7 +160,7 @@ func (this *RegController) MailConfirm() {
 				LastName:   "_",
 			})
 			if err != nil {
-				beego.Error("cant create pterodactyl user for " + user.Name)
+				glgf.Error("cant create pterodactyl user for " + user.Name)
 				MinoMessage.Send("ADMIN", user.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
 				DelayRedirect(DelayInfo{
 					URL:    MinoConfigure.WebHostName + "/login",
@@ -197,7 +198,7 @@ func (this *RegController) MailConfirm() {
 func checkUserName(userName string) bool {
 	const validChar = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
 	for i := 0; i < len(userName); i++ {
-		// beego.Info(string(userName[i]))
+		// glgf.Info(string(userName[i]))
 		if !strings.ContainsAny(validChar, string(userName[i])) {
 			return false
 		}

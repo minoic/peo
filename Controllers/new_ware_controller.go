@@ -5,6 +5,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"strings"
@@ -187,7 +188,7 @@ func (this *NewWareController) Prepare() {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
-	// beego.Info(wareInfo)
+	// glgf.Info(wareInfo)
 	this.Data["options"] = wareInfo
 	this.Data["u"] = 0
 }
@@ -214,7 +215,7 @@ func (this *NewWareController) Post() {
 	)
 	ware.Cpu, err = this.GetInt("cpu")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 cpu " + err.Error()
 	} else if ware.Cpu < 0 {
@@ -223,7 +224,7 @@ func (this *NewWareController) Post() {
 	}
 	ware.Disk, err = this.GetInt("disk")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 disk " + err.Error()
 	} else if ware.Disk <= 0 {
@@ -232,7 +233,7 @@ func (this *NewWareController) Post() {
 	}
 	ware.Memory, err = this.GetInt("memory")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 memory " + err.Error()
 	} else if ware.Memory <= 0 {
@@ -241,7 +242,7 @@ func (this *NewWareController) Post() {
 	}
 	ware.Io, err = this.GetInt("io")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 io " + err.Error()
 	} else if ware.Io < 100 || ware.Io > 1000 {
@@ -250,7 +251,7 @@ func (this *NewWareController) Post() {
 	}
 	ware.Swap, err = this.GetInt("swap")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 swap " + err.Error()
 	} else if ware.Swap < (-1) {
@@ -259,7 +260,7 @@ func (this *NewWareController) Post() {
 	}
 	var discount [3]int
 	if discount[0], err = this.GetInt("discount0"); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 discount0 " + err.Error()
 	} else if discount[0] > 100 || discount[0] < 0 {
@@ -267,7 +268,7 @@ func (this *NewWareController) Post() {
 		hasErrorText = "Discount0 输入值不合法"
 	}
 	if discount[1], err = this.GetInt("discount1"); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 discount1 " + err.Error()
 	} else if discount[1] > 100 || discount[1] < 0 {
@@ -275,7 +276,7 @@ func (this *NewWareController) Post() {
 		hasErrorText = "Discount1 输入值不合法"
 	}
 	if discount[2], err = this.GetInt("discount2"); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 discount2 " + err.Error()
 	} else if discount[2] > 100 || discount[2] < 0 {
@@ -284,7 +285,7 @@ func (this *NewWareController) Post() {
 	}
 	ware.Node, err = this.GetInt("node_id")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 discount " + err.Error()
 	} else if ware.Node < 0 || PterodactylAPI.GetNode(PterodactylAPI.ConfGetParams(), ware.Node) == (PterodactylAPI.PterodactylNode{}) {
@@ -293,13 +294,13 @@ func (this *NewWareController) Post() {
 	}
 	ware.Nest, err = this.GetInt("nest_id")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 nest_id " + err.Error()
 	}
 	ware.Egg, err = this.GetInt("egg_id")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 egg_id " + err.Error()
 	} else if PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), ware.Nest, ware.Egg) == (PterodactylAPI.PterodactylEgg{}) {
@@ -308,7 +309,7 @@ func (this *NewWareController) Post() {
 	}
 	price, err := this.GetUint32("price", 999)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 price " + err.Error()
 	} else if price < 0 {
@@ -317,7 +318,7 @@ func (this *NewWareController) Post() {
 	}
 	e, err := this.GetInt("delete_time")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 price " + err.Error()
 	} else if e < 0 {
@@ -340,7 +341,7 @@ func (this *NewWareController) Post() {
 			90 * 24 * time.Hour,
 			365 * 24 * time.Hour,
 		} {
-			// beego.Debug(d)
+			// glgf.Debug(d)
 			wareTemp := ware
 			wareTemp.ValidDuration = d
 			wareTemp.Discount = discount[i]

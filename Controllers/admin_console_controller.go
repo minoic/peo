@@ -9,6 +9,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoMessage"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
 	"github.com/mholt/archiver"
@@ -79,7 +80,7 @@ func (this *AdminConsoleController) Get() {
 			}
 		}
 	}
-	// beego.Debug(deleteServers )
+	// glgf.Debug(deleteServers )
 	this.Data["deleteServers"] = deleteServers
 	/* panel stats*/
 	var (
@@ -297,25 +298,25 @@ func (this *AdminConsoleController) GetKeys() {
 	DB.Find(&specs)
 	err := os.MkdirAll("tmp/download/keys", os.ModePerm)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	}
 	for _, s := range specs {
-		// beego.Debug(s)
+		// glgf.Debug(s)
 		wg.Add(1)
 		go func(spec MinoDatabase.WareSpec) {
 			defer wg.Done()
 			txt, err := os.Create("tmp/download/keys/key_" + spec.WareName + "_" + durafmt.Parse(spec.ValidDuration).LimitFirstN(1).String() + ".txt")
 			if err != nil {
-				beego.Error(err)
+				glgf.Error(err)
 				failed = true
 			}
-			// beego.Debug(spec,txt.Name())
+			// glgf.Debug(spec,txt.Name())
 			var keys []MinoDatabase.WareKey
 			DB.Where("spec_id = ?", spec.ID).Find(&keys)
 			for _, k := range keys {
 				_, err = txt.Write([]byte(k.KeyString + "\n"))
 				if err != nil {
-					beego.Error(err)
+					glgf.Error(err)
 					failed = true
 				}
 			}
@@ -328,7 +329,7 @@ func (this *AdminConsoleController) GetKeys() {
 			defer wg.Done()
 			txt, err := os.Create("tmp/download/keys/recharge_key_" + strconv.Itoa(int(balance)) + ".txt")
 			if err != nil {
-				beego.Error(err)
+				glgf.Error(err)
 				failed = true
 			}
 			var keys []MinoDatabase.RechargeKey
@@ -336,7 +337,7 @@ func (this *AdminConsoleController) GetKeys() {
 			for _, k := range keys {
 				_, err = txt.Write([]byte(k.KeyString + "\n"))
 				if err != nil {
-					beego.Error(err)
+					glgf.Error(err)
 					failed = true
 				}
 			}
@@ -358,14 +359,14 @@ func (this *AdminConsoleController) GetKeys() {
 	}
 	err = arc.Archive([]string{"tmp/download/keys"}, "tmp/download/keys.zip")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		// _, _ = this.Ctx.ResponseWriter.Write([]byte("生成文件失败！"+err.Error()))
 		return
 	}
 	this.Ctx.Output.Download("tmp/download/keys.zip", "keys_"+time.Now().Format("2006-01-02 15:04:05")+".zip")
 	err = os.RemoveAll("tmp/download/")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	}
 	// _, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
@@ -384,13 +385,13 @@ func (this *AdminConsoleController) CloseWorkOrder() {
 	DB := MinoDatabase.GetDatabase()
 	var order MinoDatabase.WorkOrder
 	if err := DB.Where("id = ?", orderID).First(&order).Error; err != nil || order.Closed {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取工单失败或工单已经被解决"))
 		return
 	}
 	/* valid post */
 	if err := DB.Model(&order).Update("closed", true).Error; err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("更新工单状态失败"))
 		return
 	}
@@ -411,20 +412,20 @@ func (this *AdminConsoleController) GalleryPass() {
 	}
 	itemID, err := this.GetInt("itemID")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取图片 ID 失败"))
 		return
 	}
 	var item MinoDatabase.GalleryItem
 	DB := MinoDatabase.GetDatabase()
 	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))
 		return
 	}
 	/* item found correctly*/
 	if err = DB.Model(&item).Update("review_passed", true).Error; err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库更新图片状态失败"))
 		return
 	}
@@ -438,20 +439,20 @@ func (this *AdminConsoleController) GalleryDelete() {
 	}
 	itemID, err := this.GetInt("itemID")
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取图片 ID 失败"))
 		return
 	}
 	var item MinoDatabase.GalleryItem
 	DB := MinoDatabase.GetDatabase()
 	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))
 		return
 	}
 	/* item found correctly*/
 	if err = DB.Delete(&item).Error; err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库更新图片状态失败"))
 		return
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoEmail"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"time"
 )
@@ -74,11 +75,11 @@ func (this *ForgetPasswordController) SendMail() {
 	}
 	key, err := MinoEmail.SendCaptcha(userEmail)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	} else {
 		err := bm.Put("FORGET"+userEmail, key, 1*time.Minute)
 		if err != nil {
-			beego.Error(err)
+			glgf.Error(err)
 		}
 	}
 }

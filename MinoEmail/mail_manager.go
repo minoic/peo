@@ -4,7 +4,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoKey"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"github.com/xhit/go-simple-mail"
 )
 
@@ -22,14 +22,14 @@ func sendConfirmMail(key MinoDatabase.RegConfirmKey) {
 		SetSubject(MinoConfigure.WebApplicationName+" 注册验证邮件").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	} else {
-		beego.Info("mail sent successfully to: " + key.UserEmail)
+		glgf.Info("mail sent successfully to: " + key.UserEmail)
 	}
 }
 
 func SendCaptcha(receiver string) (string, error) {
-	// beego.Info(receiver)
+	// glgf.Info(receiver)
 	conf := MinoConfigure.GetConf()
 	key := MinoKey.RandNumKey(6)
 	smtpServer := getSTMPClient()
@@ -46,7 +46,7 @@ func SendCaptcha(receiver string) (string, error) {
 	if err := email.Send(smtpc); err != nil {
 		return "", nil
 	}
-	beego.Info("mail sent successfully to: " + receiver)
+	glgf.Info("mail sent successfully to: " + receiver)
 	return key, nil
 }
 
@@ -66,6 +66,6 @@ func SendAnyEmail(receiveAddr string, text string) error {
 	if err := email.Send(smtpc); err != nil {
 		return err
 	}
-	beego.Info("mail sent successfully to: " + receiveAddr)
+	glgf.Info("mail sent successfully to: " + receiveAddr)
 	return nil
 }

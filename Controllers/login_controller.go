@@ -6,6 +6,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
 	"github.com/MinoIC/MinoIC-PE/MinoSession"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 )
 
@@ -31,7 +32,7 @@ func (this *LoginController) Post() {
 	loginPass := this.GetString("loginPass")
 	loginRemember, err := this.GetBool("loginRemember", false)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 	}
 	var user MinoDatabase.User
 	conf := MinoConfigure.GetConf()

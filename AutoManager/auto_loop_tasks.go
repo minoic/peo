@@ -7,7 +7,7 @@ import (
 	"github.com/MinoIC/MinoIC-PE/MinoKey"
 	"github.com/MinoIC/MinoIC-PE/PterodactylAPI"
 	"github.com/MinoIC/MinoIC-PE/ServerStatus"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"time"
 )
 
@@ -17,7 +17,7 @@ func LoopTasksManager() {
 		interval, err := MinoConfigure.GetConf().Int("AutoTaskInterval")
 		if err != nil {
 			interval = 10
-			beego.Error("cant get AutoTaskInterval ,set it to 10sec as default")
+			glgf.Error("cant get AutoTaskInterval ,set it to 10sec as default")
 		}
 		ticker := time.NewTicker(time.Duration(interval) * time.Second)
 		for {
@@ -32,7 +32,7 @@ func LoopTasksManager() {
 				go Controllers.RefreshServerInfo()
 				go MinoKey.DeleteOutdatedKeys()
 				DB := MinoDatabase.GetDatabase()
-				beego.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, " - ",
+				glgf.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, " - ",
 					DB.DB().Stats().WaitCount)
 
 			}
@@ -61,7 +61,7 @@ func LoopTasksManager() {
 							count++
 						}
 					}
-					// beego.Info("Servers Online - ",count)
+					// glgf.Info("Servers Online - ",count)
 				}()
 				// go func() {
 				//	var rlogs []MinoDatabase.RechargeLog
@@ -78,13 +78,13 @@ func LoopTasksManager() {
 				//			p.OutTradeNo="1316548716"
 				//			resp,err:=MinoConfigure.AliClient.TradeQuery(p)
 				//			if err != nil {
-				//				beego.Error(err)
+				//				glgf.Error(err)
 				//			}
 				//			if resp.IsSuccess(){
 				//				var user MinoDatabase.User
 				//				DB.First(&user,"id = ?",rlogs[i].UserID)
 				//				if err=DB.Model(&user).Update("balance",user.Balance+rlogs[i].Balance).Error;err!=nil{
-				//					beego.Error(err)
+				//					glgf.Error(err)
 				//					continue
 				//				}
 				//
@@ -92,7 +92,7 @@ func LoopTasksManager() {
 				//					Code:   rlogs[i].Code[:23] + fmt.Sprintf("%d_%d_Finished",user.Balance-rlogs[i].Balance,user.Balance),
 				//					Status:  `<span class="label label-success">已到账</span>`,
 				//				})
-				//				beego.Info("user",user.Name,user.Email,"has recharged ",rlogs[i].Balance)
+				//				glgf.Info("user",user.Name,user.Email,"has recharged ",rlogs[i].Balance)
 				//				MinoMessage.SendAdmin("user",user.Name,user.Email,"has recharged ",rlogs[i].Balance)
 				//			}
 				//		}

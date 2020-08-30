@@ -1,7 +1,7 @@
 package MinoSession
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"github.com/robbert229/jwt"
 	"time"
 )
@@ -22,10 +22,10 @@ func GeneToken(username string, remember bool) string {
 		claims.SetTime("exp", time.Now().AddDate(0, 0, 1))
 	}
 	if token, err := AuthAlgo.Encode(claims); err != nil {
-		beego.Error("cant GeneToken for " + username)
+		glgf.Error("cant GeneToken for " + username)
 		return ""
 	} else {
-		// beego.Info("user:" + username + "`s token:" + token)
+		// glgf.Info("user:" + username + "`s token:" + token)
 		return token
 	}
 }
@@ -35,18 +35,18 @@ func ValidateToken(utoken string, username string) bool {
 		return false
 	}
 	claims, err := AuthAlgo.Decode(utoken)
-	// beego.Debug(claims)
+	// glgf.Debug(claims)
 	if err != nil {
-		beego.Error(err.Error())
+		glgf.Error(err.Error())
 		return false
 	}
 	tempName, _ := claims.Get("username")
 	tokenName, ok := tempName.(string)
 	if !ok {
-		beego.Error(username + "`s tokenName is not a string!")
+		glgf.Error(username + "`s tokenName is not a string!")
 	}
 	tokenTime, _ := claims.GetTime("exp")
-	// beego.Info(tokenTime)
+	// glgf.Info(tokenTime)
 	if tokenName == username && time.Now().Before(tokenTime) {
 		return true
 	}

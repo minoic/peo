@@ -3,7 +3,7 @@ package MinoSession
 import (
 	"errors"
 	"github.com/MinoIC/MinoIC-PE/MinoDatabase"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego/session"
 	_ "github.com/astaxie/beego/session/memcache"
 	_ "github.com/astaxie/beego/session/mysql"
@@ -19,7 +19,7 @@ func SessionIslogged(sess session.Store) bool {
 	cookie1 := sess.Get("LST")
 	cookie2 := sess.Get("UN")
 	if cookie1 == nil || cookie2 == nil {
-		// beego.Info("user doesnt have session")
+		// glgf.Info("user doesnt have session")
 		return false
 	}
 	lsToken := cookie1.(string)
@@ -27,12 +27,12 @@ func SessionIslogged(sess session.Store) bool {
 	if MinoDatabase.GetDatabase().First(&MinoDatabase.User{}, "name = ?", unToken).RecordNotFound() {
 		return false
 	}
-	// beego.Debug(lsToken, unToken)
+	// glgf.Debug(lsToken, unToken)
 	if len(lsToken) == 0 || !ValidateToken(lsToken, unToken) {
-		beego.Warn(unToken + " is not logged in!")
+		glgf.Warn(unToken + " is not logged in!")
 		return false
 	} else {
-		// beego.Info(unToken + " is logged in!")
+		// glgf.Info(unToken + " is logged in!")
 		return true
 	}
 }
@@ -40,7 +40,7 @@ func SessionIslogged(sess session.Store) bool {
 func SessionIsAdmin(sess session.Store) bool {
 	user, err := SessionGetUser(sess)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		return false
 	}
 	return user.IsAdmin

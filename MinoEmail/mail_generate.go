@@ -2,7 +2,7 @@ package MinoEmail
 
 import (
 	"github.com/MinoIC/MinoIC-PE/MinoConfigure"
-	"github.com/astaxie/beego"
+	"github.com/MinoIC/glgf"
 	"github.com/matcornic/hermes/v2"
 )
 
@@ -49,7 +49,7 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 	if err != nil {
 		panic(err)
 	}
-	// beego.Info(mailBody,mailText)
+	// glgf.Info(mailBody,mailText)
 	return mailBody, mailText
 }
 
@@ -67,15 +67,15 @@ func genForgetPasswordEmail(key string) (string, string) {
 		}}
 	mailBody, err := h.GenerateHTML(email)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		return "", ""
 	}
 	mailText, err := h.GeneratePlainText(email)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		return "", ""
 	}
-	// beego.Info(mailBody,mailText)
+	// glgf.Info(mailBody,mailText)
 	return mailBody, mailText
 }
 
@@ -93,12 +93,12 @@ func genAnyEmail(text string) (string, string) {
 	}
 	mailBody, err := h.GenerateHTML(email)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		return "", ""
 	}
 	mailText, err := h.GeneratePlainText(email)
 	if err != nil {
-		beego.Error(err)
+		glgf.Error(err)
 		return "", ""
 	}
 	return mailBody, mailText
