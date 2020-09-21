@@ -22,6 +22,7 @@ type UserConsoleController struct {
 }
 
 type serverInfo struct {
+	PteInfo            PterodactylAPI.PterodactylServer
 	ServerIsOnline     bool
 	ServerIconData     template.URL
 	ServerName         string
@@ -69,22 +70,22 @@ func RefreshServerInfo() {
 	DB := MinoDatabase.GetDatabase()
 	var (
 		pongsSync struct {
-			pongs []*ServerStatus.Pong
+			pongs []ServerStatus.Pong
 		}
 		wg       sync.WaitGroup
 		entities []MinoDatabase.WareEntity
 	)
 	DB.Find(&entities)
-	pongsSync.pongs = make([]*ServerStatus.Pong, len(entities))
+	pongsSync.pongs = make([]ServerStatus.Pong, len(entities))
 	wg.Add(len(entities))
 	for i, e := range entities {
 		go func(host string, index int) {
 			defer wg.Done()
 			pongTemp, err := ServerStatus.Ping(host)
 			if err != nil {
-				pongsSync.pongs[index] = &ServerStatus.Pong{}
+				pongsSync.pongs[index] = ServerStatus.Pong{}
 			} else {
-				pongsSync.pongs[index] = pongTemp
+				pongsSync.pongs[index] = *pongTemp
 			}
 			// glgf.Info(pongTemp,host)
 			/* different index dont need Lock*/
@@ -96,10 +97,17 @@ func RefreshServerInfo() {
 	// glgf.Debug(pongs)
 	for i, p := range pongsSync.pongs {
 		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
-		var server serverInfo
+		if pteServer == (PterodactylAPI.PterodactylServer{}) {
+			temp, ok := entityMap.Load(entities[i].ID)
+			if ok {
+				pteServer = temp.(serverInfo).PteInfo
+			}
+		}
+		var info serverInfo
+		info.PteInfo = pteServer
 		if p.Version.Protocol == 0 {
 			/* server is offline*/
-			server = serverInfo{
+			info = serverInfo{
 				ServerIsOnline:     false,
 				ServerName:         pteServer.Name,
 				ServerEXP:          entities[i].ValidDate.Format("2006-01-02 15:04:05"),
@@ -115,7 +123,7 @@ func RefreshServerInfo() {
 		} else {
 			/* server is online*/
 			icon := template.URL(p.FavIcon)
-			server = serverInfo{
+			info = serverInfo{
 				ServerIsOnline:     true,
 				ServerIconData:     icon,
 				ServerName:         pteServer.Name,
@@ -133,26 +141,23 @@ func RefreshServerInfo() {
 				ServerRenew2URL:    template.URL(MinoConfigure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
 				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 			}
-			if server.ServerFMLType != "" {
+			if info.ServerFMLType != "" {
 				for _, f := range p.ModInfo.ModList {
-					server.ServerModList = append(server.ServerModList, struct{ ModText string }{ModText: f.ModID + " " + f.ModVersion})
+					info.ServerModList = append(info.ServerModList, struct{ ModText string }{ModText: f.ModID + " " + f.ModVersion})
 				}
-				server.ServerModCount = len(server.ServerModList)
+				info.ServerModCount = len(info.ServerModList)
 			}
 		}
 		/* no matter server is online or offline*/
-		DB.Where("nest_id = ? AND egg_id = ?", pteServer.NestId, pteServer.EggId).Find(&server.ServerPacks)
-		if len(server.ServerPacks) == 0 {
-			server.ServerPacks = append(server.ServerPacks, MinoDatabase.Pack{
-				Model:           gorm.Model{},
-				PackName:        "没有可以安装的包",
-				NestID:          0,
-				EggID:           0,
-				PackID:          -1,
-				PackDescription: "",
+		DB.Where("nest_id = ? AND egg_id = ?", pteServer.NestId, pteServer.EggId).Find(&info.ServerPacks)
+		if len(info.ServerPacks) == 0 {
+			info.ServerPacks = append(info.ServerPacks, MinoDatabase.Pack{
+				Model:    gorm.Model{},
+				PackName: "没有可以安装的包",
+				PackID:   -1,
 			})
 		}
-		entityMap.Store(entities[i].ID, server)
+		entityMap.Store(entities[i].ID, info)
 	}
 
 }
