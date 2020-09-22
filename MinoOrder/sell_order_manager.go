@@ -71,6 +71,7 @@ func SellGet(orderID uint) (MinoDatabase.Order, error) {
 
 func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName string) error {
 	DB := MinoDatabase.GetDatabase()
+	cli := PterodactylAPI.ClientFromConf()
 	var (
 		order MinoDatabase.Order
 		key   MinoDatabase.WareKey
@@ -96,8 +97,8 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 	if DB.Where("id = ?", order.SpecID).First(&spec).RecordNotFound() {
 		return errors.New("cant find wareSpec by id: " + strconv.Itoa(int(order.SpecID)))
 	}
-	pteUser, ok := PterodactylAPI.GetUser(PterodactylAPI.ConfGetParams(), user.Name, true)
-	if !ok || pteUser == (PterodactylAPI.PterodactylUser{}) {
+	pteUser, err := cli.GetUser(user.Name, true)
+	if err != nil {
 		return errors.New("cant find pte user: " + user.Name)
 	}
 	switch spec.ValidDuration {
@@ -110,13 +111,13 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 	case 365 * 24 * time.Hour:
 		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
 	}
-	err := PterodactylAPI.PterodactylCreateServer(PterodactylAPI.ConfGetParams(), PterodactylAPI.PterodactylServer{
+	err = cli.CreateServer(PterodactylAPI.Server{
 		UserId:      pteUser.Uid,
 		ExternalId:  user.Name + strconv.Itoa(int(orderID)),
 		Name:        user.Name + strconv.Itoa(int(orderID)),
 		Description: "到期时间：" + exp,
 		Suspended:   false,
-		Limits: PterodactylAPI.PterodactylServerLimit{
+		Limits: PterodactylAPI.ServerLimit{
 			Memory: spec.Memory,
 			Swap:   spec.Swap,
 			Disk:   spec.Disk,
@@ -140,26 +141,26 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 			ValidDate:        time.Now().Add(spec.ValidDuration),
 		}
 		if err := DB.Create(&entity).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(orderID)))
 			return err
 		}
 		if err = DB.Model(&order).Update("allocation_id", selectedIP).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(orderID)))
 			DB.Delete(&entity)
 			return err
 		}
 		if err = DB.Model(&order).Update("confirmed", true).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(orderID)))
 			DB.Delete(&entity)
 			return err
 		}
 		if err = DB.Model(&order).Update("paid", true).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(orderID)))
 			DB.Delete(&entity)
 			return err
 		}
 		if err = DB.Delete(&key).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(orderID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(orderID)))
 			DB.Delete(&entity)
 			DB.Model(&order).Update("paid", false)
 			return err
@@ -176,6 +177,7 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 
 func SellPaymentCheckByBalance(order *MinoDatabase.Order, user *MinoDatabase.User, selectedIP int, hostName string) error {
 	DB := MinoDatabase.GetDatabase()
+	cli := PterodactylAPI.ClientFromConf()
 	var (
 		spec MinoDatabase.WareSpec
 		exp  string
@@ -186,8 +188,8 @@ func SellPaymentCheckByBalance(order *MinoDatabase.Order, user *MinoDatabase.Use
 	if err := DB.Where("id = ?", order.SpecID).First(&spec).Error; err != nil {
 		return errors.New("无法获取对应商品")
 	}
-	pteUser, ok := PterodactylAPI.GetUser(PterodactylAPI.ConfGetParams(), user.Name, true)
-	if !ok || pteUser == (PterodactylAPI.PterodactylUser{}) {
+	pteUser, err := cli.GetUser(user.Name, true)
+	if err != nil {
 		return errors.New("cant find pte user: " + user.Name)
 	}
 	switch spec.ValidDuration {
@@ -200,13 +202,13 @@ func SellPaymentCheckByBalance(order *MinoDatabase.Order, user *MinoDatabase.Use
 	case 365 * 24 * time.Hour:
 		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
 	}
-	err := PterodactylAPI.PterodactylCreateServer(PterodactylAPI.ConfGetParams(), PterodactylAPI.PterodactylServer{
+	err = cli.CreateServer(PterodactylAPI.Server{
 		UserId:      pteUser.Uid,
 		ExternalId:  user.Name + strconv.Itoa(int(order.ID)),
 		Name:        user.Name + strconv.Itoa(int(order.ID)),
 		Description: "到期时间：" + exp,
 		Suspended:   false,
-		Limits: PterodactylAPI.PterodactylServerLimit{
+		Limits: PterodactylAPI.ServerLimit{
 			Memory: spec.Memory,
 			Swap:   spec.Swap,
 			Disk:   spec.Disk,
@@ -229,27 +231,27 @@ func SellPaymentCheckByBalance(order *MinoDatabase.Order, user *MinoDatabase.Use
 			ValidDate:        time.Now().Add(spec.ValidDuration),
 		}
 		if err := DB.Create(&entity).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(order.ID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(order.ID)))
 			return err
 		}
 		if err = DB.Model(&order).Update("allocation_id", selectedIP).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(order.ID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(order.ID)))
 			DB.Delete(&entity)
 			return err
 		}
 		if err = DB.Model(&order).Update("confirmed", true).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(order.ID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(order.ID)))
 			DB.Delete(&entity)
 			return err
 		}
 		if err = DB.Model(&order).Update("paid", true).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(order.ID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(order.ID)))
 			DB.Delete(&entity)
 			DB.Model(&order).Update("paid", false).Update("confirmed", false)
 			return err
 		}
 		if err = DB.Model(&user).Update("balance", user.Balance-order.FinalPrice).Error; err != nil {
-			_ = PterodactylAPI.PterodactylDeleteServer(PterodactylAPI.ConfGetParams(), user.Name+strconv.Itoa(int(order.ID)))
+			_ = cli.DeleteServer(user.Name + strconv.Itoa(int(order.ID)))
 			DB.Delete(&entity)
 			DB.Model(&order).Update("paid", false).Update("confirmed", false)
 			return err

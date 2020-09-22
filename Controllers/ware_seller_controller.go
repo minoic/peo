@@ -54,7 +54,7 @@ func RefreshWareInfo() {
 	}
 	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
 		for _, w := range waresInDB {
-			egg := PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), w.Nest, w.Egg)
+			egg, _ := PterodactylAPI.ClientFromConf().GetEgg(w.Nest, w.Egg)
 			// glgf.Debug(w)
 			nw := ware{
 				WareName: w.WareName,

@@ -22,7 +22,7 @@ type UserConsoleController struct {
 }
 
 type serverInfo struct {
-	PteInfo            PterodactylAPI.PterodactylServer
+	PteInfo            *PterodactylAPI.Server
 	ServerIsOnline     bool
 	ServerIconData     template.URL
 	ServerName         string
@@ -68,6 +68,7 @@ var (
 
 func RefreshServerInfo() {
 	DB := MinoDatabase.GetDatabase()
+	cli := PterodactylAPI.ClientFromConf()
 	var (
 		pongsSync struct {
 			pongs []ServerStatus.Pong
@@ -96,8 +97,8 @@ func RefreshServerInfo() {
 	wg.Wait()
 	// glgf.Debug(pongs)
 	for i, p := range pongsSync.pongs {
-		pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entities[i].ServerExternalID)
-		if pteServer == (PterodactylAPI.PterodactylServer{}) {
+		pteServer, err := cli.GetServer(entities[i].ServerExternalID)
+		if err != nil {
 			temp, ok := entityMap.Load(entities[i].ID)
 			if ok {
 				pteServer = temp.(serverInfo).PteInfo
@@ -105,6 +106,9 @@ func RefreshServerInfo() {
 		}
 		var info serverInfo
 		info.PteInfo = pteServer
+		if info.PteInfo == nil {
+			pteServer = &PterodactylAPI.Server{}
+		}
 		if p.Version.Protocol == 0 {
 			/* server is offline*/
 			info = serverInfo{
@@ -118,7 +122,7 @@ func RefreshServerInfo() {
 				ServerRenewURL:     template.URL(MinoConfigure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
 				ServerRenew2URL:    template.URL(MinoConfigure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
 				ServerReinstallURL: template.URL(MinoConfigure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
-				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
+				ConsoleHostName:    cli.HostName(),
 			}
 		} else {
 			/* server is online*/
@@ -133,7 +137,7 @@ func RefreshServerInfo() {
 				ServerPlayerMax:    p.Players.Max,
 				ServerHostName:     entities[i].HostName,
 				ServerIdentifier:   pteServer.Identifier,
-				ConsoleHostName:    PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()),
+				ConsoleHostName:    cli.HostName(),
 				ServerFMLType:      p.ModInfo.ModType,
 				ServerVersion:      p.Version.Name,
 				ServerIndex:        strconv.Itoa(i),
@@ -248,13 +252,13 @@ func (this *UserConsoleController) Renew() {
 		DB.Create(&key)
 		return
 	}
-	pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entity.ServerExternalID)
-	if pteServer == (PterodactylAPI.PterodactylServer{}) {
+	pteServer, err := PterodactylAPI.ClientFromConf().GetServer(entity.ServerExternalID)
+	if err != nil {
 		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 		return
 	}
-	if err := PterodactylAPI.PterodactylUpdateServerDetail(PterodactylAPI.ConfGetParams(), entity.ServerExternalID, PterodactylAPI.PostUpdateDetails{
+	if err := PterodactylAPI.ClientFromConf().UpdateServerDetail(entity.ServerExternalID, PterodactylAPI.PostUpdateDetails{
 		UserID:      pteServer.UserId,
 		ServerName:  pteServer.Name,
 		Description: "到期时间：" + entity.ValidDate.Format("2006-01-02"),
@@ -304,13 +308,13 @@ func (this *UserConsoleController) Renew2() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		return
 	}
-	pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entity.ServerExternalID)
-	if pteServer == (PterodactylAPI.PterodactylServer{}) {
+	pteServer, err := PterodactylAPI.ClientFromConf().GetServer(entity.ServerExternalID)
+	if err != nil {
 		MinoMessage.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 		return
 	}
-	if err := PterodactylAPI.PterodactylUpdateServerDetail(PterodactylAPI.ConfGetParams(), entity.ServerExternalID, PterodactylAPI.PostUpdateDetails{
+	if err := PterodactylAPI.ClientFromConf().UpdateServerDetail(entity.ServerExternalID, PterodactylAPI.PostUpdateDetails{
 		UserID:      pteServer.UserId,
 		ServerName:  pteServer.Name,
 		Description: "到期时间：" + entity.ValidDate.Format("2006-01-02"),
@@ -355,7 +359,7 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("您没有权限操作他人服务器"))
 		return
 	}
-	if err = PterodactylAPI.PterodactylUpdateServerStartup(PterodactylAPI.ConfGetParams(), entity.ServerExternalID, packID); err != nil {
+	if err = PterodactylAPI.ClientFromConf().UpdateServerStartup(entity.ServerExternalID, packID); err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
 		return

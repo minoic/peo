@@ -36,20 +36,22 @@ func (this *AdminConsoleController) Prepare() {
 	}
 }
 
+type dServer struct {
+	ServerName            string
+	ServerConsoleHostName template.URL
+	ServerIdentifier      string
+	DeleteURL             template.URL
+	ServerOwner           string
+	ServerEXP             string
+	ServerHostName        string
+}
+
 func (this *AdminConsoleController) Get() {
 	DB := MinoDatabase.GetDatabase()
 	/* delete confirm */
 	var (
 		dib           []MinoDatabase.DeleteConfirm
-		deleteServers []struct {
-			ServerName            string
-			ServerConsoleHostName template.URL
-			ServerIdentifier      string
-			DeleteURL             template.URL
-			ServerOwner           string
-			ServerEXP             string
-			ServerHostName        string
-		}
+		deleteServers []dServer
 	)
 	DB.Find(&dib)
 	for i, d := range dib {
@@ -57,18 +59,10 @@ func (this *AdminConsoleController) Get() {
 		if DB.Where("id = ?", d.WareID).First(&entity).RecordNotFound() || entity.DeleteStatus != 1 {
 			DB.Delete(&d)
 		} else {
-			pteServer := PterodactylAPI.GetServer(PterodactylAPI.ConfGetParams(), entity.ServerExternalID)
-			deleteServers = append(deleteServers, struct {
-				ServerName            string
-				ServerConsoleHostName template.URL
-				ServerIdentifier      string
-				DeleteURL             template.URL
-				ServerOwner           string
-				ServerEXP             string
-				ServerHostName        string
-			}{
+			pteServer, _ := PterodactylAPI.ClientFromConf().GetServer(entity.ServerExternalID)
+			deleteServers = append(deleteServers, dServer{
 				ServerName:            entity.ServerExternalID,
-				ServerConsoleHostName: template.URL(PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams()) + "/server/" + pteServer.Identifier),
+				ServerConsoleHostName: template.URL(PterodactylAPI.ClientFromConf().HostName() + "/server/" + pteServer.Identifier),
 				ServerIdentifier:      pteServer.Identifier,
 				DeleteURL:             template.URL(MinoConfigure.WebHostName + "/admin-console/delete-confirm/" + strconv.Itoa(int(entity.ID))),
 				ServerOwner:           entity.UserExternalID,

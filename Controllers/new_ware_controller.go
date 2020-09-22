@@ -201,6 +201,7 @@ func (this *NewWareController) Post() {
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
 		return
 	}
+	cli := PterodactylAPI.ClientFromConf()
 	// formText,_:=template.ParseFiles("tpls/forms/formgroup.html")
 	ware := MinoDatabase.WareSpec{
 		Model:           gorm.Model{},
@@ -284,11 +285,12 @@ func (this *NewWareController) Post() {
 		hasErrorText = "Discount2 输入值不合法"
 	}
 	ware.Node, err = this.GetInt("node_id")
+	_, nerr := cli.GetNode(ware.Node)
 	if err != nil {
 		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 discount " + err.Error()
-	} else if ware.Node < 0 || PterodactylAPI.GetNode(PterodactylAPI.ConfGetParams(), ware.Node) == (PterodactylAPI.PterodactylNode{}) {
+	} else if ware.Node < 0 || nerr != nil {
 		hasError = true
 		hasErrorText = "Node ID 输入值小于 0 或找不到该节点"
 	}
@@ -303,7 +305,7 @@ func (this *NewWareController) Post() {
 		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 egg_id " + err.Error()
-	} else if PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), ware.Nest, ware.Egg) == (PterodactylAPI.PterodactylEgg{}) {
+	} else if _, err := cli.GetEgg(ware.Nest, ware.Egg); err != nil {
 		hasError = true
 		hasErrorText = "在翼龙面板中找不到对应的 EGG"
 	}

@@ -21,52 +21,49 @@ func ClearCache() {
 	}
 }
 
-func ConfGetParams() ParamsData {
+var confInstance *Client
+
+func ClientFromConf() *Client {
+	if confInstance != nil {
+		return confInstance
+	}
 	conf := MinoConfigure.GetConf()
 	sec, err := conf.Bool("Serversecure")
 	if err != nil {
-		glgf.Error(err.Error())
+		panic(err)
 	}
-	data := ParamsData{
-		Serverhostname: conf.String("Serverhostname"),
-		Serversecure:   sec,
-		Serverpassword: conf.String("Serverpassword"),
+	Serverhostname := conf.String("Serverhostname")
+	var hostname string
+	if sec {
+		hostname = "https://" + Serverhostname
+	} else {
+		hostname = "http://" + Serverhostname
 	}
-	return data
+	ret := NewClient(hostname, conf.String("Serverpassword"))
+	confInstance = ret
+	return ret
 }
 
-func GetUser(data ParamsData, ID interface{}, isExternal bool) (PterodactylUser, bool) {
+func (this *Client) GetUser(ID interface{}, isExternal bool) (*User, error) {
 	if isExternal {
 		if bm.IsExist("USERE" + ID.(string)) {
-			user := bm.Get("USERE" + ID.(string))
-			ok := true
-			if user == (PterodactylUser{}) {
-				ok = false
-			}
-			return user.(PterodactylUser), ok
+			return bm.Get("USERE" + ID.(string)).(*User), nil
 		} else {
-			user, ok := pterodactylGetUser(data, ID, isExternal)
-			err := bm.Put("USERE"+ID.(string), user, timeout)
+			user, err := this.getUser(ID, isExternal)
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
-			return user, ok
+			return user, bm.Put("USERE"+ID.(string), user, timeout)
 		}
 	} else {
 		if bm.IsExist("USER" + strconv.Itoa(ID.(int))) {
-			user := bm.Get("USER" + strconv.Itoa(ID.(int)))
-			ok := true
-			if user == (PterodactylUser{}) {
-				ok = false
-			}
-			return user.(PterodactylUser), ok
+			return bm.Get("USER" + strconv.Itoa(ID.(int))).(*User), nil
 		} else {
-			user, ok := pterodactylGetUser(data, ID, isExternal)
-			err := bm.Put("USER"+strconv.Itoa(ID.(int)), user, timeout)
+			user, err := this.getUser(ID, isExternal)
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
-			return user, ok
+			return user, bm.Put("USER"+strconv.Itoa(ID.(int)), user, timeout)
 		}
 	}
 }
@@ -84,68 +81,77 @@ const (
 
 var pool = make(chan struct{}, 2)
 
-func get(data ParamsData, key string, mode int, id []int, ExternalID string) interface{} {
+func (this *Client) get(key string, mode int, id []int, ExternalID string) (interface{}, error) {
 	pool <- struct{}{}
 	if bm.IsExist(key) {
 		<-pool
-		return bm.Get(key)
+		return bm.Get(key), nil
 	} else {
 		var ret interface{}
+		var err error
 		switch mode {
 		case nest:
-			ret = pterodactylGetNest(data, id[0])
+			ret, err = this.getNest(id[0])
 		case allNests:
-			ret = pterodactylGetAllNests(data)
+			ret, err = this.getAllNests()
 		case egg:
-			ret = pterodactylGetEgg(data, id[0], id[1])
+			ret, err = this.getEgg(id[0], id[1])
 		case allEggs:
-			ret = pterodactylGetAllEggs(data, id[0])
+			ret, err = this.getAllEggs(id[0])
 		case node:
-			ret = pterodactylGetNode(data, id[0])
+			ret, err = this.getNode(id[0])
 		case allocations:
-			ret = pterodactylGetAllocations(data, id[0])
+			ret, err = this.getAllocations(id[0])
 		case env:
-			ret = pterodactylGetEnv(data, id[0], id[1])
+			ret, err = this.getEnv(id[0], id[1])
 		case server:
-			ret = pterodactylGetServer(data, ExternalID, true)
+			ret, err = this.getServer(ExternalID, true)
 		}
-		err := bm.Put(key, ret, timeout)
+		_ = bm.Put(key, ret, timeout)
 		if err != nil {
 			glgf.Error(err)
 		}
 		<-pool
-		return ret
+		return ret, err
 	}
 }
 
-func GetServer(data ParamsData, ExternalID string) PterodactylServer {
-	return get(data, "SERVER"+ExternalID, server, []int{}, ExternalID).(PterodactylServer)
+func (this *Client) GetServer(ExternalID string) (*Server, error) {
+	ret, err := this.get("SERVER"+ExternalID, server, []int{}, ExternalID)
+	return ret.(*Server), err
 }
 
-func GetAllEggs(data ParamsData) []PterodactylEgg {
-	return get(data, "ALLEGGS", allEggs, []int{}, "").([]PterodactylEgg)
+func (this *Client) GetAllEggs() ([]Egg, error) {
+	ret, err := this.get("ALLEGGS", allEggs, []int{}, "")
+	return ret.([]Egg), err
 }
 
-func GetNest(data ParamsData, nestID int) PterodactylNest {
-	return get(data, "nest"+strconv.Itoa(nestID), nest, []int{nestID}, "").(PterodactylNest)
+func (this *Client) GetNest(nestID int) (*Nest, error) {
+	ret, err := this.get("nest"+strconv.Itoa(nestID), nest, []int{nestID}, "")
+	return ret.(*Nest), err
 }
 
-func GetAllNests(data ParamsData) []PterodactylNest {
-	return get(data, "allNests", allNests, []int{}, "").([]PterodactylNest)
+func (this *Client) GetAllNests() ([]Nest, error) {
+	ret, err := this.get("allNests", allNests, []int{}, "")
+	return ret.([]Nest), err
 }
 
-func GetEgg(data ParamsData, nestID int, eggID int) PterodactylEgg {
-	return get(data, "EGG"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), egg, []int{nestID, eggID}, "").(PterodactylEgg)
+func (this *Client) GetEgg(nestID int, eggID int) (*Egg, error) {
+	ret, err := this.get("EGG"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), egg, []int{nestID, eggID}, "")
+	return ret.(*Egg), err
 }
 
-func GetAllocations(data ParamsData, nodeID int) []PterodactylAllocation {
-	return get(data, "ALLOCATIONS", allocations, []int{nodeID}, "").([]PterodactylAllocation)
+func (this *Client) GetAllocations(nodeID int) ([]Allocation, error) {
+	ret, err := this.get("ALLOCATIONS", allocations, []int{nodeID}, "")
+	return ret.([]Allocation), err
 }
 
-func GetNode(data ParamsData, nodeID int) PterodactylNode {
-	return get(data, "NODE"+strconv.Itoa(nodeID), node, []int{nodeID}, "").(PterodactylNode)
+func (this *Client) GetNode(nodeID int) (*Node, error) {
+	ret, err := this.get("NODE"+strconv.Itoa(nodeID), node, []int{nodeID}, "")
+	return ret.(*Node), err
 }
 
-func GetEnv(data ParamsData, nestID int, eggID int) map[string]string {
-	return get(data, "ENV"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), env, []int{nestID, eggID}, "").(map[string]string)
+func (this *Client) GetEnv(nestID int, eggID int) (map[string]string, error) {
+	ret, err := this.get("ENV"+strconv.Itoa(nestID)+"#"+strconv.Itoa(eggID), env, []int{nestID, eggID}, "")
+	return ret.(map[string]string), err
 }

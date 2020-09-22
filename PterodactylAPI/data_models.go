@@ -2,7 +2,7 @@ package PterodactylAPI
 
 import "time"
 
-type PterodactylUser struct {
+type User struct {
 	Uid        int       `json:"id"`
 	ExternalId string    `json:"external_id"`
 	Uuid       string    `json:"uuid"`
@@ -17,7 +17,7 @@ type PterodactylUser struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-type PterodactylNest struct {
+type Nest struct {
 	Id          int       `json:"id"`
 	Uuid        string    `json:"uuid"`
 	Author      string    `json:"author"`
@@ -27,7 +27,7 @@ type PterodactylNest struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-type PterodactylEgg struct {
+type Egg struct {
 	Id          int       `json:"id"`
 	Uuid        string    `json:"uuid"`
 	Name        string    `json:"name"`
@@ -40,7 +40,7 @@ type PterodactylEgg struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-type PterodactylNode struct {
+type Node struct {
 	Id                 int       `json:"id"`
 	Public             bool      `json:"public"`
 	Name               string    `json:"name"`
@@ -62,7 +62,7 @@ type PterodactylNode struct {
 	UpdatedAt          time.Time `json:"updated_at"`
 }
 
-type PterodactylAllocation struct {
+type Allocation struct {
 	ID       int    `json:"id"`
 	IP       string `json:"ip"`
 	Alias    string `json:"alias"`
@@ -70,7 +70,7 @@ type PterodactylAllocation struct {
 	Assigned bool   `json:"assigned"`
 }
 
-type PterodactylServerLimit struct {
+type ServerLimit struct {
 	Memory int `json:"memory"`
 	Swap   int `json:"swap"`
 	Disk   int `json:"disk"`
@@ -78,21 +78,21 @@ type PterodactylServerLimit struct {
 	CPU    int `json:"cpu"`
 }
 
-type PterodactylServer struct {
-	Id          int                    `json:"id"`
-	ExternalId  string                 `json:"external_id"`
-	Uuid        string                 `json:"uuid"`
-	Identifier  string                 `json:"identifier"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"Description"`
-	Suspended   bool                   `json:"suspended"`
-	Limits      PterodactylServerLimit `json:"limits"`
-	UserId      int                    `json:"user"`
-	NodeId      int                    `json:"node"`
-	Allocation  int                    `json:"allocation"`
-	NestId      int                    `json:"nest"`
-	EggId       int                    `json:"egg"`
-	PackId      int                    `json:"pack"`
+type Server struct {
+	Id          int         `json:"id"`
+	ExternalId  string      `json:"external_id"`
+	Uuid        string      `json:"uuid"`
+	Identifier  string      `json:"identifier"`
+	Name        string      `json:"name"`
+	Description string      `json:"Description"`
+	Suspended   bool        `json:"suspended"`
+	Limits      ServerLimit `json:"limits"`
+	UserId      int         `json:"user"`
+	NodeId      int         `json:"node"`
+	Allocation  int         `json:"allocation"`
+	NestId      int         `json:"nest"`
+	EggId       int         `json:"egg"`
+	PackId      int         `json:"pack"`
 }
 
 type PostPteUser struct {

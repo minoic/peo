@@ -105,7 +105,7 @@ func (this *NewPackController) Post() {
 		hasError = true
 		hasErrorText = "POST 表单获取错误 egg_id " + err.Error()
 	}
-	if PterodactylAPI.GetEgg(PterodactylAPI.ConfGetParams(), pack.NestID, pack.EggID) == (PterodactylAPI.PterodactylEgg{}) {
+	if _, err := PterodactylAPI.ClientFromConf().GetEgg(pack.NestID, pack.EggID); err != nil {
 		hasError = true
 		hasErrorText = "获取 EGG 信息失败！"
 	}

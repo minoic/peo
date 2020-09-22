@@ -32,8 +32,8 @@ func (this *UserSettingsController) Prepare() {
 	user, _ := MinoSession.SessionGetUser(this.StartSession())
 	this.Data["userCreated"] = user.PteUserCreated
 	if user.PteUserCreated {
-		pteUser, ok := PterodactylAPI.GetUser(PterodactylAPI.ConfGetParams(), user.Name, true)
-		if !ok || pteUser == (PterodactylAPI.PterodactylUser{}) {
+		pteUser, err := PterodactylAPI.ClientFromConf().GetUser(user.Name, true)
+		if err != nil {
 			this.Data["pteUserUUID"] = "获取用户信息失败"
 			this.Data["pteUserName"] = "获取用户信息失败"
 			this.Data["pteUserEmail"] = "获取用户信息失败"
@@ -148,7 +148,7 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
 		return
 	}
-	if err = PterodactylAPI.PterodactylCreateUser(PterodactylAPI.ConfGetParams(), PterodactylAPI.PostPteUser{
+	if err = PterodactylAPI.ClientFromConf().CreateUser(PterodactylAPI.PostPteUser{
 		ExternalId: user.Name,
 		Username:   user.Name,
 		Email:      user.Email,

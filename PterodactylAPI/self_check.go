@@ -11,6 +11,7 @@ import (
 
 func CheckServers() {
 	var entities []MinoDatabase.WareEntity
+	cli := ClientFromConf()
 	DB := MinoDatabase.GetDatabase()
 	DB.Find(&entities)
 	for _, entity := range entities {
@@ -24,9 +25,9 @@ func CheckServers() {
 		}
 		if entity.ValidDate.Before(time.Now()) &&
 			entity.ValidDate.AddDate(0, 0, 10).After(time.Now()) {
-			server := pterodactylGetServer(ConfGetParams(), entity.ServerExternalID, true)
-			if server != (PterodactylServer{}) && !server.Suspended {
-				err := PterodactylSuspendServer(ConfGetParams(), server.ExternalId)
+			server, err := cli.getServer(entity.ServerExternalID, true)
+			if err == nil && !server.Suspended {
+				err := cli.SuspendServer(server.ExternalId)
 				glgf.Info("server suspended because Expired: ", entity.ServerExternalID)
 				if err != nil {
 					glgf.Error(err)
@@ -41,7 +42,7 @@ func CheckServers() {
 				glgf.Info("server added to delete confirm list because Expired more than 10 days: ",
 					entity.ServerExternalID)
 			} else if entity.DeleteStatus == 2 {
-				err := PterodactylDeleteServer(ConfGetParams(), entity.ServerExternalID)
+				err := cli.DeleteServer(entity.ServerExternalID)
 				if err != nil {
 					glgf.Error(err)
 				} else {
@@ -51,7 +52,7 @@ func CheckServers() {
 		} else if entity.ValidDate.After(time.Now()) && entity.DeleteStatus != 0 {
 			DB.Model(&entity).Update("delete_status", 0)
 			DB.Delete(&MinoDatabase.DeleteConfirm{}, "ware_id = ?", entity.ID)
-			err := PterodactylUnsuspendServer(ConfGetParams(), entity.ServerExternalID)
+			err := cli.UnsuspendServer(entity.ServerExternalID)
 			if err != nil {
 				glgf.Error(err)
 			}
@@ -64,7 +65,7 @@ func CacheNeededEggs() {
 	DB := MinoDatabase.GetDatabase()
 	if !DB.Find(&wareSpecs).RecordNotFound() {
 		for _, spec := range wareSpecs {
-			pterodactylGetEgg(ConfGetParams(), spec.Nest, spec.Egg)
+			ClientFromConf().GetEgg(spec.Nest, spec.Egg)
 		}
 	}
 }
@@ -74,7 +75,7 @@ func CacheNeededServers() {
 	DB := MinoDatabase.GetDatabase()
 	if !DB.Find(&entities).RecordNotFound() {
 		for _, entity := range entities {
-			GetServer(ConfGetParams(), entity.ServerExternalID)
+			ClientFromConf().GetServer(entity.ServerExternalID)
 		}
 	}
 }
@@ -85,7 +86,7 @@ func ConfirmDelete(entityID uint) error {
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
 		return errors.New("cant find entity by ID: " + strconv.Itoa(int(entityID)))
 	}
-	err := PterodactylDeleteServer(ConfGetParams(), entity.ServerExternalID)
+	err := ClientFromConf().DeleteServer(entity.ServerExternalID)
 	if err != nil {
 		return err
 	}

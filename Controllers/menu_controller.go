@@ -31,5 +31,5 @@ func handleNavbar(this *beego.Controller) {
 }
 
 func handleSidebar(this *beego.Controller) {
-	this.Data["dashboard"] = PterodactylAPI.PterodactylGethostname(PterodactylAPI.ConfGetParams())
+	this.Data["dashboard"] = PterodactylAPI.ClientFromConf().HostName()
 }

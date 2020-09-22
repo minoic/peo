@@ -82,7 +82,7 @@ func (this *OrderInfoController) Prepare() {
 	this.Data["finalPrice"] = order.FinalPrice
 	this.Data["paid"] = order.Paid
 	this.Data["orderID"] = order.ID
-	allocations := PterodactylAPI.GetAllocations(PterodactylAPI.ConfGetParams(), spec.Node)
+	allocations, _ := PterodactylAPI.ClientFromConf().GetAllocations(spec.Node)
 	type IPInfo struct {
 		IP string
 		ID int

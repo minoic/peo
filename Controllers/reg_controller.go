@@ -111,7 +111,7 @@ func (this *RegController) Post() {
 				}, &this.Controller)
 			}
 		} else {
-			err := PterodactylAPI.PterodactylCreateUser(PterodactylAPI.ConfGetParams(), PterodactylAPI.PostPteUser{
+			err := PterodactylAPI.ClientFromConf().CreateUser(PterodactylAPI.PostPteUser{
 				ExternalId: newUser.Name,
 				Username:   newUser.Name,
 				Email:      newUser.Email,
@@ -149,7 +149,7 @@ func (this *RegController) MailConfirm() {
 	DB := MinoDatabase.GetDatabase()
 	if ok {
 		if MinoConfigure.SMTPEnabled {
-			err := PterodactylAPI.PterodactylCreateUser(PterodactylAPI.ConfGetParams(), PterodactylAPI.PostPteUser{
+			err := PterodactylAPI.ClientFromConf().CreateUser(PterodactylAPI.PostPteUser{
 				ExternalId: user.Name,
 				Username:   user.Name,
 				Email:      user.Email,
