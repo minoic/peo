@@ -87,49 +87,19 @@ func (this *AdminConsoleController) Get() {
 		orders       []MinoDatabase.Order
 		WorkOrders   []MinoDatabase.WorkOrder
 		galleryItems []MinoDatabase.GalleryItem
-		wg           sync.WaitGroup
 	)
-	wg.Add(9)
-	go func() {
-		DB.Find(&specs)
-		wg.Done()
-	}()
-	go func() {
-		DB.Find(&entities)
-		wg.Done()
-	}()
-	go func() {
-		DB.Find(&users)
-		wg.Done()
-	}()
-	go func() {
-		DB.Find(&packs)
-		wg.Done()
-	}()
-	go func() {
-		DB.Find(&keys)
-		wg.Done()
-	}()
-	go func() {
-		DB.Where("confirmed = ?", true).Find(&orders)
-		wg.Done()
-	}()
-	go func() {
-		DB.Find(&rkeys)
-		wg.Done()
-	}()
-	go func() {
-		DB.Where("closed = ?", false).Find(&WorkOrders)
-		wg.Done()
-	}()
-	go func() {
-		DB.Find(&galleryItems)
-		for i, j := 0, len(galleryItems)-1; i < j; i, j = i+1, j-1 {
-			galleryItems[i], galleryItems[j] = galleryItems[j], galleryItems[i]
-		}
-		wg.Done()
-	}()
-	wg.Wait()
+	DB.Find(&specs)
+	DB.Find(&entities)
+	DB.Find(&users)
+	DB.Find(&packs)
+	DB.Find(&keys)
+	DB.Where("confirmed = ?", true).Find(&orders)
+	DB.Find(&rkeys)
+	DB.Where("closed = ?", false).Find(&WorkOrders)
+	DB.Find(&galleryItems)
+	for i, j := 0, len(galleryItems)-1; i < j; i, j = i+1, j-1 {
+		galleryItems[i], galleryItems[j] = galleryItems[j], galleryItems[i]
+	}
 	this.Data["WorkOrders"] = WorkOrders
 	this.Data["specAmount"] = len(specs)
 	this.Data["entityAmount"] = len(entities)

@@ -11,7 +11,6 @@ func main() {
 	beego.Router("/", &Controllers.WareSellerController{})
 	beego.Router("/gallery-show", &Controllers.GalleryShowController{})
 	beego.Router("/alipay", &Controllers.CallbackController{})
-	beego.Router("/index", &Controllers.IndexController{})
 	beego.Router("/reg", &Controllers.RegController{})
 	beego.Router("/reg/confirm/:key", &Controllers.RegController{}, "get:MailConfirm")
 	beego.Router("/login", &Controllers.LoginController{})
@@ -52,5 +51,4 @@ func main() {
 	beego.Run()
 }
 
-// todo: add alipay/wxpay or more payment method
 // todo: add code comments

@@ -9,7 +9,7 @@ import (
 	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
-	qrcode "github.com/skip2/go-qrcode"
+	"github.com/skip2/go-qrcode"
 	"github.com/smartwalle/alipay/v3"
 	_ "github.com/smartwalle/alipay/v3"
 	"strconv"

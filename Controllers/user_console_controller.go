@@ -104,11 +104,11 @@ func RefreshServerInfo() {
 				pteServer = temp.(serverInfo).PteInfo
 			}
 		}
-		var info serverInfo
-		info.PteInfo = pteServer
-		if info.PteInfo == nil {
+		if pteServer == nil {
 			pteServer = &PterodactylAPI.Server{}
 		}
+		var info serverInfo
+		info.PteInfo = pteServer
 		if p.Version.Protocol == 0 {
 			/* server is offline*/
 			info = serverInfo{
