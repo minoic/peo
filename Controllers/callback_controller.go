@@ -20,6 +20,10 @@ func (this *CallbackController) Prepare() {
 }
 
 func (this *CallbackController) Post() {
+	if MinoConfigure.AliClient == nil {
+		this.Abort("403")
+		return
+	}
 	notify, err := MinoConfigure.AliClient.GetTradeNotification(this.Ctx.Request)
 	if err != nil {
 		glgf.Error(err)

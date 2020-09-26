@@ -43,6 +43,11 @@ func (this *UserRechargeController) Get() {
 	}
 	this.Data["balance"] = user.Balance
 	this.Data["rechargeTimes"] = len(logs)
+	if MinoConfigure.AliClient == nil {
+		this.Data["aliEnabled"] = false
+	} else {
+		this.Data["aliEnabled"] = true
+	}
 }
 
 func (this *UserRechargeController) RechargeByKey() {
@@ -128,6 +133,10 @@ func (this *UserRechargeController) RechargeByKey() {
 
 func (this *UserRechargeController) CreateZFB() {
 	if !this.CheckXSRFCookie() {
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
+		return
+	}
+	if MinoConfigure.AliClient == nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}

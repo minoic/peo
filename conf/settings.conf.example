@@ -1,0 +1,77 @@
+############################
+#Please rename this file to settings.conf after edited it
+############################
+
+############################
+#Basic Settings
+############################
+WebHostName = "example.com" # hostname to visit your web site
+WebSecure = false  # use SSL or not
+WebApplicationName = "MinoIC - PE" # website name to show
+WebDescription = "Pterodactyl 服务器出售系统" # website description to show
+WebAdminAddress = "ADMIN <admin@example.com>" # website Admin address
+
+  ############################
+  #Pterodactyl Settings
+  ############################
+Serverhostname = "pterodactyl.example.com" # your pterodactyl panel hostname
+Serversecure = false # wether your pterodactyl use SSL or not
+Serverpassword = "kkE6BQJreSqNfZhpgrNs46gy8OFKyv0DN7rgmVXpqiQNRsK6" # pterodactyl admin token
+
+  ############################
+  #Database Settings
+  ############################
+Database = "MYSQL" # Choose database to use: MYSQL
+DatabaseSalt = "salt_salt" # salt
+UseGormCache = true
+SqlTablePrefix = "pe_"
+  #Fill the account info if MinoDatabase = "MYSQL"
+MYSQLHost = "localhost:3306"
+MYSQLUsername = "root"
+MYSQLUserPassword = "nightgod_"
+MYSQLDatabaseName = "testdb"
+
+  ############################
+  #SMTP settings
+  ############################
+SMTPEnabled = false # if set to false, we wont send any email to user
+SMTPHost = "smtpdm-ap-southeast-1.aliyun.com"
+SMTPPort = 80
+SMTPSendFrom = "ADMIN <admin@example.com>"
+SMTPUsername = "admin@example.com"
+SMTPUserPassword = "yourpassword"
+SMTPEncryption = "TLS" #TLS/SSL
+DeleteEmailConfirm = true #if DeleteEmailConfirm be set to true all admins will receive an email before Server being deleted
+
+  ############################
+  #Cache Settings
+  ############################
+  #change your cache settings
+  #CacheMode = "memory"/"file"/"redis"/"memcache"
+CacheMode = "memory"
+  #CacheMode = "memory"
+CacheMemoryGCInterval = 60
+  #CacheMode = "file"
+CacheFilePath = "./cache"
+CacheFileSuffix = ".cache"
+CacheFileDirectoryLevel = "2"
+CacheFileEmbedExpiry = "120"
+  #CacheMode = "redis"
+CacheRedisKey = "collectionName"
+CacheRedisCONN = ":6039"
+CacheRedisdbNum = "0"
+CacheRedisPassword = "thePassWord"
+  #CacheMode = "memcache"
+CacheMemcacheCONN = "127.0.0.1:11211"
+
+  ############################
+  #Misc Settings
+  ############################
+RechargeMode = false # check if you want user to recharge balance
+TotalDiscount = false # if set to false, we wont accept any discount
+AutoTaskInterval = 10 # Task run interval in seconds, 10 is recommended
+# fill if you want to enable alipay recharge
+AliPayEnabled = false
+AliPayPublicKey = ""
+AliPayPrivateKey = ""
+AliPayAppID = ""

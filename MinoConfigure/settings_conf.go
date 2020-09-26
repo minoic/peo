@@ -3,12 +3,14 @@ package MinoConfigure
 import (
 	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego/config"
+	"github.com/smartwalle/alipay/v3"
 	"os"
 )
 
 var conf config.Configer
 
 var (
+	AliClient          *alipay.Client
 	RechargeMode       bool
 	SqlTablePrefix     string
 	TotalDiscount      bool
@@ -37,6 +39,20 @@ func init() {
 	glgf.Get().SetMode(glgf.BOTH).
 		SetWriter(d).
 		AddLevelWriter(glgf.ERR, e)
+	e2, err := conf.Bool("AliPayEnabled")
+	if err != nil {
+		panic(err)
+	}
+	if e2 {
+		AliClient, err = alipay.New(conf.String("AliPayAppID"), conf.String("AliPayPrivateKey"), true)
+		if err != nil {
+			panic(err)
+		}
+		err = AliClient.LoadAliPayPublicKey(conf.String("AliPayPublicKey"))
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func ReloadConfig() {
