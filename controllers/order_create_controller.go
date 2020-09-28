@@ -37,5 +37,5 @@ func (this *OrderCreateController) Get() {
 		return
 	}
 	orderID := orderform.SellCreate(uint(specID), user.ID)
-	this.Redirect("/orderform/"+strconv.Itoa(int(orderID)), 302)
+	this.Redirect("/order/"+strconv.Itoa(int(orderID)), 302)
 }

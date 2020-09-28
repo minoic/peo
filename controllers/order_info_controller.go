@@ -33,7 +33,7 @@ func (this *OrderInfoController) Prepare() {
 	if DB.Where("id = ?", orderID).First(&order).RecordNotFound() {
 		this.Abort("404")
 	}
-	/*	orderform=database.Order{
+	/*	order=database.Order{
 		Model:        gorm.Model{
 			ID:        333,
 			CreatedAt: time.Now(),

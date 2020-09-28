@@ -1,6 +1,7 @@
 package email
 
 import (
+	"fmt"
 	"github.com/MinoIC/MinoIC-PE/configure"
 	"github.com/MinoIC/MinoIC-PE/cryptoo"
 	"github.com/MinoIC/MinoIC-PE/database"
@@ -50,14 +51,14 @@ func SendCaptcha(receiver string) (string, error) {
 	return key, nil
 }
 
-func SendAnyEmail(receiveAddr string, text string) error {
+func SendAnyEmail(receiveAddr string, text ...string) error {
 	conf := configure.GetConf()
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
 	if err != nil {
 		return err
 	}
-	mailHtml, _ := genAnyEmail(text)
+	mailHtml, _ := genAnyEmail(fmt.Sprint(text))
 	email := mail.NewMSG()
 	email.SetFrom(conf.String("SMTPSendFrom")).
 		AddTo(receiveAddr).

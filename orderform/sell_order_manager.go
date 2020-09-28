@@ -66,7 +66,7 @@ func SellGet(orderID uint) (database.Order, error) {
 	if !DB.Where("id = ?", orderID).First(&order).RecordNotFound() {
 		return order, nil
 	}
-	return database.Order{}, errors.New("cant find orderform by id " + strconv.Itoa(int(orderID)))
+	return database.Order{}, errors.New("cant find order by id " + strconv.Itoa(int(orderID)))
 }
 
 func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName string) error {
@@ -80,10 +80,10 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 		exp   string
 	)
 	if DB.Where("id = ?", orderID).First(&order).RecordNotFound() {
-		return errors.New("cant find orderform by id: " + strconv.Itoa(int(orderID)))
+		return errors.New("cant find order by id: " + strconv.Itoa(int(orderID)))
 	}
 	if order.Paid {
-		return errors.New("orderform is already paid: " + strconv.Itoa(int(orderID)))
+		return errors.New("order is already paid: " + strconv.Itoa(int(orderID)))
 	}
 	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
 		return errors.New("cant find key: " + keyString)
@@ -92,7 +92,7 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 		return errors.New("invalid key: " + keyString)
 	}
 	if DB.Where("id = ?", order.UserID).First(&user).RecordNotFound() {
-		return errors.New("cant find orderform`s owner by id: " + strconv.Itoa(int(order.UserID)))
+		return errors.New("cant find order`s owner by id: " + strconv.Itoa(int(order.UserID)))
 	}
 	if DB.Where("id = ?", order.SpecID).First(&spec).RecordNotFound() {
 		return errors.New("cant find wareSpec by id: " + strconv.Itoa(int(order.SpecID)))
@@ -167,9 +167,9 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 		}
 		glgf.Info("KeyString used: " + key.KeyString)
 		message.Send("ADMIN", user.ID, "您的订单 #"+strconv.Itoa(int(order.ID))+" 已成功创建对应服务器，请前往控制台确认")
-		glgf.Info("orderform id confirmed: " + strconv.Itoa(int(orderID)))
+		glgf.Info("order id confirmed: " + strconv.Itoa(int(orderID)))
 	} else {
-		glgf.Error("cant create server for orderform id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())
+		glgf.Error("cant create server for order id: " + strconv.Itoa(int(orderID)) + "with error: " + err.Error())
 		return err
 	}
 	return nil

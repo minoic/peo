@@ -149,8 +149,8 @@ var IN_GLOBAL_SCOPE = false;
     var scriptQuery = '';
     // Look for the <script> node that loads this script to get its parameters.
     // This starts looking at the end instead of just considering the last
-    // because deferred and async scripts run out of orderform.
-    // If the script is loaded twice, then this will run in reverse orderform.
+    // because deferred and async scripts run out of order.
+    // If the script is loaded twice, then this will run in reverse order.
     for (var scripts = doc.scripts, i = scripts.length; --i >= 0;) {
         var script = scripts[i];
         var match = script.src.match(
@@ -159,7 +159,7 @@ var IN_GLOBAL_SCOPE = false;
             scriptQuery = match[1] || '';
             // Remove the script from the DOM so that multiple runs at least run
             // multiple times even if parameter sets are interpreted in reverse
-            // orderform.
+            // order.
             script.parentNode.removeChild(script);
             break;
         }
@@ -908,7 +908,7 @@ var IN_GLOBAL_SCOPE = false;
              * @param {Array} shortcutStylePatterns patterns that always start with
              *   a known character.  Must have a shortcut string.
              * @param {Array} fallthroughStylePatterns patterns that will be tried in
-             *   orderform if the shortcut ones fail.  May have shortcuts.
+             *   order if the shortcut ones fail.  May have shortcuts.
              *
              * @return {function (Object)} a
              *   function that takes source code and returns a list of decorations.
@@ -944,7 +944,7 @@ var IN_GLOBAL_SCOPE = false;
                 /**
                  * Lexes job.sourceCode and produces an output array job.decorations of
                  * style classes preceded by the position at which they start in
-                 * job.sourceCode in orderform.
+                 * job.sourceCode in order.
                  *
                  * @param {Object} job an object like <pre>{
                  *    sourceCode: {string} sourceText plain text,
@@ -954,7 +954,7 @@ var IN_GLOBAL_SCOPE = false;
                  */
                 var decorate = function (job) {
                     var sourceCode = job.sourceCode, basePos = job.basePos;
-                    /** Even entries are positions in source in ascending orderform.  Odd enties
+                    /** Even entries are positions in source in ascending order.  Odd enties
                      * are style markers (e.g., PR_COMMENT) that run from that position until
                      * the end.
                      * @type {Array.<number|string>}
@@ -1379,7 +1379,7 @@ var IN_GLOBAL_SCOPE = false;
              *       and the text node or element (e.g. {@code <BR>}) corresponding to that
              *       span.
              *    decorations: {Array.<number|string} an array of style classes preceded
-             *       by the position at which they start in job.sourceCode in orderform
+             *       by the position at which they start in job.sourceCode in order
              * }</pre>
              * @private
              */
@@ -1504,7 +1504,7 @@ var IN_GLOBAL_SCOPE = false;
              *        sourceCode: {string} as plain text.
              *        decorations: {Array.<number|string>} an array of style classes
              *                     preceded by the position at which they start in
-             *                     job.sourceCode in orderform.
+             *                     job.sourceCode in order.
              *                     The language handler should assigned this field.
              *        basePos: {int} the position of source in the larger source chunk.
              *                 All positions in the output decorations array are relative

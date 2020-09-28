@@ -3,6 +3,8 @@ package pterodactyl
 import (
 	"errors"
 	"github.com/MinoIC/MinoIC-PE/database"
+	"github.com/MinoIC/MinoIC-PE/email"
+	"github.com/MinoIC/MinoIC-PE/message"
 	"github.com/MinoIC/glgf"
 	"github.com/jinzhu/gorm"
 	"strconv"
@@ -28,7 +30,17 @@ func CheckServers() {
 			server, err := cli.getServer(entity.ServerExternalID, true)
 			if err == nil && !server.Suspended {
 				err := cli.SuspendServer(server.ExternalId)
+				if err != nil {
+					glgf.Error(err)
+				}
 				glgf.Info("server suspended because Expired: ", entity.ServerExternalID)
+				message.Send("ADMIN", entity.UserID, "您的服务器 <", entity.ServerExternalID, "> 因过期被暂停使用，请及时续费！")
+				var user database.User
+				if err := DB.First(&user, "id = ?", entity.UserID).Error; err != nil {
+					message.SendAdmin("server with Non-existent user:", entity.ServerExternalID)
+					continue
+				}
+				err = email.SendAnyEmail(user.Email, "您的服务器 <", entity.ServerExternalID, "> 已过期暂停，如需延长服务或保留数据请及时续费！")
 				if err != nil {
 					glgf.Error(err)
 				}
