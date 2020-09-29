@@ -59,7 +59,11 @@ func (this *AdminConsoleController) Get() {
 		if DB.Where("id = ?", d.WareID).First(&entity).RecordNotFound() || entity.DeleteStatus != 1 {
 			DB.Delete(&d)
 		} else {
-			pteServer, _ := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID)
+			pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID)
+			if err != nil {
+				glgf.Error(err)
+				continue
+			}
 			deleteServers = append(deleteServers, dServer{
 				ServerName:            entity.ServerExternalID,
 				ServerConsoleHostName: template.URL(pterodactyl.ClientFromConf().HostName() + "/server/" + pteServer.Identifier),

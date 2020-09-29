@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/MinoIC/glgf"
 	"github.com/MinoIC/peo/configure"
 	"github.com/MinoIC/peo/database"
 	"github.com/MinoIC/peo/orderform"
@@ -23,8 +24,8 @@ func (this *OrderInfoController) Prepare() {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
-	orderIDstring := this.Ctx.Input.Param(":orderID")
-	orderID, _ := strconv.Atoi(orderIDstring)
+	orderIDString := this.Ctx.Input.Param(":orderID")
+	orderID, _ := strconv.Atoi(orderIDString)
 	DB := database.GetDatabase()
 	var (
 		spec  database.WareSpec
@@ -82,7 +83,12 @@ func (this *OrderInfoController) Prepare() {
 	this.Data["finalPrice"] = order.FinalPrice
 	this.Data["paid"] = order.Paid
 	this.Data["orderID"] = order.ID
-	allocations, _ := pterodactyl.ClientFromConf().GetAllocations(spec.Node)
+	allocations, err := pterodactyl.ClientFromConf().GetAllocations(spec.Node)
+	if err != nil {
+		glgf.Error(err)
+		this.Abort("500")
+		return
+	}
 	type IPInfo struct {
 		IP string
 		ID int

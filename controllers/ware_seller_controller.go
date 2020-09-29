@@ -54,7 +54,11 @@ func RefreshWareInfo() {
 	}
 	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
 		for _, w := range waresInDB {
-			egg, _ := pterodactyl.ClientFromConf().GetEgg(w.Nest, w.Egg)
+			egg, err := pterodactyl.ClientFromConf().GetEgg(w.Nest, w.Egg)
+			if err != nil {
+				glgf.Error(err)
+				continue
+			}
 			// glgf.Debug(w)
 			nw := ware{
 				WareName: w.WareName,
