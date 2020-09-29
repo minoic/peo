@@ -1,17 +1,26 @@
 package database
 
 import (
+	"fmt"
 	"github.com/8treenet/gcache"
 	gcopt "github.com/8treenet/gcache/option"
 	"github.com/MinoIC/glgf"
 	"github.com/MinoIC/peo/configure"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"time"
 )
 
 var db *gorm.DB
 
 func connect() {
+	defer func() {
+		if err := recover(); err != nil {
+			glgf.Error("panic caught:", fmt.Errorf("%v", err).Error())
+			time.Sleep(3 * time.Second)
+			connect()
+		}
+	}()
 	conf := configure.GetConf()
 	dialect := conf.String("Database")
 	opt := gcopt.DefaultOption{}
@@ -60,7 +69,6 @@ func GetDatabase() *gorm.DB {
 		glgf.Warn("trying to connect to database!")
 		connect()
 	}
-
 	for err := db.DB().Ping(); err != nil; err = db.DB().Ping() {
 		glgf.Warn("trying to connect to database!")
 		connect()
