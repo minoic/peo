@@ -6,6 +6,8 @@ import (
 	"github.com/astaxie/beego"
 )
 
+const Version = "v0.1.0"
+
 func main() {
 	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
 	beego.Router("/", &controllers.WareSellerController{})
