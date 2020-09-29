@@ -2,10 +2,10 @@ package email
 
 import (
 	"fmt"
-	"github.com/MinoIC/MinoIC-PE/configure"
-	"github.com/MinoIC/MinoIC-PE/cryptoo"
-	"github.com/MinoIC/MinoIC-PE/database"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
+	"github.com/MinoIC/peo/cryptoo"
+	"github.com/MinoIC/peo/database"
 	"github.com/xhit/go-simple-mail"
 )
 

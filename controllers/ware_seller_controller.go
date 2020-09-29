@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"github.com/MinoIC/MinoIC-PE/configure"
-	"github.com/MinoIC/MinoIC-PE/database"
-	"github.com/MinoIC/MinoIC-PE/pterodactyl"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
+	"github.com/MinoIC/peo/database"
+	"github.com/MinoIC/peo/pterodactyl"
 	"github.com/astaxie/beego"
 	"html/template"
 	"strconv"

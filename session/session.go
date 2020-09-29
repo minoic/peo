@@ -2,8 +2,8 @@ package session
 
 import (
 	"errors"
-	"github.com/MinoIC/MinoIC-PE/database"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/database"
 	"github.com/astaxie/beego/session"
 	_ "github.com/astaxie/beego/session/memcache"
 	_ "github.com/astaxie/beego/session/mysql"

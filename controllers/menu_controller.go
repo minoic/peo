@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"github.com/MinoIC/MinoIC-PE/configure"
-	"github.com/MinoIC/MinoIC-PE/message"
-	"github.com/MinoIC/MinoIC-PE/pterodactyl"
-	"github.com/MinoIC/MinoIC-PE/session"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
+	"github.com/MinoIC/peo/message"
+	"github.com/MinoIC/peo/pterodactyl"
+	"github.com/MinoIC/peo/session"
 	"github.com/astaxie/beego"
 	"html/template"
 )

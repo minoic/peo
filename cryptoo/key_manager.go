@@ -1,7 +1,7 @@
 package cryptoo
 
 import (
-	"github.com/MinoIC/MinoIC-PE/database"
+	"github.com/MinoIC/peo/database"
 	"github.com/jinzhu/gorm"
 	"time"
 )

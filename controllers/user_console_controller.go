@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"github.com/MinoIC/MinoIC-PE/configure"
-	"github.com/MinoIC/MinoIC-PE/database"
-	"github.com/MinoIC/MinoIC-PE/message"
-	"github.com/MinoIC/MinoIC-PE/pterodactyl"
-	"github.com/MinoIC/MinoIC-PE/session"
-	"github.com/MinoIC/MinoIC-PE/status"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
+	"github.com/MinoIC/peo/database"
+	"github.com/MinoIC/peo/message"
+	"github.com/MinoIC/peo/pterodactyl"
+	"github.com/MinoIC/peo/session"
+	"github.com/MinoIC/peo/status"
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
 	"github.com/jinzhu/gorm"

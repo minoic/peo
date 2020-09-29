@@ -1,4 +1,4 @@
-module github.com/MinoIC/MinoIC-PE
+module github.com/MinoIC/peo
 
 go 1.13
 

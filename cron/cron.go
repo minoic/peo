@@ -1,13 +1,13 @@
 package cron
 
 import (
-	"github.com/MinoIC/MinoIC-PE/configure"
-	"github.com/MinoIC/MinoIC-PE/controllers"
-	"github.com/MinoIC/MinoIC-PE/cryptoo"
-	"github.com/MinoIC/MinoIC-PE/database"
-	"github.com/MinoIC/MinoIC-PE/pterodactyl"
-	"github.com/MinoIC/MinoIC-PE/status"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
+	"github.com/MinoIC/peo/controllers"
+	"github.com/MinoIC/peo/cryptoo"
+	"github.com/MinoIC/peo/database"
+	"github.com/MinoIC/peo/pterodactyl"
+	"github.com/MinoIC/peo/status"
 	"time"
 )
 

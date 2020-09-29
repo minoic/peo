@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/MinoIC/MinoIC-PE/controllers"
-	"github.com/MinoIC/MinoIC-PE/cron"
+	"github.com/MinoIC/peo/controllers"
+	"github.com/MinoIC/peo/cron"
 	"github.com/astaxie/beego"
 )
 

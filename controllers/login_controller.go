@@ -3,10 +3,10 @@ package controllers
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/MinoIC/MinoIC-PE/configure"
-	"github.com/MinoIC/MinoIC-PE/database"
-	"github.com/MinoIC/MinoIC-PE/session"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
+	"github.com/MinoIC/peo/database"
+	"github.com/MinoIC/peo/session"
 	"github.com/astaxie/beego"
 )
 

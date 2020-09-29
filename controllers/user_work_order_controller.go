@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"github.com/MinoIC/MinoIC-PE/database"
-	"github.com/MinoIC/MinoIC-PE/email"
-	"github.com/MinoIC/MinoIC-PE/message"
-	"github.com/MinoIC/MinoIC-PE/session"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/database"
+	"github.com/MinoIC/peo/email"
+	"github.com/MinoIC/peo/message"
+	"github.com/MinoIC/peo/session"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"time"

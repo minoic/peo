@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"encoding/base64"
-	"github.com/MinoIC/MinoIC-PE/configure"
-	"github.com/MinoIC/MinoIC-PE/cryptoo"
-	"github.com/MinoIC/MinoIC-PE/database"
-	"github.com/MinoIC/MinoIC-PE/session"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
+	"github.com/MinoIC/peo/cryptoo"
+	"github.com/MinoIC/peo/database"
+	"github.com/MinoIC/peo/session"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
 	"github.com/skip2/go-qrcode"
@@ -154,7 +154,7 @@ func (this *UserRechargeController) CreateZFB() {
 	tradeNo := cryptoo.RandNumKey(16)
 	p := alipay.TradePreCreate{}
 	p.NotifyURL = configure.WebHostName + "/alipay"
-	p.Subject = "MinoIC-PE 充值"
+	p.Subject = "peo 充值"
 	p.OutTradeNo = tradeNo
 	p.TotalAmount = strconv.Itoa(amount)
 	resp, err := configure.AliClient.TradePreCreate(p)

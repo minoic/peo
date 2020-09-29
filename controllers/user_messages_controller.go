@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/MinoIC/MinoIC-PE/message"
-	"github.com/MinoIC/MinoIC-PE/session"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/message"
+	"github.com/MinoIC/peo/session"
 	"github.com/astaxie/beego"
 )
 

@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/MinoIC/MinoIC-PE/configure"
+	"github.com/MinoIC/peo/configure"
 	"github.com/astaxie/beego/cache"
 	_ "github.com/astaxie/beego/cache/memcache"
 	_ "github.com/astaxie/beego/cache/redis"

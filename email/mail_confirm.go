@@ -2,8 +2,8 @@ package email
 
 import (
 	"errors"
-	"github.com/MinoIC/MinoIC-PE/cryptoo"
-	"github.com/MinoIC/MinoIC-PE/database"
+	"github.com/MinoIC/peo/cryptoo"
+	"github.com/MinoIC/peo/database"
 	"github.com/jinzhu/gorm"
 	"time"
 )

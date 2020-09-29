@@ -8,7 +8,7 @@ sessionproviderconfig = "127.0.0.1:6379"
 
 
 # NOT RECOMMENDED TO EDIT
-appname = MinoIC-PE
+appname = peo
 httpaddr = "localhost"
 httpport = 5701
 runmode = "dev"

@@ -3,8 +3,8 @@ package database
 import (
 	"github.com/8treenet/gcache"
 	gcopt "github.com/8treenet/gcache/option"
-	"github.com/MinoIC/MinoIC-PE/configure"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )

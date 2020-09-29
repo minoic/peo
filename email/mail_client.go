@@ -1,8 +1,8 @@
 package email
 
 import (
-	"github.com/MinoIC/MinoIC-PE/configure"
 	"github.com/MinoIC/glgf"
+	"github.com/MinoIC/peo/configure"
 	"github.com/xhit/go-simple-mail"
 	"time"
 )

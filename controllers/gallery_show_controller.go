@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/MinoIC/MinoIC-PE/database"
+	"github.com/MinoIC/peo/database"
 	"github.com/astaxie/beego"
 )
 
