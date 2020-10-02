@@ -79,7 +79,7 @@ const (
 	server
 )
 
-var pool = make(chan struct{}, 2)
+var pool = make(chan struct{}, 3)
 
 func (this *Client) get(key string, mode int, id []int, ExternalID string) (interface{}, error) {
 	pool <- struct{}{}
@@ -107,11 +107,12 @@ func (this *Client) get(key string, mode int, id []int, ExternalID string) (inte
 		case server:
 			ret, err = this.getServer(ExternalID, true)
 		}
-		_ = bm.Put(key, ret, timeout)
+		<-pool
 		if err != nil {
 			glgf.Error(err)
+		} else if ret != nil {
+			_ = bm.Put(key, ret, timeout)
 		}
-		<-pool
 		return ret, err
 	}
 }

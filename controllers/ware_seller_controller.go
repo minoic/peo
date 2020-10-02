@@ -34,10 +34,6 @@ var (
 	wares3 []ware
 )
 
-func init() {
-	RefreshWareInfo()
-}
-
 func RefreshWareInfo() {
 	st := time.Now()
 	wares1 = []ware{}
@@ -52,12 +48,12 @@ func RefreshWareInfo() {
 	if configure.SMTPEnabled {
 		emailText = "邮件提醒！"
 	}
-	if !DB.Find(&waresInDB).RecordNotFound() && len(waresInDB) != 0 {
+	if DB.Find(&waresInDB).Error == nil {
 		for _, w := range waresInDB {
 			egg, err := pterodactyl.ClientFromConf().GetEgg(w.Nest, w.Egg)
 			if err != nil {
 				glgf.Error(err)
-				continue
+				egg = &pterodactyl.Egg{}
 			}
 			// glgf.Debug(w)
 			nw := ware{

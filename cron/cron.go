@@ -13,13 +13,14 @@ import (
 )
 
 func LoopTasksManager() {
-	DB := database.GetDatabase()
 	defer func() {
 		if err := recover(); err != nil {
 			glgf.Error("cron error caught:", fmt.Errorf("%v", err).Error())
 			LoopTasksManager()
 		}
 	}()
+	controllers.RefreshWareInfo()
+	DB := database.GetDatabase()
 	interval, err := configure.GetConf().Int("AutoTaskInterval")
 	if err != nil {
 		interval = 10
