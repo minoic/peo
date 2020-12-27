@@ -11,6 +11,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20191009132224-3f39dc1ed9f4
 	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.10
+	github.com/m1/go-localize v0.0.0-20200103190313-f004b52da308
 	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.1.0 // indirect
@@ -23,4 +24,6 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xhit/go-simple-mail v2.2.2+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	golang.org/x/text v0.3.3 // indirect
+	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

@@ -1,0 +1,5 @@
+package configure
+
+func init() {
+
+}
