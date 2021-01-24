@@ -227,6 +227,7 @@ func SellPaymentCheckByBalance(order *database.Order, user *database.User, selec
 			ServerExternalID: user.Name + strconv.Itoa(int(order.ID)),
 			UserExternalID:   user.Name,
 			HostName:         hostName,
+			SpecID:           spec.ID,
 			DeleteStatus:     0,
 			ValidDate:        time.Now().Add(spec.ValidDuration),
 		}
