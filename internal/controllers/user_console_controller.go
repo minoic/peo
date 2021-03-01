@@ -246,7 +246,11 @@ func (this *UserConsoleController) Renew() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库处理失败！"))
 		return
 	}
-	if DB.Model(&entity).Update("valid_date", entity.ValidDate.Add(spec.ValidDuration)).Update("delete_status", 0).Error != nil {
+	startDate := entity.ValidDate
+	if time.Now().After(entity.ValidDate) {
+		startDate = time.Now()
+	}
+	if DB.Model(&entity).Update("valid_date", startDate.Add(spec.ValidDuration)).Update("delete_status", 0).Error != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		DB.Create(&key)
@@ -266,6 +270,10 @@ func (this *UserConsoleController) Renew() {
 	}); err != nil {
 		glgf.Error(err)
 		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+	}
+	if err = pterodactyl.ClientFromConf().UnsuspendServer(entity.ServerExternalID); err != nil {
+		glgf.Error(err)
+		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但更改暂停状态失败，请联系管理员修改！")
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
