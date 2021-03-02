@@ -47,7 +47,7 @@ type User struct {
 
 type WareKey struct {
 	gorm.Model
-	SpecID    uint
+	SpecID    uint `gorm:"index"`
 	KeyString string
 	Exp       time.Time
 }
@@ -81,7 +81,7 @@ type WareSpec struct {
 
 type WareEntity struct {
 	gorm.Model
-	UserID           uint
+	UserID           uint `gorm:"index"`
 	SpecID           uint
 	ServerExternalID string
 	UserExternalID   string
@@ -117,7 +117,7 @@ type DeleteConfirm struct {
 type Order struct {
 	gorm.Model
 	SpecID       uint
-	UserID       uint
+	UserID       uint `gorm:"index"`
 	AllocationID int
 	OriginPrice  uint
 	FinalPrice   uint
@@ -154,7 +154,7 @@ type RechargeKey struct {
 
 type WorkOrder struct {
 	gorm.Model
-	UserID     uint
+	UserID     uint `gorm:"index"`
 	UserName   string
 	OrderTitle string
 	OrderText  string
@@ -163,7 +163,7 @@ type WorkOrder struct {
 
 type GalleryItem struct {
 	gorm.Model
-	UserID          uint
+	UserID          uint `gorm:"index"`
 	ItemName        string
 	ItemDescription string
 	Likes           uint
