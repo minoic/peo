@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/MinoIC/peo/internal/database"
 	"github.com/astaxie/beego"
+	"github.com/minoic/peo/internal/database"
 )
 
 type GalleryShowController struct {

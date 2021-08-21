@@ -1,7 +1,7 @@
 package session
 
 import (
-	"github.com/MinoIC/glgf"
+	"github.com/minoic/glgf"
 	"github.com/robbert229/jwt"
 	"time"
 )

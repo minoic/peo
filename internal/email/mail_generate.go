@@ -1,9 +1,9 @@
 package email
 
 import (
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/configure"
 	"github.com/matcornic/hermes/v2"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
 )
 
 func getProd() hermes.Hermes {

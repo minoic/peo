@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/MinoIC/peo/api"
-	"github.com/MinoIC/peo/internal/cron"
 	"github.com/astaxie/beego"
+	"github.com/minoic/peo/api"
+	"github.com/minoic/peo/internal/cron"
 )
 
 const Version = "v0.1.0"

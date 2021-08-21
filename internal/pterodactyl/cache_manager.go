@@ -1,9 +1,9 @@
 package pterodactyl
 
 import (
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/cache"
-	"github.com/MinoIC/peo/internal/configure"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/cache"
+	"github.com/minoic/peo/internal/configure"
 	"strconv"
 	"time"
 )

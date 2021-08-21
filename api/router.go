@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/MinoIC/peo/internal/controllers"
 	"github.com/astaxie/beego"
+	"github.com/minoic/peo/internal/controllers"
 )
 
 func InitRouter() {

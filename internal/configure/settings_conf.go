@@ -1,8 +1,8 @@
 package configure
 
 import (
-	"github.com/MinoIC/glgf"
 	"github.com/astaxie/beego/config"
+	"github.com/minoic/glgf"
 	"github.com/smartwalle/alipay/v3"
 	"os"
 )

@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/message"
-	"github.com/MinoIC/peo/internal/session"
 	"github.com/astaxie/beego"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/message"
+	"github.com/minoic/peo/internal/session"
 )
 
 type UserMessagesController struct {

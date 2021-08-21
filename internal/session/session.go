@@ -2,12 +2,12 @@ package session
 
 import (
 	"errors"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/database"
 	"github.com/astaxie/beego/session"
 	_ "github.com/astaxie/beego/session/memcache"
 	_ "github.com/astaxie/beego/session/mysql"
 	_ "github.com/astaxie/beego/session/redis"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/database"
 	"strconv"
 )
 

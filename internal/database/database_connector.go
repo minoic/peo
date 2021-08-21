@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/8treenet/gcache"
 	gcopt "github.com/8treenet/gcache/option"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/configure"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
 	"time"
 )
 

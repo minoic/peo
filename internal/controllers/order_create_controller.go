@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"github.com/MinoIC/peo/internal/database"
-	"github.com/MinoIC/peo/internal/orderform"
-	"github.com/MinoIC/peo/internal/session"
 	"github.com/astaxie/beego"
+	"github.com/minoic/peo/internal/database"
+	"github.com/minoic/peo/internal/orderform"
+	"github.com/minoic/peo/internal/session"
 	"strconv"
 )
 

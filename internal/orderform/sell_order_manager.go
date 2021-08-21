@@ -2,12 +2,12 @@ package orderform
 
 import (
 	"errors"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/configure"
-	"github.com/MinoIC/peo/internal/database"
-	"github.com/MinoIC/peo/internal/message"
-	"github.com/MinoIC/peo/internal/pterodactyl"
 	"github.com/jinzhu/gorm"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
+	"github.com/minoic/peo/internal/database"
+	"github.com/minoic/peo/internal/message"
+	"github.com/minoic/peo/internal/pterodactyl"
 	"strconv"
 	"time"
 )

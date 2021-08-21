@@ -2,11 +2,11 @@ package pterodactyl
 
 import (
 	"errors"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/database"
-	"github.com/MinoIC/peo/internal/email"
-	"github.com/MinoIC/peo/internal/message"
 	"github.com/jinzhu/gorm"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/database"
+	"github.com/minoic/peo/internal/email"
+	"github.com/minoic/peo/internal/message"
 	"strconv"
 	"time"
 )

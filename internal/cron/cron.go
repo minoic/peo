@@ -2,13 +2,13 @@ package cron
 
 import (
 	"fmt"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/configure"
-	"github.com/MinoIC/peo/internal/controllers"
-	"github.com/MinoIC/peo/internal/cryptoo"
-	"github.com/MinoIC/peo/internal/database"
-	"github.com/MinoIC/peo/internal/pterodactyl"
-	"github.com/MinoIC/peo/internal/status"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
+	"github.com/minoic/peo/internal/controllers"
+	"github.com/minoic/peo/internal/cryptoo"
+	"github.com/minoic/peo/internal/database"
+	"github.com/minoic/peo/internal/pterodactyl"
+	"github.com/minoic/peo/internal/status"
 	"time"
 )
 
@@ -32,11 +32,12 @@ func LoopTasksManager() {
 	for {
 		select {
 		case <-ticker.C:
+			// todo: 更新任务调用方式防止单任务阻塞全局任务
+			controllers.RefreshWareInfo()
+			controllers.RefreshServerInfo()
 			pterodactyl.CheckServers()
 			pterodactyl.CacheNeededEggs()
 			pterodactyl.CacheNeededServers()
-			controllers.RefreshWareInfo()
-			controllers.RefreshServerInfo()
 			glgf.Info("DB_OpenConnections: ", DB.DB().Stats().OpenConnections, " - ", DB.DB().Stats().WaitCount)
 		case <-ticker2.C:
 			func() {

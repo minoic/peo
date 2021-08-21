@@ -2,8 +2,8 @@ package message
 
 import (
 	"fmt"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/database"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/database"
 )
 
 var adminID uint

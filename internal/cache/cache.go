@@ -1,11 +1,11 @@
 package cache
 
 import (
-	"github.com/MinoIC/peo/internal/configure"
 	"github.com/astaxie/beego/cache"
 	_ "github.com/astaxie/beego/cache/memcache"
 	_ "github.com/astaxie/beego/cache/redis"
 	_ "github.com/astaxie/beego/cache/ssdb"
+	"github.com/minoic/peo/internal/configure"
 	"strconv"
 )
 

@@ -3,11 +3,11 @@ package controllers
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/configure"
-	"github.com/MinoIC/peo/internal/database"
-	"github.com/MinoIC/peo/internal/session"
 	"github.com/astaxie/beego"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
+	"github.com/minoic/peo/internal/database"
+	"github.com/minoic/peo/internal/session"
 )
 
 type LoginController struct {

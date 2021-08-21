@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/MinoIC/peo/internal/configure"
 	"github.com/jinzhu/gorm"
+	"github.com/minoic/peo/internal/configure"
 	uuid "github.com/satori/go.uuid"
 	"html/template"
 	"time"

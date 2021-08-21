@@ -2,13 +2,13 @@ package controllers
 
 import (
 	"encoding/base64"
-	"github.com/MinoIC/glgf"
-	"github.com/MinoIC/peo/internal/configure"
-	"github.com/MinoIC/peo/internal/cryptoo"
-	"github.com/MinoIC/peo/internal/database"
-	"github.com/MinoIC/peo/internal/session"
 	"github.com/astaxie/beego"
 	"github.com/jinzhu/gorm"
+	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
+	"github.com/minoic/peo/internal/cryptoo"
+	"github.com/minoic/peo/internal/database"
+	"github.com/minoic/peo/internal/session"
 	"github.com/skip2/go-qrcode"
 	"github.com/smartwalle/alipay/v3"
 	_ "github.com/smartwalle/alipay/v3"

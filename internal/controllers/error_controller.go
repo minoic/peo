@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/MinoIC/peo/internal/configure"
 	"github.com/astaxie/beego"
+	"github.com/minoic/peo/internal/configure"
 )
 
 type ErrorController struct {
