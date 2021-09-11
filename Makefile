@@ -1,6 +1,6 @@
 NAME=peo
 BINDIR=dist
-VERSION=$(shell cat main.go | grep 'Version =' | sed 's/.*\"\(.*\)\".*/\1/g')
+VERSION=$(shell cat ./cmd/main.go | grep 'Version =' | sed 's/.*\"\(.*\)\".*/\1/g')
 GOBUILD=CGO_ENABLED=0 go build --ldflags="-s -w" -v -a
 GOFILES=./cmd/*.go
 PACKFILE=views static app.conf settings.conf README.md
