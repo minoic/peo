@@ -2,8 +2,8 @@ NAME=peo
 BINDIR=dist
 VERSION=$(shell cat main.go | grep 'Version =' | sed 's/.*\"\(.*\)\".*/\1/g')
 GOBUILD=CGO_ENABLED=0 go build --ldflags="-s -w" -v -a
-GOFILES=./*.go
-PACKFILE=views static conf README.md
+GOFILES=./cmd/*.go
+PACKFILE=views static app.conf settings.conf README.md
 
 PLATFORM_LIST = \
 	darwin-amd64 \
