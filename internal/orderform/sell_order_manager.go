@@ -118,16 +118,16 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 		Description: "到期时间：" + exp,
 		Suspended:   false,
 		Limits: pterodactyl.ServerLimit{
-			Memory: spec.Memory,
-			Swap:   spec.Swap,
-			Disk:   spec.Disk,
-			IO:     spec.Io,
-			CPU:    spec.Cpu,
+			Memory:  spec.Memory,
+			Swap:    spec.Swap,
+			Disk:    spec.Disk,
+			IO:      spec.Io,
+			CPU:     spec.Cpu,
+			Backups: spec.Backups,
 		},
 		Allocation: selectedIP,
 		NestId:     spec.Nest,
 		EggId:      spec.Egg,
-		PackId:     0,
 	})
 	if err == nil {
 		entity := database.WareEntity{
@@ -209,16 +209,16 @@ func SellPaymentCheckByBalance(order *database.Order, user *database.User, selec
 		Description: "到期时间：" + exp,
 		Suspended:   false,
 		Limits: pterodactyl.ServerLimit{
-			Memory: spec.Memory,
-			Swap:   spec.Swap,
-			Disk:   spec.Disk,
-			IO:     spec.Io,
-			CPU:    spec.Cpu,
+			Memory:  spec.Memory,
+			Swap:    spec.Swap,
+			Disk:    spec.Disk,
+			IO:      spec.Io,
+			CPU:     spec.Cpu,
+			Backups: spec.Backups,
 		},
 		Allocation: selectedIP,
 		NestId:     spec.Nest,
 		EggId:      spec.Egg,
-		PackId:     0,
 	})
 	if err == nil {
 		entity := database.WareEntity{

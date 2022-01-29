@@ -50,10 +50,10 @@ func RefreshWareInfo() {
 	}
 	if DB.Find(&waresInDB).Error == nil {
 		for _, w := range waresInDB {
-			egg, err := pterodactyl.ClientFromConf().GetEgg(w.Nest, w.Egg)
+			nest, err := pterodactyl.ClientFromConf().GetNest(w.Nest)
 			if err != nil {
 				glgf.Error(err)
-				egg = &pterodactyl.Egg{}
+				nest = &pterodactyl.Nest{}
 			}
 			// glgf.Debug(w)
 			nw := ware{
@@ -72,11 +72,11 @@ func RefreshWareInfo() {
 						Second: "MB存储空间",
 					},
 					{
-						First:  egg.DockerImage,
+						First:  "Docker",
 						Second: "虚拟化隔离",
 					},
 					{
-						First:  egg.Description,
+						First:  nest.Description,
 						Second: "",
 					},
 					{

@@ -85,7 +85,7 @@ func (this *AdminConsoleController) Get() {
 		specs        []database.WareSpec
 		entities     []database.WareEntity
 		users        []database.User
-		packs        []database.Pack
+		eggCount     int
 		keys         []database.WareKey
 		rkeys        []database.RechargeKey
 		orders       []database.Order
@@ -95,7 +95,14 @@ func (this *AdminConsoleController) Get() {
 	DB.Find(&specs)
 	DB.Find(&entities)
 	DB.Find(&users)
-	DB.Find(&packs)
+	for i := range specs {
+		eggs, err := pterodactyl.ClientFromConf().GetAllEggs(specs[i].Nest)
+		if err != nil {
+			glgf.Error(err)
+			continue
+		}
+		eggCount += len(eggs)
+	}
 	DB.Find(&keys)
 	DB.Where("confirmed = ?", true).Find(&orders)
 	DB.Find(&rkeys)
@@ -108,7 +115,7 @@ func (this *AdminConsoleController) Get() {
 	this.Data["specAmount"] = len(specs)
 	this.Data["entityAmount"] = len(entities)
 	this.Data["userAmount"] = len(users)
-	this.Data["packAmount"] = len(packs)
+	this.Data["packAmount"] = eggCount
 	this.Data["keyAmount"] = len(keys) + len(rkeys)
 	this.Data["orderAmount"] = len(orders)
 	this.Data["galleryItems"] = galleryItems

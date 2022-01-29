@@ -2,23 +2,20 @@ package pterodactyl
 
 import (
 	"github.com/minoic/glgf"
-	"github.com/minoic/peo/internal/cache"
 	"github.com/minoic/peo/internal/configure"
 	"strconv"
+	"sync"
 	"time"
 )
 
 /* set interval to refresh cache */
 const timeout = 3 * time.Minute
 
-var bm = cache.GetCache()
+var bm sync.Map
 
 func ClearCache() {
 	/* force refresh cache */
-	err := bm.ClearAll()
-	if err != nil {
-		glgf.Error(err)
-	}
+	bm = sync.Map{}
 }
 
 var confInstance *Client
@@ -46,24 +43,26 @@ func ClientFromConf() *Client {
 
 func (this *Client) GetUser(ID interface{}, isExternal bool) (*User, error) {
 	if isExternal {
-		if bm.IsExist("USERE" + ID.(string)) {
-			return bm.Get("USERE" + ID.(string)).(*User), nil
+		if v, ok := bm.Load("USERE" + ID.(string)); ok {
+			return v.(*User), nil
 		} else {
 			user, err := this.getUser(ID, isExternal)
 			if err != nil {
 				return nil, err
 			}
-			return user, bm.Put("USERE"+ID.(string), user, timeout)
+			bm.Store("USERE"+ID.(string), user)
+			return user, nil
 		}
 	} else {
-		if bm.IsExist("USER" + strconv.Itoa(ID.(int))) {
-			return bm.Get("USER" + strconv.Itoa(ID.(int))).(*User), nil
+		if v, ok := bm.Load("USER" + strconv.Itoa(ID.(int))); ok {
+			return v.(*User), nil
 		} else {
 			user, err := this.getUser(ID, isExternal)
 			if err != nil {
 				return nil, err
 			}
-			return user, bm.Put("USER"+strconv.Itoa(ID.(int)), user, timeout)
+			bm.Store("USER"+strconv.Itoa(ID.(int)), user)
+			return user, nil
 		}
 	}
 }
@@ -83,9 +82,11 @@ var pool = make(chan struct{}, 3)
 
 func (this *Client) get(key string, mode int, id []int, ExternalID string) (interface{}, error) {
 	pool <- struct{}{}
-	if bm.IsExist(key) {
+	defer func() {
 		<-pool
-		return bm.Get(key), nil
+	}()
+	if v, ok := bm.Load(key); ok {
+		return v, nil
 	} else {
 		var ret interface{}
 		var err error
@@ -107,11 +108,10 @@ func (this *Client) get(key string, mode int, id []int, ExternalID string) (inte
 		case server:
 			ret, err = this.getServer(ExternalID, true)
 		}
-		<-pool
 		if err != nil {
 			glgf.Error(err)
 		} else if ret != nil {
-			_ = bm.Put(key, ret, timeout)
+			bm.Store(key, ret)
 		}
 		return ret, err
 	}
@@ -122,8 +122,8 @@ func (this *Client) GetServer(ExternalID string) (*Server, error) {
 	return ret.(*Server), err
 }
 
-func (this *Client) GetAllEggs() ([]Egg, error) {
-	ret, err := this.get("ALLEGGS", allEggs, []int{}, "")
+func (this *Client) GetAllEggs(nestID int) ([]Egg, error) {
+	ret, err := this.get("ALLEGGS", allEggs, []int{nestID}, "")
 	return ret.([]Egg), err
 }
 

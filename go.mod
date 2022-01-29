@@ -12,7 +12,7 @@ require (
 	github.com/json-iterator/go v1.1.11
 	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/mholt/archiver v3.1.1+incompatible
-	github.com/minoic/glgf v0.0.4
+	github.com/minoic/glgf v0.0.5
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
 	github.com/robbert229/jwt v2.0.0+incompatible

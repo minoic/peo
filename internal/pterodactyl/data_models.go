@@ -71,11 +71,12 @@ type Allocation struct {
 }
 
 type ServerLimit struct {
-	Memory int `json:"memory"`
-	Swap   int `json:"swap"`
-	Disk   int `json:"disk"`
-	IO     int `json:"io"`
-	CPU    int `json:"cpu"`
+	Memory  int `json:"memory"`
+	Swap    int `json:"swap"`
+	Disk    int `json:"disk"`
+	IO      int `json:"io"`
+	CPU     int `json:"cpu"`
+	Backups int `json:"backups"`
 }
 
 type Server struct {
@@ -92,7 +93,6 @@ type Server struct {
 	Allocation  int         `json:"allocation"`
 	NestId      int         `json:"nest"`
 	EggId       int         `json:"egg"`
-	PackId      int         `json:"pack"`
 }
 
 type PostPteUser struct {
@@ -123,4 +123,5 @@ type PostUpdateBuild struct {
 	OomDisabled bool
 	Database    int
 	Allocations int
+	Backups     int
 }

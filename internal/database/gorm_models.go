@@ -23,7 +23,6 @@ func init() {
 		&Message{},
 		&Order{},
 		&DeleteConfirm{},
-		&Pack{},
 		&RechargeLog{},
 		&RechargeKey{},
 		&WorkOrder{},
@@ -69,6 +68,7 @@ type WareSpec struct {
 	Swap              int
 	Disk              int
 	Io                int
+	Backups           int
 	Nest              int
 	Egg               int
 	Discount          int
@@ -123,15 +123,6 @@ type Order struct {
 	FinalPrice   uint
 	Paid         bool
 	Confirmed    bool
-}
-
-type Pack struct {
-	gorm.Model
-	PackName        string
-	NestID          int
-	EggID           int
-	PackID          int
-	PackDescription string
 }
 
 type RechargeLog struct {

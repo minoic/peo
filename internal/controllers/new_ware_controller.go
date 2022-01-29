@@ -73,7 +73,14 @@ func init() {
 		{
 			Name:           "io",
 			FriendlyName:   "Block IO 大小",
-			Description:    "Block IO 大小 (10-1000) (默认500)",
+			Description:    "Block IO 大小 (10-1000) (默认填500)",
+			Type:           "number",
+			AdditionalTags: "required",
+		},
+		{
+			Name:           "backups",
+			FriendlyName:   "备份数量",
+			Description:    "允许的备份数量 (默认填0)",
 			Type:           "number",
 			AdditionalTags: "required",
 		},
@@ -94,7 +101,7 @@ func init() {
 		{
 			Name:           "egg_id",
 			FriendlyName:   "Egg ID",
-			Description:    "服务器使用的Egg的ID",
+			Description:    "服务器使用的默认Egg的ID",
 			Type:           "number",
 			AdditionalTags: "required",
 		},
@@ -249,6 +256,15 @@ func (this *NewWareController) Post() {
 	} else if ware.Io < 100 || ware.Io > 1000 {
 		hasError = true
 		hasErrorText = "Block IO Weight 输入了不建议的值"
+	}
+	ware.Backups, err = this.GetInt("backups")
+	if err != nil {
+		glgf.Error(err)
+		hasError = true
+		hasErrorText = "POST 表单获取错误 backups " + err.Error()
+	} else if ware.Backups < 0 || ware.Backups > 1000 {
+		hasError = true
+		hasErrorText = "备份数量输入了不建议的值"
 	}
 	ware.Swap, err = this.GetInt("swap")
 	if err != nil {

@@ -1,0 +1,29 @@
+version: '3'
+services:
+  ##
+  # MariaDB (MySQL) Server
+  # If you rely on another MySQL/MariaDB instance,
+  # this can be safely removed. If you want to have
+  # your game servers be able to access this, be sure
+  # to declare your ports.
+  ##
+  mysql:
+    image: mysql:5.7
+    restart: always
+    volumes:
+      - ./build/db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: nightgod_
+    ports:
+      - 3306:3306
+
+  # Panel Cache
+  # This service is required for the panel to function.
+  # You can use either redis or memcached, but redis
+  # is provided by default here.
+  ##
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - 6379:6379

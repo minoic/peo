@@ -148,8 +148,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0j
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/mholt/archiver v3.1.1+incompatible h1:1dCVxuqs0dJseYEhi5pl7MYPH9zDa1wBi7mF09cbNkU=
 github.com/mholt/archiver v3.1.1+incompatible/go.mod h1:Dh2dOXnSdiLxRiPoVfIr/fI1TwETms9B8CTWfeh7ROU=
-github.com/minoic/glgf v0.0.4 h1:VWT9q3rnhlowcQXXo3O+yjDiVHgztDZed7OLyr6wGnU=
-github.com/minoic/glgf v0.0.4/go.mod h1:zk2Wazrgo0dGULc5YgmpoveJT9NXNH+xhDM4EVnlF/k=
+github.com/minoic/glgf v0.0.5 h1:EV0PzngoE9+6zqUhxaNq+1uCs01BVkWTfS/mbFOQLNE=
+github.com/minoic/glgf v0.0.5/go.mod h1:zk2Wazrgo0dGULc5YgmpoveJT9NXNH+xhDM4EVnlF/k=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

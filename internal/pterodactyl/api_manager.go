@@ -141,12 +141,12 @@ func (this *Client) getAllNests() ([]Nest, error) {
 	}
 	var ret []Nest
 	dec := struct {
-		data []struct {
+		Data []struct {
 			Attributes Nest `json:"attributes"`
-		}
+		} `json:"data"`
 	}{}
 	if err := json.Unmarshal(body, &dec); err == nil {
-		for _, v := range dec.data {
+		for _, v := range dec.Data {
 			ret = append(ret, v.Attributes)
 		}
 		return ret, nil
@@ -175,12 +175,12 @@ func (this *Client) getAllEggs(nestID int) ([]Egg, error) {
 	}
 	var ret []Egg
 	dec := struct {
-		data []struct {
+		Data []struct {
 			Attributes Egg `json:"attributes"`
-		}
+		} `json:"data"`
 	}{}
 	if err := json.Unmarshal(body, &dec); err == nil {
-		for _, v := range dec.data {
+		for _, v := range dec.Data {
 			ret = append(ret, v.Attributes)
 		}
 		return ret, err
@@ -251,17 +251,18 @@ func (this *Client) GetAllServers() ([]Server, error) {
 		return nil, err
 	}
 	dec := struct {
-		data []struct {
+		Data []struct {
 			Attributes Server `json:"attributes"`
-		}
+		} `json:"data"`
 	}{}
 	var servers []Server
 	if err := json.Unmarshal(body, &dec); err == nil {
-		for _, v := range dec.data {
+		for _, v := range dec.Data {
 			servers = append(servers, v.Attributes)
 		}
 	}
 	return servers, nil
+
 }
 
 func (this *Client) GetServerID(serverExternalID string) int {
@@ -415,9 +416,10 @@ func (this *Client) CreateServer(serverInfo Server) error {
 		"feature_limits": map[string]interface{}{
 			"databases":   nil,
 			"allocations": serverInfo.Allocation,
+			"backups":     serverInfo.Limits.Backups,
 		},
 		"environment":         envInfo,
-		"start_on_completion": false,
+		"start_on_completion": true,
 		"external_id":         serverInfo.ExternalId,
 		"allocation": map[string]interface{}{
 			"default": serverInfo.Allocation,
@@ -466,30 +468,30 @@ func (this *Client) UpdateServerBuild(externalID string, build PostUpdateBuild) 
 		"feature_limits": map[string]interface{}{
 			"databases":   build.Database,
 			"allocations": build.Allocations,
+			"backups":     build.Backups,
 		},
 	}
 	_, err := this.api(patchData, "servers/"+strconv.Itoa(serverID)+"/build", "PATCH")
 	return err
 }
 
-func (this *Client) UpdateServerStartup(externalID string, packID int) error {
+func (this *Client) UpdateServerStartup(externalID string, eggID int) error {
 	server, err := this.getServer(externalID, true)
 	if err != nil {
 		return err
 	}
-	eggInfo, err := this.getEgg(server.NestId, server.EggId)
+	eggInfo, err := this.getEgg(server.NestId, eggID)
 	if err != nil {
 		return err
 	}
-	env, err := this.getEnv(server.NestId, server.EggId)
+	env, err := this.getEnv(server.NestId, eggID)
 	if err != nil {
 		return err
 	}
 	patchData := map[string]interface{}{
 		"environment":  env,
 		"startup":      eggInfo.StartUp,
-		"egg":          server.EggId,
-		"pack":         packID,
+		"egg":          eggID,
 		"image":        eggInfo.DockerImage,
 		"skip_scripts": false,
 	}

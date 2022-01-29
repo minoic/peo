@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/hako/durafmt"
-	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -43,7 +42,7 @@ type serverInfo struct {
 		ModText string
 	}
 	ServerModCount int
-	ServerPacks    []database.Pack
+	ServerEggs     []pterodactyl.Egg
 }
 
 func (this *UserConsoleController) Prepare() {
@@ -153,12 +152,16 @@ func RefreshServerInfo() {
 			}
 		}
 		/* no matter server is online or offline*/
-		DB.Where("nest_id = ? AND egg_id = ?", pteServer.NestId, pteServer.EggId).Find(&info.ServerPacks)
-		if len(info.ServerPacks) == 0 {
-			info.ServerPacks = append(info.ServerPacks, database.Pack{
-				Model:    gorm.Model{},
-				PackName: "没有可以安装的包",
-				PackID:   -1,
+		eggs, err := pterodactyl.ClientFromConf().GetAllEggs(pteServer.NestId)
+		if err != nil {
+			glgf.Error(err)
+		}
+		info.ServerEggs = append(info.ServerEggs, eggs...)
+		if len(info.ServerEggs) == 0 {
+			info.ServerEggs = append(info.ServerEggs, pterodactyl.Egg{
+				Id:   -1,
+				Nest: pteServer.NestId,
+				Name: "无可用的安装包",
 			})
 		}
 		entityMap.Store(entities[i].ID, info)
@@ -346,14 +349,14 @@ func (this *UserConsoleController) Reinstall() {
 		return
 	}
 	entityID := this.Ctx.Input.Param(":entityID")
-	packIDstring := this.Ctx.Input.Param(":packID")
-	packID, err := strconv.Atoi(packIDstring)
+	eggIDstring := this.Ctx.Input.Param(":eggID")
+	eggID, err := strconv.Atoi(eggIDstring)
 	if err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入了无效的PackID"))
 		return
 	}
-	if packID == -1 {
+	if eggID == -1 {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法安装这个包"))
 		return
 	}
@@ -367,7 +370,12 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("您没有权限操作他人服务器"))
 		return
 	}
-	if err = pterodactyl.ClientFromConf().UpdateServerStartup(entity.ServerExternalID, packID); err != nil {
+	if err = pterodactyl.ClientFromConf().UpdateServerStartup(entity.ServerExternalID, eggID); err != nil {
+		glgf.Error(err)
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("更新服务器失败！"))
+		return
+	}
+	if err = pterodactyl.ClientFromConf().ReinstallServer(entity.ServerExternalID); err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
 		return

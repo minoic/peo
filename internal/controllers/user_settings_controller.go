@@ -152,7 +152,7 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 		ExternalId: user.Name,
 		Username:   user.Name,
 		Email:      user.Email,
-		Language:   "zh",
+		Language:   "en",
 		RootAdmin:  user.IsAdmin,
 		Password:   user.Name,
 		FirstName:  user.Name,
