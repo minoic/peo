@@ -95,13 +95,18 @@ func (this *AdminConsoleController) Get() {
 	DB.Find(&specs)
 	DB.Find(&entities)
 	DB.Find(&users)
+	vised := make(map[int]bool)
 	for i := range specs {
+		if vised[specs[i].Nest] {
+			continue
+		}
 		eggs, err := pterodactyl.ClientFromConf().GetAllEggs(specs[i].Nest)
 		if err != nil {
 			glgf.Error(err)
 			continue
 		}
 		eggCount += len(eggs)
+		vised[specs[i].Nest] = true
 	}
 	DB.Find(&keys)
 	DB.Where("confirmed = ?", true).Find(&orders)
