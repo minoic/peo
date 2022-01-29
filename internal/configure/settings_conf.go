@@ -28,11 +28,11 @@ func init() {
 		panic("cant get settings.config: " + err.Error())
 	}
 	ReloadConfig()
-	d, err := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE, os.ModePerm)
+	d, err := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-	e, err := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE, os.ModePerm)
+	e, err := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
