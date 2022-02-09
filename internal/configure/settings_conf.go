@@ -1,6 +1,7 @@
 package configure
 
 import (
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
 	"github.com/minoic/glgf"
 	"github.com/smartwalle/alipay/v3"
@@ -23,22 +24,29 @@ var (
 
 func init() {
 	var err error
-	conf, err = config.NewConfig("ini", "settings.conf")
+	conf, err = config.NewConfig("ini", "conf/settings.conf")
 	if err != nil {
 		panic("cant get settings.config: " + err.Error())
 	}
 	ReloadConfig()
-	d, err := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	err = beego.LoadAppConfig("ini", "conf/app.conf")
 	if err != nil {
 		panic(err)
 	}
-	e, err := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	os.Mkdir("log", os.ModePerm)
+	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
+	d, err := os.OpenFile("log/debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	e, err := os.OpenFile("log/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 	glgf.Get().SetMode(glgf.BOTH).
 		SetWriter(d).
 		AddLevelWriter(glgf.ERR, e)
+
 	e2, err := conf.Bool("AliPayEnabled")
 	if err != nil {
 		panic(err)

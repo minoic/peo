@@ -54,7 +54,9 @@ func (this *RegController) Post() {
 	if err != nil {
 		glgf.Error(err)
 	}
+	var userCount int
 	DB := database.GetDatabase()
+	DB.Model(&database.User{}).Count(&userCount)
 	if !cptSuccess {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "验证码输入错误，请重试！"
@@ -91,9 +93,15 @@ func (this *RegController) Post() {
 			IsAdmin:        false,
 			EmailConfirmed: false,
 		}
+		if userCount == 0 {
+			newUser.IsAdmin = true
+		}
 		glgf.Info(newUser)
 		DB.Create(&newUser)
 		message.Send("ADMIN", newUser.ID, "这是您的第一条消息")
+		if newUser.IsAdmin {
+			message.Send("ADMIN", newUser.ID, "您是第一个注册的账号，已被设置为管理员")
+		}
 		if configure.SMTPEnabled {
 			message.Send("Admin", newUser.ID, "您已成功注册账号，请前往邮箱确认注册，确认时会自动帮您创建翼龙面板用户，或请您在用户设置页面手动创建")
 			if err := email.ConfirmRegister(newUser); err != nil {

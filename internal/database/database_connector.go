@@ -36,7 +36,7 @@ func connect() {
 		db = DB
 		if configure.UseGormCache {
 			gcache.AttachDB(db, &opt, &gcopt.RedisOption{
-				Addr: "localhost:6379",
+				Addr: conf.String("CacheRedisCONN"),
 			})
 		}
 		return
@@ -55,7 +55,7 @@ func connect() {
 		db = DB
 		if configure.UseGormCache {
 			gcache.AttachDB(db, &opt, &gcopt.RedisOption{
-				Addr: "localhost:6379",
+				Addr: conf.String("CacheRedisCONN"),
 			})
 		}
 		return
@@ -67,10 +67,12 @@ func connect() {
 func GetDatabase() *gorm.DB {
 	for db == nil {
 		glgf.Warn("trying to connect to database!")
+		time.Sleep(3 * time.Second)
 		connect()
 	}
 	for err := db.DB().Ping(); err != nil; err = db.DB().Ping() {
 		glgf.Warn("trying to connect to database!")
+		time.Sleep(3 * time.Second)
 		connect()
 	}
 	return db

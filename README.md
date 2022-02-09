@@ -6,9 +6,11 @@
 
 当前适配翼龙面板 v1.7.0
 
+[Docker镜像]([minoic/peo - Docker Image | Docker Hub](https://hub.docker.com/r/minoic/peo))
+
 #### 特性
 
-- [x] 登录、注册、找回密码、修改密码、改绑邮箱
+- [x] 登录、注册（首个用户为管理员）、找回密码、修改密码、改绑邮箱
 - [x] 主页商品展示、建立订单、支持余额支付或 KEY 支付
 - [x] 用户控制台：展示用户服务器信息、跳转控制台、运行时间记录、用同种 KEY 或余额自助续费
 - [x] 工单系统
@@ -37,3 +39,25 @@
 2. 修改`app.conf`以及`settings.conf`中的配置，主要包含redis（必要）、mysql（必要）、网站地址（必要）、邮件服务器（可选）、翼龙面板API（必要）、支付宝当面付API（可选）、缓存方式（可选）。
 3. 运行可执行文件
 
+##### Docker
+
+1. 安装 Docker、Docker Compose
+2. 下载本目录下 `docker` 文件夹（包括`docker-compose.yml`和`conf`目录）
+3. mysql、redis配置已填好，修改其它需要的配置
+4. 在该文件夹内打开终端，运行
+
+```bash
+docker-compose up
+```
+
+或在后台运行
+
+```bash
+docker-compose up -d
+```
+
+5. 浏览器中访问目标机器 8080 端口，如 `http://localhost:8080`
+
+##### 网关
+
+使用 Nginx 等软件监听 80/443 端口，配置 SSL 后设置反向代理将根目录转发到 8080 端口

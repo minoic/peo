@@ -1,5 +1,6 @@
 tmp
-dist
+/dist/
 .idea/dataSources/
 *.log
 *.conf
+/build/

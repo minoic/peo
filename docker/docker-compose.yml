@@ -1,0 +1,32 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    hostname: mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: PEOMYSQLPASSWORD
+      MYSQL_DATABASE: peo
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+
+  redis:
+    image: redis:alpine
+    restart: always
+    hostname: redis
+
+  peo:
+    image: minoic/peo
+    restart: always
+    depends_on:
+      - redis
+      - mysql
+    hostname: peo
+    volumes:
+      - ./log:/log
+      - ./conf:/conf
+    ports:
+      - "8080:8080"

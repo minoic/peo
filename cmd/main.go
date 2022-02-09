@@ -6,11 +6,9 @@ import (
 	"github.com/minoic/peo/internal/cron"
 )
 
-const Version = "v0.1.0"
+const Version = "v0.1.8"
 
 func main() {
-	beego.LoadAppConfig("ini", "app.conf")
-	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
 	api.InitRouter()
 	go cron.LoopTasksManager()
 	beego.Run()
