@@ -6,7 +6,7 @@
 
 当前适配翼龙面板 v1.7.0
 
-[Docker镜像]([minoic/peo - Docker Image | Docker Hub](https://hub.docker.com/r/minoic/peo))
+[minoic/peo - Docker Image | Docker Hub](https://hub.docker.com/r/minoic/peo)
 
 #### 特性
 
