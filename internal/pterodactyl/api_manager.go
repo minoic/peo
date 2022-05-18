@@ -2,9 +2,9 @@ package pterodactyl
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -24,8 +24,6 @@ func NewClient(url string, token string) *Client {
 	}
 	return &Client{url: url, token: token}
 }
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func (this *Client) HostName() string {
 	return this.url
