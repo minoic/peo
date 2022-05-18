@@ -77,12 +77,13 @@ func RefreshServerInfo() {
 	)
 	DB.Find(&entities)
 	pongsSync.pongs = make([]status.Pong, len(entities))
-	wg.Add(len(entities))
 	for i, e := range entities {
+		wg.Add(1)
 		go func(host string, index int) {
 			defer wg.Done()
 			pongTemp, err := status.Ping(host)
 			if err != nil {
+				glgf.Error("mc ping", host, err)
 				pongsSync.pongs[index] = status.Pong{}
 			} else {
 				pongsSync.pongs[index] = *pongTemp

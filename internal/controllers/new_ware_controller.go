@@ -377,7 +377,10 @@ func (this *NewWareController) CheckXSRFCookie() bool {
 	if !this.EnableXSRF {
 		return true
 	}
-	token := this.Ctx.Input.Query("_xsrf")
+	token := this.GetString("_xsrf")
+	if token == "" {
+		token = this.Ctx.Input.Query("_xsrf")
+	}
 	if token == "" {
 		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
 	}
