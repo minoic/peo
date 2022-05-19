@@ -17,6 +17,7 @@ func handleNavbar(this *beego.Controller) {
 	this.Data["webApplicationName"] = configure.WebApplicationName
 	this.Data["webApplicationAuthor"] = "CytusD <cytusd@outlook.com>"
 	this.Data["webDescription"] = conf.String("webDescription")
+	this.Data["AlbumEnabled"] = conf.String("AlbumEnabled")
 	sess := this.StartSession()
 	if !session.SessionIslogged(sess) {
 		this.Data["notLoggedIn"] = true

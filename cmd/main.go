@@ -6,7 +6,7 @@ import (
 	"github.com/minoic/peo/internal/cron"
 )
 
-const Version = "v0.1.8"
+const Version = "v0.1.9"
 
 func main() {
 	api.InitRouter()
