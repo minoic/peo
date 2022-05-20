@@ -4,6 +4,8 @@
 
 目前已在 [demo](https://order.ntmc.tech) 稳定运行并跟进开发版本的部署
 
+主要用于 **Minecraft** 服务器的出售管理，暂不支持其它种类服务器的状态的信息获取 
+
 当前适配翼龙面板 v1.7.0
 
 [minoic/peo - Docker Image | Docker Hub](https://hub.docker.com/r/minoic/peo)
