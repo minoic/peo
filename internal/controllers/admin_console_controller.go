@@ -54,7 +54,7 @@ func (this *AdminConsoleController) Get() {
 		deleteServers []dServer
 	)
 	DB.Find(&dib)
-	for i, d := range dib {
+	for _, d := range dib {
 		var entity database.WareEntity
 		if DB.Where("id = ?", d.WareID).First(&entity).RecordNotFound() || entity.DeleteStatus != 1 {
 			DB.Delete(&d)
@@ -64,7 +64,7 @@ func (this *AdminConsoleController) Get() {
 				glgf.Error(err)
 				continue
 			}
-			deleteServers = append(deleteServers, dServer{
+			ds := dServer{
 				ServerName:            entity.ServerExternalID,
 				ServerConsoleHostName: template.URL(pterodactyl.ClientFromConf().HostName() + "/server/" + pteServer.Identifier),
 				ServerIdentifier:      pteServer.Identifier,
@@ -72,10 +72,12 @@ func (this *AdminConsoleController) Get() {
 				ServerOwner:           entity.UserExternalID,
 				ServerEXP:             entity.ValidDate.Format("2006-01-02"),
 				ServerHostName:        entity.HostName,
-			})
-			if deleteServers[i].ServerIdentifier == "" {
-				deleteServers[i].ServerIdentifier = "无法获取编号"
 			}
+			if ds.ServerIdentifier == "" {
+				ds.ServerIdentifier = "无法获取编号"
+			}
+			deleteServers = append(deleteServers, ds)
+
 		}
 	}
 	// glgf.Debug(deleteServers )
