@@ -9,7 +9,7 @@ require (
 	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/hako/durafmt v0.0.0-20191009132224-3f39dc1ed9f4
 	github.com/jinzhu/gorm v1.9.16
-	github.com/json-iterator/go v1.1.11
+	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/minoic/glgf v0.0.5
@@ -22,7 +22,6 @@ require (
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xhit/go-simple-mail v2.2.2+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e // indirect
-	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
