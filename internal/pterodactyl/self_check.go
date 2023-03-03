@@ -14,7 +14,7 @@ import (
 func CheckServers() {
 	var entities []database.WareEntity
 	cli := ClientFromConf()
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	DB.Find(&entities)
 	for _, entity := range entities {
 		if entity.DeleteStatus == 1 {
@@ -27,7 +27,7 @@ func CheckServers() {
 		}
 		if entity.ValidDate.Before(time.Now()) &&
 			entity.ValidDate.AddDate(0, 0, 10).After(time.Now()) {
-			server, err := cli.getServer(entity.ServerExternalID, true)
+			server, err := cli.GetServer(entity.ServerExternalID, true)
 			if err == nil && !server.Suspended {
 				err := cli.SuspendServer(server.ExternalId)
 				if err != nil {
@@ -74,7 +74,7 @@ func CheckServers() {
 
 func CacheNeededEggs() {
 	var wareSpecs []database.WareSpec
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if !DB.Find(&wareSpecs).RecordNotFound() {
 		for _, spec := range wareSpecs {
 			ClientFromConf().GetEgg(spec.Nest, spec.Egg)
@@ -84,17 +84,17 @@ func CacheNeededEggs() {
 
 func CacheNeededServers() {
 	var entities []database.WareEntity
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if !DB.Find(&entities).RecordNotFound() {
 		for _, entity := range entities {
-			ClientFromConf().GetServer(entity.ServerExternalID)
+			ClientFromConf().GetServer(entity.ServerExternalID, true)
 		}
 	}
 }
 
 func ConfirmDelete(entityID uint) error {
 	var entity database.WareEntity
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
 		return errors.New("cant find entity by ID: " + strconv.Itoa(int(entityID)))
 	}
@@ -108,7 +108,7 @@ func ConfirmDelete(entityID uint) error {
 }
 
 func GetConfirmWareEntities() []database.WareEntity {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var entities []database.WareEntity
 	DB.Find(&entities)
 	glgf.Debug(entities)
@@ -116,7 +116,7 @@ func GetConfirmWareEntities() []database.WareEntity {
 }
 
 func addConfirmWareEntity(entity database.WareEntity) {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	d := database.DeleteConfirm{
 		Model:  gorm.Model{},
 		WareID: entity.ID,

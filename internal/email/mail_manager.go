@@ -10,7 +10,6 @@ import (
 )
 
 func sendConfirmMail(key database.RegConfirmKey) {
-	conf := configure.GetConf()
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
 	if err != nil {
@@ -18,9 +17,9 @@ func sendConfirmMail(key database.RegConfirmKey) {
 	}
 	mailHtml, _ := genRegConfirmMail(key.UserName, key.KeyString)
 	email := mail.NewMSG()
-	email.SetFrom(conf.String("SMTPSendFrom")).
+	email.SetFrom(configure.Viper().GetString("SMTPSendFrom")).
 		AddTo(key.UserEmail).
-		SetSubject(configure.WebApplicationName+" 注册验证邮件").
+		SetSubject(configure.Viper().GetString("WebApplicationName")+" 注册验证邮件").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		glgf.Error(err)
@@ -31,7 +30,7 @@ func sendConfirmMail(key database.RegConfirmKey) {
 
 func SendCaptcha(receiver string) (string, error) {
 	// glgf.Info(receiver)
-	conf := configure.GetConf()
+
 	key := cryptoo.RandNumKey(6)
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
@@ -40,9 +39,9 @@ func SendCaptcha(receiver string) (string, error) {
 	}
 	mailHtml, _ := genForgetPasswordEmail(key)
 	email := mail.NewMSG()
-	email.SetFrom(conf.String("SMTPSendFrom")).
+	email.SetFrom(configure.Viper().GetString("SMTPSendFrom")).
 		AddTo(receiver).
-		SetSubject(configure.WebApplicationName+" 验证码").
+		SetSubject(configure.Viper().GetString("WebApplicationName")+" 验证码").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		return "", nil
@@ -52,7 +51,6 @@ func SendCaptcha(receiver string) (string, error) {
 }
 
 func SendAnyEmail(receiveAddr string, text ...string) error {
-	conf := configure.GetConf()
 	smtpServer := getSTMPClient()
 	smtpc, err := smtpServer.Connect()
 	if err != nil {
@@ -60,9 +58,9 @@ func SendAnyEmail(receiveAddr string, text ...string) error {
 	}
 	mailHtml, _ := genAnyEmail(fmt.Sprint(text))
 	email := mail.NewMSG()
-	email.SetFrom(conf.String("SMTPSendFrom")).
+	email.SetFrom(configure.Viper().GetString("SMTPSendFrom")).
 		AddTo(receiveAddr).
-		SetSubject(configure.WebApplicationName+" 邮件通知系统").
+		SetSubject(configure.Viper().GetString("WebApplicationName")+" 邮件通知系统").
 		SetBody(mail.TextHTML, mailHtml)
 	if err := email.Send(smtpc); err != nil {
 		return err

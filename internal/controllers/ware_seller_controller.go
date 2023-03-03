@@ -1,18 +1,19 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/pterodactyl"
+	"github.com/spf13/cast"
 	"html/template"
 	"strconv"
 	"time"
 )
 
 type WareSellerController struct {
-	beego.Controller
+	web.Controller
 }
 
 type ware struct {
@@ -44,8 +45,8 @@ func RefreshWareInfo() {
 		emailText string
 	)
 
-	DB := database.GetDatabase()
-	if configure.SMTPEnabled {
+	DB := database.Mysql()
+	if configure.Viper().GetBool("SMTPEnabled") {
 		emailText = "邮件提醒！"
 	}
 	if DB.Find(&waresInDB).Error == nil {
@@ -72,6 +73,10 @@ func RefreshWareInfo() {
 						Second: "MB存储空间",
 					},
 					{
+						First:  cast.ToString(w.Backups),
+						Second: "个服务器备份",
+					},
+					{
 						First:  "Docker",
 						Second: "虚拟化隔离",
 					},
@@ -87,7 +92,7 @@ func RefreshWareInfo() {
 				SpecID:   w.ID,
 				Discount: w.Discount,
 			}
-			if !configure.TotalDiscount {
+			if !configure.Viper().GetBool("TotalDiscount") {
 				nw.Discount = 0
 			}
 			if w.WareDescription != "" {

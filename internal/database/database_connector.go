@@ -2,16 +2,18 @@ package database
 
 import (
 	"fmt"
-	"github.com/8treenet/gcache"
-	gcopt "github.com/8treenet/gcache/option"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
+	"github.com/redis/go-redis/v9"
 	"time"
 )
 
-var db *gorm.DB
+var (
+	rdb *redis.Client
+	db  *gorm.DB
+)
 
 func connect() {
 	defer func() {
@@ -21,50 +23,19 @@ func connect() {
 			connect()
 		}
 	}()
-	conf := configure.GetConf()
-	dialect := conf.String("Database")
-	opt := gcopt.DefaultOption{}
-	opt.PenetrationSafe = true
-	opt.Level = gcopt.LevelModel
-	switch dialect {
-	case "SQLITE":
-		DB, err := gorm.Open("sqlite3", "sqlite3.db")
-		if err != nil {
-			db = nil
-			glgf.Error(err.Error())
-		}
-		db = DB
-		if configure.UseGormCache {
-			gcache.AttachDB(db, &opt, &gcopt.RedisOption{
-				Addr: conf.String("CacheRedisCONN"),
-			})
-		}
-		return
-	case "MYSQL":
-		DSN := conf.String("MYSQLUsername") + ":" +
-			conf.String("MYSQLUserPassword") + "@(" +
-			conf.String("MYSQLHost") + ")/" +
-			conf.String("MYSQLDatabaseName") +
-			"?charset=utf8&parseTime=True&loc=Local"
-		glgf.Info("DSN: " + DSN)
-		DB, err := gorm.Open("mysql", DSN)
-		if err != nil {
-			db = nil
-			glgf.Error(err.Error())
-		}
-		db = DB
-		if configure.UseGormCache {
-			gcache.AttachDB(db, &opt, &gcopt.RedisOption{
-				Addr: conf.String("CacheRedisCONN"),
-			})
-		}
+	DSN := fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local", configure.Viper().GetString("MYSQLUsername"),
+		configure.Viper().GetString("MYSQLUserPassword"), configure.Viper().GetString("MYSQLHost"), configure.Viper().GetString("MYSQLDatabaseName"))
+	glgf.Debug(DSN)
+	DB, err := gorm.Open("mysql", DSN)
+	if err != nil {
+		db = nil
+		glgf.Error(err)
 		return
 	}
-	db = nil
-	panic("CONF ERR: WRONG SQL DIALECT!!! " + dialect)
+	db = DB
 }
 
-func GetDatabase() *gorm.DB {
+func Mysql() *gorm.DB {
 	for db == nil {
 		glgf.Warn("trying to connect to database!")
 		time.Sleep(3 * time.Second)
@@ -76,4 +47,14 @@ func GetDatabase() *gorm.DB {
 		connect()
 	}
 	return db
+}
+
+func Redis() *redis.Client {
+	if rdb == nil {
+		rdb = redis.NewClient(&redis.Options{
+			Addr:        configure.Viper().GetString("RedisHost"),
+			DialTimeout: 3 * time.Second,
+		})
+	}
+	return rdb
 }

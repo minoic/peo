@@ -1,62 +1,61 @@
 package configure
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/config"
+	"errors"
 	"github.com/minoic/glgf"
+	"github.com/minoic/peo/conf"
 	"github.com/smartwalle/alipay/v3"
+	"github.com/spf13/viper"
 	"os"
+	"path"
 )
 
-var conf config.Configer
-
 var (
-	AliClient          *alipay.Client
-	RechargeMode       bool
-	SqlTablePrefix     string
-	TotalDiscount      bool
-	UseGormCache       bool
-	SMTPEnabled        bool
-	WebApplicationName string
-	WebHostName        string
-	AdminAddress       string
+	AliClient *alipay.Client
+	v         *viper.Viper
 )
 
 func init() {
 	var err error
-	conf, err = config.NewConfig("ini", "conf/settings.conf")
-	if err != nil {
-		panic("cant get settings.config: " + err.Error())
+	if _, err := os.Stat("/conf/app.conf"); errors.Is(err, os.ErrNotExist) {
+		file, _ := os.Create("/conf/app.conf")
+		file.Write(conf.AppConf)
+		file.Close()
+		glgf.Error("未检测到配置文件，已生成默认，请重启应用程序")
+		os.Exit(1)
+	}
+	if _, err := os.Stat("/conf/settings.toml"); errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat("/conf/settings.conf"); errors.Is(err, os.ErrNotExist) {
+			glgf.Warn("找不到配置文件，正在生成 settings.toml")
+			file, _ := os.Create("/conf/settings.toml")
+			file.Write(conf.SettingsToml)
+			file.Close()
+		} else {
+			glgf.Warn("找到旧版配置文件，正在转换 settings.conf->settings.toml")
+			os.Rename("/conf/settings.conf", "/conf/settings.toml")
+			ReloadConfig()
+			Viper().Set("RedisHost", Viper().GetString("CacheRedisCONN"))
+			if Viper().GetBool("WebSecure") {
+				Viper().Set("WebHostName", path.Join("http://", Viper().GetString("WebHostName")))
+			} else {
+				Viper().Set("WebHostName", path.Join("https://", Viper().GetString("WebHostName")))
+			}
+			if Viper().GetBool("Serversecure") {
+				Viper().Set("PterodactylHostname", path.Join("http://", Viper().GetString("Serverhostname")))
+			} else {
+				Viper().Set("PterodactylHostname", path.Join("https://", Viper().GetString("Serverhostname")))
+			}
+			Viper().Set("PterodactylToken", Viper().GetString("Serverpassword"))
+			Viper().WriteConfig()
+		}
 	}
 	ReloadConfig()
-	err = beego.LoadAppConfig("ini", "conf/app.conf")
-	if err != nil {
-		panic(err)
-	}
-	os.Mkdir("log", os.ModePerm)
-	beego.BConfig.WebConfig.Session.SessionDisableHTTPOnly = true
-	d, err := os.OpenFile("log/debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	e, err := os.OpenFile("log/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	glgf.Get().SetMode(glgf.BOTH).
-		SetWriter(d).
-		AddLevelWriter(glgf.ERR, e)
-
-	e2, err := conf.Bool("AliPayEnabled")
-	if err != nil {
-		panic(err)
-	}
-	if e2 {
-		AliClient, err = alipay.New(conf.String("AliPayAppID"), conf.String("AliPayPrivateKey"), true)
+	if Viper().GetBool("AliPayEnabled") {
+		AliClient, err = alipay.New(Viper().GetString("AliPayAppID"), Viper().GetString("AliPayPrivateKey"), true)
 		if err != nil {
 			panic(err)
 		}
-		err = AliClient.LoadAliPayPublicKey(conf.String("AliPayPublicKey"))
+		err = AliClient.LoadAliPayPublicKey(Viper().GetString("AliPayPublicKey"))
 		if err != nil {
 			panic(err)
 		}
@@ -64,37 +63,15 @@ func init() {
 }
 
 func ReloadConfig() {
-	var err error
-	RechargeMode, err = conf.Bool("RechargeMode")
+	v = viper.New()
+	v.SetConfigType("toml")
+	v.SetConfigFile("conf/settings.toml")
+	err := v.ReadInConfig()
 	if err != nil {
 		panic(err)
-	}
-	SMTPEnabled, err = conf.Bool("SMTPEnabled")
-	if err != nil {
-		panic(err)
-	}
-	TotalDiscount, err = conf.Bool("TotalDiscount")
-	if err != nil {
-		panic(err)
-	}
-	UseGormCache, err = conf.Bool("UseGormCache")
-	if err != nil {
-		panic(err)
-	}
-	WebApplicationName = conf.String("WebApplicationName")
-	AdminAddress = conf.String("WebAdminAddress")
-	SqlTablePrefix = conf.String("SqlTablePrefix")
-	secure, err := conf.Bool("WebSecure")
-	if err != nil {
-		panic(err)
-	}
-	if secure {
-		WebHostName = "https://" + conf.String("WebHostName")
-	} else {
-		WebHostName = "http://" + conf.String("WebHostName")
 	}
 }
 
-func GetConf() config.Configer {
-	return conf
+func Viper() *viper.Viper {
+	return v
 }

@@ -1,8 +1,9 @@
 package controllers
 
 import (
+	"context"
 	"encoding/base64"
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
@@ -17,11 +18,11 @@ import (
 )
 
 type UserRechargeController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *UserRechargeController) Prepare() {
-	if !session.SessionIslogged(this.StartSession()) {
+	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
@@ -32,8 +33,8 @@ func (this *UserRechargeController) Prepare() {
 }
 
 func (this *UserRechargeController) Get() {
-	user, _ := session.SessionGetUser(this.StartSession())
-	DB := database.GetDatabase()
+	user, _ := session.GetUser(this.StartSession())
+	DB := database.Mysql()
 	var logs []database.RechargeLog
 	DB.Where("user_id = ?", user.ID).Find(&logs)
 	this.Data["rechargeLogs"] = logs
@@ -55,22 +56,22 @@ func (this *UserRechargeController) RechargeByKey() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
 		return
 	}
-	user, err := session.SessionGetUser(this.StartSession())
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
 	// glgf.Debug(bm.Get("RECHARGE_DELAY"+user.Name))
-	if bm.IsExist("RECHARGE_DELAY" + user.Name) {
+	if database.Redis().Get(context.Background(), "RECHARGE_DELAY"+user.Name).Err() == nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 3 秒钟内只能充值一次"))
 		return
 	}
-	err = bm.Put("RECHARGE_DELAY"+user.Name, 1, 3*time.Second)
+	err = database.Redis().Set(context.Background(), "RECHARGE_DELAY"+user.Name, 1, 3*time.Second).Err()
 	if err != nil {
 		glgf.Error(err)
 	}
 	keyString := this.GetString("keyString")
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var key database.RechargeKey
 	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无效的 KEY"))
@@ -140,7 +141,7 @@ func (this *UserRechargeController) CreateZFB() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
 	}
-	user, err := session.SessionGetUser(this.StartSession())
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
@@ -153,7 +154,7 @@ func (this *UserRechargeController) CreateZFB() {
 	}
 	tradeNo := cryptoo.RandNumKey(16)
 	p := alipay.TradePreCreate{}
-	p.NotifyURL = configure.WebHostName + "/alipay"
+	p.NotifyURL = configure.Viper().GetString("WebHostName") + "/alipay"
 	p.Subject = "peo 充值"
 	p.OutTradeNo = tradeNo
 	p.TotalAmount = strconv.Itoa(amount)
@@ -173,7 +174,7 @@ func (this *UserRechargeController) CreateZFB() {
 		Time:       time.Now().Format("2006-01-02_15:04:05"),
 		Status:     `<span class="label label-warning">未支付</span>`,
 	}
-	database.GetDatabase().Create(&rlog)
+	database.Mysql().Create(&rlog)
 	img, err := qrcode.Encode(resp.Content.QRCode, qrcode.High, 256)
 	if err != nil {
 		glgf.Error(err)

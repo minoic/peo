@@ -7,7 +7,7 @@ import (
 )
 
 func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) error {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	for i := 1; i <= keyAmount; i++ {
 		newKey := database.WareKey{
 			Model:     gorm.Model{},
@@ -23,7 +23,7 @@ func GeneKeys(keyAmount int, wareID uint, validityTermInDay int, keyLength int) 
 }
 
 func GeneRechargeKeys(keyAmount int, balance uint, validityTermInDay int, keyLength int) error {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	for i := 1; i <= keyAmount; i++ {
 		newKey := database.RechargeKey{
 			Model:     gorm.Model{},
@@ -39,7 +39,7 @@ func GeneRechargeKeys(keyAmount int, balance uint, validityTermInDay int, keyLen
 }
 
 func DeleteOutdatedKeys() {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	/* ware keys*/
 	var keys []database.WareKey
 	DB.Find(&keys)

@@ -1,17 +1,17 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/peo/internal/configure"
 )
 
 type ErrorController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *ErrorController) Error400() {
 	DelayRedirect(DelayInfo{
-		URL:    configure.WebHostName,
+		URL:    configure.Viper().GetString("WebHostName"),
 		Detail: "请求参数有误",
 		Title:  "400 Bad Request",
 	}, &this.Controller, 400)
@@ -20,7 +20,7 @@ func (this *ErrorController) Error400() {
 
 func (this *ErrorController) Error401() {
 	DelayRedirect(DelayInfo{
-		URL:    configure.WebHostName,
+		URL:    configure.Viper().GetString("WebHostName"),
 		Detail: "未经授权，请求要求验证身份",
 		Title:  "401 Unauthorized",
 	}, &this.Controller, 401)
@@ -29,7 +29,7 @@ func (this *ErrorController) Error401() {
 
 func (this *ErrorController) Error403() {
 	DelayRedirect(DelayInfo{
-		URL:    configure.WebHostName,
+		URL:    configure.Viper().GetString("WebHostName"),
 		Detail: "服务器拒绝请求",
 		Title:  "403 Forbidden",
 	}, &this.Controller, 403)
@@ -38,8 +38,8 @@ func (this *ErrorController) Error403() {
 
 func (this *ErrorController) Error404() {
 	DelayRedirect(DelayInfo{
-		URL:    configure.WebHostName,
-		Detail: "找不到指定页面: " + configure.WebHostName + this.Ctx.Request.URL.String(),
+		URL:    configure.Viper().GetString("WebHostName"),
+		Detail: "找不到指定页面: " + configure.Viper().GetString("WebHostName") + this.Ctx.Request.URL.String(),
 		Title:  "404 Not Found 😭",
 	}, &this.Controller, 404)
 	this.TplName = "Delay.html"
@@ -47,7 +47,7 @@ func (this *ErrorController) Error404() {
 
 func (this *ErrorController) Error405() {
 	DelayRedirect(DelayInfo{
-		URL:    configure.WebHostName,
+		URL:    configure.Viper().GetString("WebHostName"),
 		Detail: "不被允许的方法: " + this.Ctx.Request.Method,
 		Title:  "405 Method not Allowed",
 	}, &this.Controller, 405)

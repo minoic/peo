@@ -10,7 +10,7 @@ var adminID uint
 
 func init() {
 	var user database.User
-	database.GetDatabase().First(&user, "is_admin")
+	database.Mysql().First(&user, "is_admin")
 	adminID = user.ID
 }
 
@@ -21,7 +21,7 @@ func Send(senderName string, receiverID uint, text ...interface{}) {
 		Text:       fmt.Sprint(text...),
 		TimeText:   "",
 	}
-	if err := database.GetDatabase().Create(&message).Error; err != nil {
+	if err := database.Mysql().Create(&message).Error; err != nil {
 		glgf.Error(err)
 	}
 }
@@ -36,20 +36,20 @@ func SendAdmin(text ...interface{}) {
 		Text:       fmt.Sprint(text...),
 		TimeText:   "",
 	}
-	if err := database.GetDatabase().Create(&message).Error; err != nil {
+	if err := database.Mysql().Create(&message).Error; err != nil {
 		glgf.Error(err)
 	}
 }
 
 func UnReadNum(receiverID uint) int {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var messages []database.Message
 	DB.Where("receiver_id = ?", receiverID).Not("have_read = ?", true).Find(&messages)
 	return len(messages)
 }
 
 func GetMessages(receiverID uint) []database.Message {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var messages []database.Message
 	DB.Where("receiver_id = ?", receiverID).Find(&messages)
 	for i, m := range messages {
@@ -63,6 +63,6 @@ func GetMessages(receiverID uint) []database.Message {
 }
 
 func ReadAll(receiverID uint) {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	DB.Model(&database.Message{}).Where("receiver_id = ?", receiverID).Update("have_read", true)
 }

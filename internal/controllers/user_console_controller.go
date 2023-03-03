@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"context"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/hako/durafmt"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
@@ -17,7 +18,7 @@ import (
 )
 
 type UserConsoleController struct {
-	beego.Controller
+	web.Controller
 }
 
 type serverInfo struct {
@@ -46,7 +47,7 @@ type serverInfo struct {
 }
 
 func (this *UserConsoleController) Prepare() {
-	if !session.SessionIslogged(this.StartSession()) {
+	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
@@ -66,7 +67,7 @@ var (
 )
 
 func RefreshServerInfo() {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	cli := pterodactyl.ClientFromConf()
 	var (
 		pongsSync struct {
@@ -97,7 +98,7 @@ func RefreshServerInfo() {
 	wg.Wait()
 	// glgf.Debug(pongs)
 	for i, p := range pongsSync.pongs {
-		pteServer, err := cli.GetServer(entities[i].ServerExternalID)
+		pteServer, err := cli.GetServer(entities[i].ServerExternalID, true)
 		if err != nil {
 			temp, ok := entityMap.Load(entities[i].ID)
 			if ok {
@@ -119,9 +120,9 @@ func RefreshServerInfo() {
 				ServerHostName:     entities[i].HostName,
 				ServerIdentifier:   pteServer.Identifier,
 				ServerIndex:        strconv.Itoa(i),
-				ServerRenewURL:     template.URL(configure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
-				ServerRenew2URL:    template.URL(configure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
-				ServerReinstallURL: template.URL(configure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
+				ServerRenewURL:     template.URL(configure.Viper().GetString("WebHostName") + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
+				ServerRenew2URL:    template.URL(configure.Viper().GetString("WebHostName") + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
+				ServerReinstallURL: template.URL(configure.Viper().GetString("WebHostName") + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 				ConsoleHostName:    cli.HostName(),
 			}
 		} else {
@@ -141,9 +142,9 @@ func RefreshServerInfo() {
 				ServerFMLType:      p.ModInfo.ModType,
 				ServerVersion:      p.Version.Name,
 				ServerIndex:        strconv.Itoa(i),
-				ServerRenewURL:     template.URL(configure.WebHostName + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
-				ServerRenew2URL:    template.URL(configure.WebHostName + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
-				ServerReinstallURL: template.URL(configure.WebHostName + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
+				ServerRenewURL:     template.URL(configure.Viper().GetString("WebHostName") + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
+				ServerRenew2URL:    template.URL(configure.Viper().GetString("WebHostName") + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
+				ServerReinstallURL: template.URL(configure.Viper().GetString("WebHostName") + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
 			}
 			if info.ServerFMLType != "" {
 				for _, f := range p.ModInfo.ModList {
@@ -173,9 +174,9 @@ func RefreshServerInfo() {
 func (this *UserConsoleController) Get() {
 	this.TplName = "UserConsole.html"
 	sess := this.StartSession()
-	user, _ := session.SessionGetUser(sess)
+	user, _ := session.GetUser(sess)
 	this.Data["userName"] = user.Name
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	this.Data["infoTotalUpTime"] = durafmt.Parse(user.TotalUpTime).LimitFirstN(2).String()
 	var (
 		orders          []database.Order
@@ -209,7 +210,7 @@ func (this *UserConsoleController) Renew() {
 	keyString := this.Ctx.Input.Param(":key")
 	entityIDString := this.Ctx.Input.Param(":entityID")
 	entityID, err := strconv.Atoi(entityIDString)
-	if bm.IsExist("RENEW" + entityIDString) {
+	if database.Redis().Get(context.Background(), "RENEW"+entityIDString).Err() == nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("同一个服务器 10 秒内只能续费一次"))
 		return
 	}
@@ -217,7 +218,7 @@ func (this *UserConsoleController) Renew() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取服务器编号"))
 		return
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var (
 		entity database.WareEntity
 		key    database.WareKey
@@ -240,7 +241,7 @@ func (this *UserConsoleController) Renew() {
 		return
 	}
 	/* correct renew post */
-	if err = bm.Put("RENEW"+entityIDString, "", 10*time.Second); err != nil {
+	if err = database.Redis().Set(context.Background(), "RENEW"+entityIDString, "", 10*time.Second).Err(); err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("缓存设置失败！"))
 		return
@@ -260,7 +261,7 @@ func (this *UserConsoleController) Renew() {
 		DB.Create(&key)
 		return
 	}
-	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID)
+	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID, true)
 	if err != nil {
 		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -289,8 +290,8 @@ func (this *UserConsoleController) Renew2() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取服务器编号"))
 		return
 	}
-	DB := database.GetDatabase()
-	user, err := session.SessionGetUser(this.StartSession())
+	DB := database.Mysql()
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		glgf.Warn(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取用户信息失败"))
@@ -320,7 +321,7 @@ func (this *UserConsoleController) Renew2() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
 		return
 	}
-	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID)
+	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID, true)
 	if err != nil {
 		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -339,13 +340,13 @@ func (this *UserConsoleController) Renew2() {
 }
 
 func (this *UserConsoleController) Reinstall() {
-	user, err := session.SessionGetUser(this.StartSession())
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		// glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
-	if bm.IsExist("REINSTALL" + user.Name) {
+	if database.Redis().Get(context.Background(), "REINSTALL"+user.Name).Err() == nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("您每 10 秒只能重装一次服务器"))
 		return
 	}
@@ -361,7 +362,7 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法安装这个包"))
 		return
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var entity database.WareEntity
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("找不到指定服务器"))
@@ -381,6 +382,6 @@ func (this *UserConsoleController) Reinstall() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
 		return
 	}
-	_ = bm.Put("REINSTALL"+user.Name, "", 10*time.Second)
+	_ = database.Redis().Set(context.Background(), "REINSTALL"+user.Name, "", 10*time.Second)
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }

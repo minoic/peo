@@ -1,5 +1,0 @@
-package configure
-
-func init() {
-
-}

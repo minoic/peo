@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -11,7 +11,7 @@ import (
 )
 
 type CallbackController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *CallbackController) Prepare() {
@@ -34,7 +34,7 @@ func (this *CallbackController) Post() {
 		glgf.Error(notify.TradeStatus)
 		return
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var (
 		rlog database.RechargeLog
 		user database.User

@@ -1,44 +1,41 @@
 package session
 
 import (
+	"context"
 	"errors"
-	"github.com/astaxie/beego/session"
-	_ "github.com/astaxie/beego/session/memcache"
-	_ "github.com/astaxie/beego/session/mysql"
-	_ "github.com/astaxie/beego/session/redis"
+	"github.com/beego/beego/v2/server/web/session"
+	_ "github.com/beego/beego/v2/server/web/session/redis"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/database"
 	"strconv"
 )
 
-func init() {
-
-}
-
-func SessionIslogged(sess session.Store) bool {
-	cookie1 := sess.Get("LST")
-	cookie2 := sess.Get("UN")
+func Logged(sess session.Store) bool {
+	if sess == nil {
+		return false
+	}
+	cookie1 := sess.Get(context.Background(), "LST")
+	cookie2 := sess.Get(context.Background(), "UN")
 	if cookie1 == nil || cookie2 == nil {
 		// glgf.Info("user doesnt have session")
 		return false
 	}
 	lsToken := cookie1.(string)
 	unToken := cookie2.(string)
-	if database.GetDatabase().First(&database.User{}, "name = ?", unToken).RecordNotFound() {
+	if database.Mysql().First(&database.User{}, "name = ?", unToken).RecordNotFound() {
 		return false
 	}
 	// glgf.Debug(lsToken, unToken)
 	if len(lsToken) == 0 || !ValidateToken(lsToken, unToken) {
-		glgf.Warn(unToken + " is not logged in!")
+
 		return false
-	} else {
-		// glgf.Info(unToken + " is logged in!")
-		return true
 	}
+	return true
+
 }
 
-func SessionIsAdmin(sess session.Store) bool {
-	user, err := SessionGetUser(sess)
+func IsAdmin(sess session.Store) bool {
+	user, err := GetUser(sess)
 	if err != nil {
 		glgf.Error(err)
 		return false
@@ -46,13 +43,13 @@ func SessionIsAdmin(sess session.Store) bool {
 	return user.IsAdmin
 }
 
-func SessionGetUser(sess session.Store) (database.User, error) {
-	id := sess.Get("ID")
+func GetUser(sess session.Store) (database.User, error) {
+	id := sess.Get(context.Background(), "ID")
 	if id == nil {
 		return database.User{}, errors.New("user doesnt have session")
 	}
 	userID := int(id.(uint))
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var user database.User
 	if DB.Where("ID = ?", userID).First(&user).RecordNotFound() {
 		return database.User{}, errors.New("cant find user: " + strconv.Itoa(userID))

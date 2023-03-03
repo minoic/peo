@@ -6,9 +6,7 @@
 #Basic Settings
 ############################
 # hostname to visit your web site
-WebHostName = "example.com"
- # use SSL or not
-WebSecure = false
+WebHostName = "http://example.com"
 # website name to show
 WebApplicationName = "MinoIC - PE"
  # website description to show
@@ -20,26 +18,21 @@ WebAdminAddress = "ADMIN <admin@example.com>"
 #Pterodactyl Settings
 ############################
 # your pterodactyl panel hostname
-Serverhostname = "pterodactyl.example.com"
-# wether your pterodactyl use SSL or not
-Serversecure = false
+PterodactylHostname = "https://pterodactyl.example.com"
 # pterodactyl admin token
-Serverpassword = ""
+PterodactylToken = ""
 
 ############################
 #Database Settings
 ############################
-# Choose database to use: MYSQL
-Database = "MYSQL"
-# salt
-DatabaseSalt = "PEOSALT"
-UseGormCache = true
-SqlTablePrefix = "peo_"
 #Fill the account info if database = "MYSQL"
+DatabaseSalt = "PEOSALT"
 MYSQLHost = "mysql:3306"
 MYSQLUsername = "root"
 MYSQLUserPassword = "PEOMYSQLPASSWORD"
 MYSQLDatabaseName = "peo"
+RedisHost = "redis:6379"
+SqlTablePrefix = "pe_"
 
 ############################
 #SMTP settings
@@ -51,32 +44,10 @@ SMTPPort = 80
 SMTPSendFrom = "ADMIN <admin@example.com>"
 SMTPUsername = "admin@example.com"
 SMTPUserPassword = "yourpassword"
-SMTPLogo = ""
  #TLS/SSL
 SMTPEncryption = "TLS"
 #if DeleteEmailConfirm be set to true all admins will receive an email before Server being deleted
 DeleteEmailConfirm = true
-
-############################
-#Cache Settings
-############################
-#change your cache settings
-#CacheMode = "memory"/"file"/"redis"/"memcache"
-CacheMode = "redis"
-#CacheMode = "memory"
-CacheMemoryGCInterval = 60
-#CacheMode = "file"
-CacheFilePath = "./cache"
-CacheFileSuffix = ".cache"
-CacheFileDirectoryLevel = "2"
-CacheFileEmbedExpiry = "120"
-#CacheMode = "redis"
-CacheRedisKey = "collectionName"
-CacheRedisCONN = "redis:6379"
-CacheRedisdbNum = "0"
-CacheRedisPassword = ""
-#CacheMode = "memcache"
-CacheMemcacheCONN = "127.0.0.1:11211"
 
 ############################
 #Misc Settings
@@ -85,8 +56,6 @@ CacheMemcacheCONN = "127.0.0.1:11211"
 RechargeMode = false
 # if set to false, we wont accept any discount
 TotalDiscount = false
-# Task run interval in seconds, 10 is recommended
-AutoTaskInterval = 10
 # fill if you want to enable alipay recharge
 AliPayEnabled = false
 AliPayPublicKey = ""

@@ -1,9 +1,10 @@
 package controllers
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
@@ -17,11 +18,11 @@ import (
 )
 
 type UserSettingsController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *UserSettingsController) Prepare() {
-	if !session.SessionIslogged(this.StartSession()) {
+	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
@@ -29,7 +30,7 @@ func (this *UserSettingsController) Prepare() {
 	this.TplName = "UserSettings.html"
 	this.Data["i"] = 2
 	this.Data["u"] = 3
-	user, _ := session.SessionGetUser(this.StartSession())
+	user, _ := session.GetUser(this.StartSession())
 	this.Data["userCreated"] = user.PteUserCreated
 	if user.PteUserCreated {
 		pteUser, err := pterodactyl.ClientFromConf().GetUser(user.Name, true)
@@ -52,7 +53,7 @@ func (this *UserSettingsController) Prepare() {
 		this.Data["pteUserEmail"] = "请先创建用户"
 		this.Data["pteUser2FA"] = false
 		this.Data["pteUserCreatedAt"] = "请先创建用户"
-		this.Data["pteUserCreateURL"] = configure.WebHostName + "/user-settings/create-pterodactyl-user"
+		this.Data["pteUserCreateURL"] = configure.Viper().GetString("WebHostName") + "/user-settings/create-pterodactyl-user"
 	}
 	this.Data["pteUserPassword"] = "默认密码为注册时输入的用户名"
 }
@@ -68,18 +69,18 @@ func (this *UserSettingsController) UpdateUserPassword() {
 	oldPassword := this.GetString("oldPassword")
 	newPassword := this.GetString("newPassword")
 	confirmPassword := this.GetString("confirmPassword")
-	DB := database.GetDatabase()
-	conf := configure.GetConf()
-	user, err := session.SessionGetUser(this.StartSession())
+	DB := database.Mysql()
+
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = err.Error() + " 获取用户信息失败，请重新登录！"
 		return
 	}
-	b := md5.Sum([]byte(oldPassword + conf.String("DatabaseSalt")))
+	b := md5.Sum([]byte(oldPassword + configure.Viper().GetString("DatabaseSalt")))
 	if hex.EncodeToString(b[:]) == user.Password {
 		if newPassword == confirmPassword {
-			b2 := md5.Sum([]byte(newPassword + conf.String("DatabaseSalt")))
+			b2 := md5.Sum([]byte(newPassword + configure.Viper().GetString("DatabaseSalt")))
 			DB.Model(&user).Update("password", hex.EncodeToString(b2[:]))
 			message.Send("ADMIN", user.ID, "您刚刚成功修改了密码！")
 			this.Redirect("/user-settings", 302)
@@ -102,10 +103,10 @@ func (this *UserSettingsController) UpdateUserEmail() {
 		return
 	}
 	newEmail := this.GetString("email")
-	cpt := bm.Get("CHANGE_EMAIL" + newEmail)
+	cpt := database.Redis().Get(context.Background(), "CHANGE_EMAIL"+newEmail).String()
 	cptInput := this.GetString("captcha")
-	DB := database.GetDatabase()
-	user, err := session.SessionGetUser(this.StartSession())
+	DB := database.Mysql()
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		this.Data["hasError2"] = true
 		this.Data["hasErrorText2"] = err.Error() + " 获取用户信息失败，请重新登录！"
@@ -125,15 +126,15 @@ func (this *UserSettingsController) UpdateUserEmail() {
 func (this *UserSettingsController) SendCaptcha() {
 	this.TplName = "Loading.html"
 	userEmail := this.Ctx.Input.Param(":email")
-	DB := database.GetDatabase()
-	if DB.Where("email = ?", userEmail).First(&database.User{}).RecordNotFound() || bm.IsExist("CHANGE_EMAIL"+userEmail) {
+	DB := database.Mysql()
+	if DB.Where("email = ?", userEmail).First(&database.User{}).RecordNotFound() || database.Redis().Get(context.Background(), "CHANGE_EMAIL"+userEmail).Err() == nil {
 		return
 	}
 	key, err := email.SendCaptcha(userEmail)
 	if err != nil {
 		glgf.Error(err)
 	} else {
-		err := bm.Put("CHANGE_EMAIL"+userEmail, key, 1*time.Minute)
+		err := database.Redis().Set(context.Background(), "CHANGE_EMAIL"+userEmail, key, 1*time.Minute)
 		if err != nil {
 			glgf.Error(err)
 		}
@@ -142,7 +143,7 @@ func (this *UserSettingsController) SendCaptcha() {
 
 func (this *UserSettingsController) CreatePterodactylUser() {
 	sess := this.StartSession()
-	user, err := session.SessionGetUser(sess)
+	user, err := session.GetUser(sess)
 	if err != nil || user == (database.User{}) {
 		glgf.Debug("cant get user")
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
@@ -162,7 +163,7 @@ func (this *UserSettingsController) CreatePterodactylUser() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("FAILED"))
 		return
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	DB.Model(&user).Update("pte_user_created", true)
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
@@ -171,7 +172,7 @@ func (this *UserSettingsController) GalleryPost() {
 	itemName := this.GetString("itemName")
 	itemDescription := this.GetString("itemDescription")
 	imgSource := this.GetString("imgSource")
-	user, err := session.SessionGetUser(this.StartSession())
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
@@ -181,7 +182,7 @@ func (this *UserSettingsController) GalleryPost() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("图片名称或地址不能为空"))
 		return
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if err := DB.Create(&database.GalleryItem{
 		Model:           gorm.Model{},
 		UserID:          user.ID,

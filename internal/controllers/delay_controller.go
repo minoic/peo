@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/peo/internal/configure"
 	"strconv"
 )
 
 type DelayController struct {
-	beego.Controller
+	web.Controller
 }
 
 type DelayInfo struct {
@@ -24,7 +24,7 @@ func (this *DelayController) Get() {
 	// code,_:=this.GetInt("code",200)
 }
 
-func DelayRedirect(info DelayInfo, c *beego.Controller, code ...int) {
+func DelayRedirect(info DelayInfo, c *web.Controller, code ...int) {
 	if len(code) != 0 {
 		c.Redirect("/delay/?URL="+info.URL+"&title="+info.Title+"&detail="+info.Detail+"&code="+strconv.Itoa(code[0]), 302)
 	} else {
@@ -33,5 +33,5 @@ func DelayRedirect(info DelayInfo, c *beego.Controller, code ...int) {
 }
 
 func DelayRedirectGetURL(info DelayInfo) string {
-	return configure.WebHostName + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
+	return configure.Viper().GetString("WebHostName") + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
 }

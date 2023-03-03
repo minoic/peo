@@ -1,197 +1,201 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/pterodactyl"
 	"github.com/minoic/peo/internal/session"
-	"strings"
 	"time"
 )
 
-var wareInfo []InfoDetail
-
-type NewWareController struct {
-	beego.Controller
+var wareInfo = []InputField{
+	{
+		Name:           "ware_name",
+		FriendlyName:   "商品名称",
+		Description:    "显示在商品的标题",
+		Type:           "text",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:         "ware_description",
+		FriendlyName: "商品介绍",
+		Description:  "显示在商品的介绍",
+		Type:         "text",
+	},
+	{
+		Name:           "cpu",
+		FriendlyName:   "CPU 限制 (%)",
+		Description:    "每100个CPU限制数值表示可以占用一个CPU线程(Thread)",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "disk",
+		FriendlyName:   "磁盘限制 (MB)",
+		Description:    "服务器的磁盘限制",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "memory",
+		FriendlyName:   "内存限制 (MB)",
+		Description:    "服务器的内存限制",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "swap",
+		FriendlyName:   "SWAP内存限制 (MB)",
+		Description:    "SWAP内存，即虚拟内存，映射到磁盘中",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "io",
+		FriendlyName:   "Block IO 大小",
+		Description:    "Block IO 大小 (10-1000) (默认填500)",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "backups",
+		FriendlyName:   "备份数量",
+		Description:    "允许的备份数量 (默认填0)",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "node_id",
+		FriendlyName:   "节点ID",
+		Description:    "服务器将会在这个节点上创建",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "nest_id",
+		FriendlyName:   "Nest ID",
+		Description:    "服务器使用的Nest的ID",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "egg_id",
+		FriendlyName:   "Egg ID",
+		Description:    "服务器使用的默认Egg的ID",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	/*{
+		Name:         "dedicated_ip",
+		FriendlyName: "专用IP",
+		Description:  "为服务器设置专用IP (可选)",
+		Type:         "checkbox",
+	},*/
+	{
+		Name:         "startup",
+		FriendlyName: "启动命令",
+		Description:  "定制启动命令以分配给创建的服务器（可选）",
+		Type:         "text",
+	},
+	{
+		Name:         "image",
+		FriendlyName: "镜像",
+		Description:  "自定义Docker映像以分配给创建的服务器（可选）",
+		Type:         "text",
+	},
+	/*		{
+			Name:         "database",
+			FriendlyName: "数据库数量",
+			Description:  "客户端将能够为其服务器创建此数量的数据库（可选）",
+			Type:         "int",
+		},*/
+	/*		{
+				Name:         "start_on_completion",
+				FriendlyName: "立即启动",
+				Description:  "是否在安装完成后立即启动服务器",
+				Type:         "checkbox",
+			},
+			{
+				Name:         "oom_disabled",
+				FriendlyName: "开启 OOM Killer",
+				Description:  "是否应开启“内存不足杀手”（推荐关闭）",
+				Type:         "checkbox",
+			},*/
+	{
+		Name:           "delete_time",
+		FriendlyName:   "删除延迟（天）",
+		Description:    "商品从失效暂停到被删除的时间",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "price",
+		FriendlyName:   "价格（每三十天/人民币）",
+		Description:    "打折前的原价（任意正整数）",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "discount0",
+		FriendlyName:   "月付折扣",
+		Description:    "付款时减去的百分比(0-100的整数)",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "discount1",
+		FriendlyName:   "季付折扣",
+		Description:    "付款时减去的百分比(0-100的整数)",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
+	{
+		Name:           "discount2",
+		FriendlyName:   "年付折扣",
+		Description:    "付款时减去的百分比(0-100的整数)",
+		Type:           "number",
+		AdditionalTags: "required",
+		Required:       true,
+	},
 }
 
-type InfoDetail struct {
+type NewWareController struct {
+	web.Controller
+}
+
+type InputField struct {
 	Name           string
 	FriendlyName   string
 	Description    string
 	Type           string
 	AdditionalTags string
 	Required       bool
-}
-
-func init() {
-	wareInfo = []InfoDetail{
-		{
-			Name:           "ware_name",
-			FriendlyName:   "商品名称",
-			Description:    "显示在商品的标题",
-			Type:           "text",
-			AdditionalTags: "required",
-		},
-		{
-			Name:         "ware_description",
-			FriendlyName: "商品介绍",
-			Description:  "显示在商品的介绍",
-			Type:         "text",
-		},
-		{
-			Name:           "cpu",
-			FriendlyName:   "CPU 限制 (%)",
-			Description:    "每100个CPU限制数值表示可以占用一个CPU线程(Thread)",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "disk",
-			FriendlyName:   "磁盘限制 (MB)",
-			Description:    "服务器的磁盘限制",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "memory",
-			FriendlyName:   "内存限制 (MB)",
-			Description:    "服务器的内存限制",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "swap",
-			FriendlyName:   "SWAP内存限制 (MB)",
-			Description:    "SWAP内存，即虚拟内存，映射到磁盘中",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "io",
-			FriendlyName:   "Block IO 大小",
-			Description:    "Block IO 大小 (10-1000) (默认填500)",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "backups",
-			FriendlyName:   "备份数量",
-			Description:    "允许的备份数量 (默认填0)",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "node_id",
-			FriendlyName:   "节点ID",
-			Description:    "服务器将会在这个节点上创建",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "nest_id",
-			FriendlyName:   "Nest ID",
-			Description:    "服务器使用的Nest的ID",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "egg_id",
-			FriendlyName:   "Egg ID",
-			Description:    "服务器使用的默认Egg的ID",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		/*{
-			Name:         "dedicated_ip",
-			FriendlyName: "专用IP",
-			Description:  "为服务器设置专用IP (可选)",
-			Type:         "checkbox",
-		},*/
-		{
-			Name:         "startup",
-			FriendlyName: "启动命令",
-			Description:  "定制启动命令以分配给创建的服务器（可选）",
-			Type:         "text",
-		},
-		{
-			Name:         "image",
-			FriendlyName: "镜像",
-			Description:  "自定义Docker映像以分配给创建的服务器（可选）",
-			Type:         "text",
-		},
-		/*		{
-				Name:         "database",
-				FriendlyName: "数据库数量",
-				Description:  "客户端将能够为其服务器创建此数量的数据库（可选）",
-				Type:         "int",
-			},*/
-		/*		{
-					Name:         "start_on_completion",
-					FriendlyName: "立即启动",
-					Description:  "是否在安装完成后立即启动服务器",
-					Type:         "checkbox",
-				},
-				{
-					Name:         "oom_disabled",
-					FriendlyName: "开启 OOM Killer",
-					Description:  "是否应开启“内存不足杀手”（推荐关闭）",
-					Type:         "checkbox",
-				},*/
-		{
-			Name:           "delete_time",
-			FriendlyName:   "删除延迟（天）",
-			Description:    "商品从失效暂停到被删除的时间",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "price",
-			FriendlyName:   "价格（每三十天/人民币）",
-			Description:    "打折前的原价（任意正整数）",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "discount0",
-			FriendlyName:   "月付折扣",
-			Description:    "付款时减去的百分比(0-100的整数)",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "discount1",
-			FriendlyName:   "季付折扣",
-			Description:    "付款时减去的百分比(0-100的整数)",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-		{
-			Name:           "discount2",
-			FriendlyName:   "年付折扣",
-			Description:    "付款时减去的百分比(0-100的整数)",
-			Type:           "number",
-			AdditionalTags: "required",
-		},
-	}
-	for i, w := range wareInfo {
-		if strings.Index(w.AdditionalTags, "required") != -1 {
-			wareInfo[i].Required = true
-		} else {
-			wareInfo[i].Required = false
-		}
-	}
+	Default        interface{}
 }
 
 func (this *NewWareController) Prepare() {
 	this.TplName = "NewWare.html"
 	sess := this.StartSession()
-	if !session.SessionIslogged(sess) {
+	if !session.Logged(sess) {
 		this.Abort("401")
-	} else if !session.SessionIsAdmin(sess) {
+	} else if !session.IsAdmin(sess) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
@@ -353,7 +357,7 @@ func (this *NewWareController) Post() {
 		ware.OomDisabled = true
 		ware.StartOnCompletion = true
 		// todo: handle database number
-		DB := database.GetDatabase()
+		DB := database.Mysql()
 		for i, d := range []time.Duration{
 			30 * 24 * time.Hour,
 			90 * 24 * time.Hour,
@@ -366,7 +370,7 @@ func (this *NewWareController) Post() {
 			DB.Create(&wareTemp)
 		}
 		DelayRedirect(DelayInfo{
-			URL:    configure.WebHostName + "/new-ware",
+			URL:    configure.Viper().GetString("WebHostName") + "/new-ware",
 			Detail: "正在跳转回添加页面",
 			Title:  "添加商品成功！",
 		}, &this.Controller)

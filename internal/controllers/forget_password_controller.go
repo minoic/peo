@@ -1,11 +1,11 @@
 package controllers
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/glgf"
-	"github.com/minoic/peo/internal/cache"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/email"
@@ -13,15 +13,13 @@ import (
 )
 
 type ForgetPasswordController struct {
-	beego.Controller
+	web.Controller
 }
-
-var bm = cache.GetCache()
 
 func (this *ForgetPasswordController) Get() {
 	this.TplName = "ForgetPassword.html"
 	handleNavbar(&this.Controller)
-	if !configure.SMTPEnabled {
+	if !configure.Viper().GetBool("SMTPEnabled") {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = "服务器没有开启SMTP服务，无法使用找回密码功能，请联系网站管理员找回密码！"
 	}
@@ -39,16 +37,16 @@ func (this *ForgetPasswordController) Post() {
 	password := this.GetString("password")
 	passwordConfirm := this.GetString("passwordConfirm")
 	cpt := this.GetString("cpt")
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var user database.User
 	if !DB.Where("email = ?", userEmail).First(&user).RecordNotFound() {
-		if cpt == bm.Get("FORGET"+userEmail) {
+		if cpt == database.Redis().Get(context.Background(), "FORGET"+userEmail).String() {
 			if password == passwordConfirm {
-				conf := configure.GetConf()
-				b := md5.Sum([]byte(password + conf.String("DatabaseSalt")))
+
+				b := md5.Sum([]byte(password + configure.Viper().GetString("DatabaseSalt")))
 				DB.Model(&user).Update("Password", hex.EncodeToString(b[:]))
 				DelayRedirect(DelayInfo{
-					URL:    configure.WebHostName + "/login",
+					URL:    configure.Viper().GetString("WebHostName") + "/login",
 					Detail: "正在跳转到登录页面",
 					Title:  "修改成功 😀",
 				}, &this.Controller)
@@ -69,15 +67,15 @@ func (this *ForgetPasswordController) Post() {
 func (this *ForgetPasswordController) SendMail() {
 	this.TplName = "Loading.html"
 	userEmail := this.Ctx.Input.Param(":email")
-	DB := database.GetDatabase()
-	if DB.Where("email = ?", userEmail).First(&database.User{}).RecordNotFound() || bm.IsExist("FORGET"+userEmail) {
+	DB := database.Mysql()
+	if DB.Where("email = ?", userEmail).First(&database.User{}).RecordNotFound() || database.Redis().Get(context.Background(), "FORGET"+userEmail).Err() == nil {
 		return
 	}
 	key, err := email.SendCaptcha(userEmail)
 	if err != nil {
 		glgf.Error(err)
 	} else {
-		err := bm.Put("FORGET"+userEmail, key, 1*time.Minute)
+		err := database.Redis().Set(context.Background(), "FORGET"+userEmail, key, 1*time.Minute).Err()
 		if err != nil {
 			glgf.Error(err)
 		}

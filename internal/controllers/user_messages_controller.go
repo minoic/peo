@@ -1,19 +1,19 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/message"
 	"github.com/minoic/peo/internal/session"
 )
 
 type UserMessagesController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *UserMessagesController) Prepare() {
 	this.TplName = "UserMessages.html"
-	if !session.SessionIslogged(this.StartSession()) {
+	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
@@ -21,7 +21,7 @@ func (this *UserMessagesController) Prepare() {
 }
 
 func (this *UserMessagesController) Get() {
-	user, err := session.SessionGetUser(this.StartSession())
+	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		glgf.Error(err)
 	}

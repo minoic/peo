@@ -46,7 +46,7 @@ type Pong struct {
 }
 
 func Ping(host string) (*Pong, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	retc := make(chan *Pong)
 	errc := make(chan error)
 	go func(ctx context.Context) {

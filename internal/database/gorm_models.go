@@ -9,9 +9,9 @@ import (
 )
 
 func init() {
-	DB := GetDatabase()
+	DB := Mysql()
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
-		return configure.SqlTablePrefix + defaultTableName
+		return configure.Viper().GetString("SqlTablePrefix") + defaultTableName
 	}
 	DB.AutoMigrate(
 		&User{},

@@ -13,7 +13,7 @@ import (
 )
 
 func SellCreate(SpecID uint, userID uint) uint {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var (
 		wareSpec    database.WareSpec
 		finalPrice  uint
@@ -26,21 +26,21 @@ func SellCreate(SpecID uint, userID uint) uint {
 		finalPrice = 1
 	case 30 * 24 * time.Hour:
 		originPrice = wareSpec.PricePerMonth
-		if configure.TotalDiscount {
+		if configure.Viper().GetBool("TotalDiscount") {
 			finalPrice = uint(0.01 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
 		} else {
 			finalPrice = uint(0.01 * float32(100*wareSpec.PricePerMonth))
 		}
 	case 90 * 24 * time.Hour:
 		originPrice = wareSpec.PricePerMonth * 3
-		if configure.TotalDiscount {
+		if configure.Viper().GetBool("TotalDiscount") {
 			finalPrice = uint(0.03 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
 		} else {
 			finalPrice = uint(0.03 * float32(100*wareSpec.PricePerMonth))
 		}
 	case 365 * 24 * time.Hour:
 		originPrice = wareSpec.PricePerMonth * 12
-		if configure.TotalDiscount {
+		if configure.Viper().GetBool("TotalDiscount") {
 			finalPrice = uint(0.12 * float32(uint(100-wareSpec.Discount)*wareSpec.PricePerMonth))
 		} else {
 			finalPrice = uint(0.12 * float32(100*wareSpec.PricePerMonth))
@@ -62,7 +62,7 @@ func SellCreate(SpecID uint, userID uint) uint {
 
 func SellGet(orderID uint) (database.Order, error) {
 	var order database.Order
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if !DB.Where("id = ?", orderID).First(&order).RecordNotFound() {
 		return order, nil
 	}
@@ -70,7 +70,7 @@ func SellGet(orderID uint) (database.Order, error) {
 }
 
 func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName string) error {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	cli := pterodactyl.ClientFromConf()
 	var (
 		order database.Order
@@ -112,19 +112,22 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
 	}
 	err = cli.CreateServer(pterodactyl.Server{
-		UserId:      pteUser.Uid,
 		ExternalId:  user.Name + strconv.Itoa(int(orderID)),
 		Name:        user.Name + strconv.Itoa(int(orderID)),
 		Description: "到期时间：" + exp,
 		Suspended:   false,
 		Limits: pterodactyl.ServerLimit{
-			Memory:  spec.Memory,
-			Swap:    spec.Swap,
-			Disk:    spec.Disk,
-			IO:      spec.Io,
-			CPU:     spec.Cpu,
+			Memory: spec.Memory,
+			Swap:   spec.Swap,
+			Disk:   spec.Disk,
+			IO:     spec.Io,
+			CPU:    spec.Cpu,
+		},
+		FeatureLimits: pterodactyl.FeatureLimit{
 			Backups: spec.Backups,
 		},
+		UserId:     pteUser.Uid,
+		NodeId:     spec.Node,
 		Allocation: selectedIP,
 		NestId:     spec.Nest,
 		EggId:      spec.Egg,
@@ -176,7 +179,7 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 }
 
 func SellPaymentCheckByBalance(order *database.Order, user *database.User, selectedIP int, hostName string) error {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	cli := pterodactyl.ClientFromConf()
 	var (
 		spec database.WareSpec
@@ -203,19 +206,22 @@ func SellPaymentCheckByBalance(order *database.Order, user *database.User, selec
 		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
 	}
 	err = cli.CreateServer(pterodactyl.Server{
-		UserId:      pteUser.Uid,
 		ExternalId:  user.Name + strconv.Itoa(int(order.ID)),
 		Name:        user.Name + strconv.Itoa(int(order.ID)),
 		Description: "到期时间：" + exp,
 		Suspended:   false,
 		Limits: pterodactyl.ServerLimit{
-			Memory:  spec.Memory,
-			Swap:    spec.Swap,
-			Disk:    spec.Disk,
-			IO:      spec.Io,
-			CPU:     spec.Cpu,
+			Memory: spec.Memory,
+			Swap:   spec.Swap,
+			Disk:   spec.Disk,
+			IO:     spec.Io,
+			CPU:    spec.Cpu,
+		},
+		FeatureLimits: pterodactyl.FeatureLimit{
 			Backups: spec.Backups,
 		},
+		UserId:     pteUser.Uid,
+		NodeId:     spec.Node,
 		Allocation: selectedIP,
 		NestId:     spec.Nest,
 		EggId:      spec.Egg,

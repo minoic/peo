@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/orderform"
 	"github.com/minoic/peo/internal/session"
@@ -9,12 +9,12 @@ import (
 )
 
 type OrderCreateController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *OrderCreateController) Prepare() {
 	this.TplName = "Loading.html"
-	if !session.SessionIslogged(this.StartSession()) {
+	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
@@ -26,12 +26,12 @@ func (this *OrderCreateController) Get() {
 		this.Abort("400")
 	}
 	var spec database.WareSpec
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if DB.Where("id = ?", specID).First(&spec).RecordNotFound() {
 		this.Abort("404")
 	}
 	sess := this.StartSession()
-	user, err := session.SessionGetUser(sess)
+	user, err := session.GetUser(sess)
 	if err != nil {
 		this.Abort("401")
 		return

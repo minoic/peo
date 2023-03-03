@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"compress/flate"
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/hako/durafmt"
 	"github.com/mholt/archiver"
 	"github.com/minoic/glgf"
@@ -21,7 +21,7 @@ import (
 )
 
 type AdminConsoleController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *AdminConsoleController) Prepare() {
@@ -29,9 +29,9 @@ func (this *AdminConsoleController) Prepare() {
 	this.Data["u"] = 4
 	handleNavbar(&this.Controller)
 	sess := this.StartSession()
-	if !session.SessionIslogged(sess) {
+	if !session.Logged(sess) {
 		this.Abort("401")
-	} else if !session.SessionIsAdmin(sess) {
+	} else if !session.IsAdmin(sess) {
 		this.Abort("401")
 	}
 }
@@ -47,7 +47,7 @@ type dServer struct {
 }
 
 func (this *AdminConsoleController) Get() {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	/* delete confirm */
 	var (
 		dib           []database.DeleteConfirm
@@ -59,7 +59,7 @@ func (this *AdminConsoleController) Get() {
 		if DB.Where("id = ?", d.WareID).First(&entity).RecordNotFound() || entity.DeleteStatus != 1 {
 			DB.Delete(&d)
 		} else {
-			pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID)
+			pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID, true)
 			if err != nil {
 				glgf.Error(err)
 				continue
@@ -68,7 +68,7 @@ func (this *AdminConsoleController) Get() {
 				ServerName:            entity.ServerExternalID,
 				ServerConsoleHostName: template.URL(pterodactyl.ClientFromConf().HostName() + "/server/" + pteServer.Identifier),
 				ServerIdentifier:      pteServer.Identifier,
-				DeleteURL:             template.URL(configure.WebHostName + "/admin-console/delete-confirm/" + strconv.Itoa(int(entity.ID))),
+				DeleteURL:             template.URL(configure.Viper().GetString("WebHostName") + "/admin-console/delete-confirm/" + strconv.Itoa(int(entity.ID))),
 				ServerOwner:           entity.UserExternalID,
 				ServerEXP:             entity.ValidDate.Format("2006-01-02"),
 				ServerHostName:        entity.HostName,
@@ -87,7 +87,6 @@ func (this *AdminConsoleController) Get() {
 		specs        []database.WareSpec
 		entities     []database.WareEntity
 		users        []database.User
-		eggCount     int
 		keys         []database.WareKey
 		rkeys        []database.RechargeKey
 		orders       []database.Order
@@ -97,19 +96,6 @@ func (this *AdminConsoleController) Get() {
 	DB.Find(&specs)
 	DB.Find(&entities)
 	DB.Find(&users)
-	vised := make(map[int]bool)
-	for i := range specs {
-		if vised[specs[i].Nest] {
-			continue
-		}
-		eggs, err := pterodactyl.ClientFromConf().GetAllEggs(specs[i].Nest)
-		if err != nil {
-			glgf.Error(err)
-			continue
-		}
-		eggCount += len(eggs)
-		vised[specs[i].Nest] = true
-	}
 	DB.Find(&keys)
 	DB.Where("confirmed = ?", true).Find(&orders)
 	DB.Find(&rkeys)
@@ -122,7 +108,6 @@ func (this *AdminConsoleController) Get() {
 	this.Data["specAmount"] = len(specs)
 	this.Data["entityAmount"] = len(entities)
 	this.Data["userAmount"] = len(users)
-	this.Data["packAmount"] = eggCount
 	this.Data["keyAmount"] = len(keys) + len(rkeys)
 	this.Data["orderAmount"] = len(orders)
 	this.Data["galleryItems"] = galleryItems
@@ -172,7 +157,7 @@ func (this *AdminConsoleController) DeleteConfirm() {
 		return
 	}
 	err = pterodactyl.ConfirmDelete(uint(entityIDint))
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	DB.Delete(&database.DeleteConfirm{}, "ware_id = ?", entityIDint)
 	DB.Delete(&database.WareEntity{}, "id = ?", entityIDint)
 	if err != nil {
@@ -197,7 +182,7 @@ func (this *AdminConsoleController) NewKey() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入不合理的有效期"))
 		return
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	specID, err := this.GetUint64("spec_id")
 	/* special method */
 	if uint(specID) == ^uint(0) {
@@ -271,7 +256,7 @@ func (this *AdminConsoleController) NewKey() {
 }
 
 func (this *AdminConsoleController) GetKeys() {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var (
 		specs  []database.WareSpec
 		wg     sync.WaitGroup
@@ -364,7 +349,7 @@ func (this *AdminConsoleController) CloseWorkOrder() {
 		return
 	}
 	closeInfo := this.GetString("closeInfo")
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var order database.WorkOrder
 	if err := DB.Where("id = ?", orderID).First(&order).Error; err != nil || order.Closed {
 		glgf.Error(err)
@@ -399,7 +384,7 @@ func (this *AdminConsoleController) GalleryPass() {
 		return
 	}
 	var item database.GalleryItem
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))
@@ -426,7 +411,7 @@ func (this *AdminConsoleController) GalleryDelete() {
 		return
 	}
 	var item database.GalleryItem
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))

@@ -27,17 +27,28 @@ type Nest struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type ScriptInfo struct {
+	Privileged bool        `json:"privileged"`
+	Install    string      `json:"install"`
+	Entry      string      `json:"entry"`
+	Container  string      `json:"container"`
+	Extends    interface{} `json:"extends"`
+}
+
 type Egg struct {
-	Id          int       `json:"id"`
-	Uuid        string    `json:"uuid"`
-	Name        string    `json:"name"`
-	Nest        int       `json:"nest"`
-	Author      string    `json:"author"`
-	Description string    `json:"Description"`
-	DockerImage string    `json:"docker_image"`
-	StartUp     string    `json:"startup"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	Id           int                    `json:"id"`
+	Uuid         string                 `json:"uuid"`
+	Name         string                 `json:"name"`
+	Nest         int                    `json:"nest"`
+	Author       string                 `json:"author"`
+	Description  string                 `json:"Description"`
+	DockerImage  string                 `json:"docker_image"`
+	DockerImages map[string]string      `json:"docker_images"`
+	Config       map[string]interface{} `json:"config"`
+	Script       ScriptInfo             `json:"script"`
+	StartUp      string                 `json:"startup"`
+	CreatedAt    time.Time              `json:"created_at"`
+	UpdatedAt    time.Time              `json:"updated_at"`
 }
 
 type Node struct {
@@ -71,28 +82,44 @@ type Allocation struct {
 }
 
 type ServerLimit struct {
-	Memory  int `json:"memory"`
-	Swap    int `json:"swap"`
-	Disk    int `json:"disk"`
-	IO      int `json:"io"`
-	CPU     int `json:"cpu"`
-	Backups int `json:"backups"`
+	Memory      int  `json:"memory"`
+	Swap        int  `json:"swap"`
+	Disk        int  `json:"disk"`
+	IO          int  `json:"io"`
+	CPU         int  `json:"cpu"`
+	OOMDisabled bool `json:"oom_disabled"`
+}
+
+type FeatureLimit struct {
+	Databases   int `json:"databases"`
+	Allocations int `json:"allocations"`
+	Backups     int `json:"backups"`
+}
+
+type ContainerInfo struct {
+	StartupCommand string `json:"startup_command"`
+	Image          string `json:"image"`
+	Installed      int    `json:"installed"`
 }
 
 type Server struct {
-	Id          int         `json:"id"`
-	ExternalId  string      `json:"external_id"`
-	Uuid        string      `json:"uuid"`
-	Identifier  string      `json:"identifier"`
-	Name        string      `json:"name"`
-	Description string      `json:"Description"`
-	Suspended   bool        `json:"suspended"`
-	Limits      ServerLimit `json:"limits"`
-	UserId      int         `json:"user"`
-	NodeId      int         `json:"node"`
-	Allocation  int         `json:"allocation"`
-	NestId      int         `json:"nest"`
-	EggId       int         `json:"egg"`
+	Id            int           `json:"id"`
+	ExternalId    string        `json:"external_id"`
+	Uuid          string        `json:"uuid"`
+	Identifier    string        `json:"identifier"`
+	Name          string        `json:"name"`
+	Description   string        `json:"Description"`
+	Suspended     bool          `json:"suspended"`
+	Limits        ServerLimit   `json:"limits"`
+	FeatureLimits FeatureLimit  `json:"feature_limits"`
+	UserId        int           `json:"user"`
+	NodeId        int           `json:"node"`
+	Allocation    int           `json:"allocation"`
+	NestId        int           `json:"nest"`
+	EggId         int           `json:"egg"`
+	Container     ContainerInfo `json:"container"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	CreatedAt     time.Time     `json:"created_at"`
 }
 
 type PostPteUser struct {
@@ -107,21 +134,20 @@ type PostPteUser struct {
 }
 
 type PostUpdateDetails struct {
-	UserID      int
-	ServerName  string
-	Description string
-	ExternalID  string
+	UserID      int    `json:"user_id"`
+	ServerName  string `json:"server_name"`
+	Description string `json:"description"`
+	ExternalID  string `json:"external_id"`
 }
 
 type PostUpdateBuild struct {
-	Allocation  int
-	CPU         int
-	Memory      int
-	Swap        int
-	IO          int
-	Disk        int
-	OomDisabled bool
-	Database    int
-	Allocations int
-	Backups     int
+	Allocation  int  `json:"allocation"`
+	CPU         int  `json:"cpu"`
+	Memory      int  `json:"memory"`
+	Swap        int  `json:"swap"`
+	IO          int  `json:"io"`
+	Disk        int  `json:"disk"`
+	OomDisabled bool `json:"oom_disabled"`
+	Database    int  `json:"database"`
+	Allocations int  `json:"allocations"`
 }

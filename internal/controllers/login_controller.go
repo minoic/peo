@@ -3,7 +3,7 @@ package controllers
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -11,7 +11,7 @@ import (
 )
 
 type LoginController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *LoginController) Get() {
@@ -27,7 +27,7 @@ func (this *LoginController) Post() {
 		this.Data["hasErrorText"] = "XSRF 验证失败！"
 		return
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
 	loginRemember, err := this.GetBool("loginRemember", false)
@@ -35,15 +35,14 @@ func (this *LoginController) Post() {
 		glgf.Error(err)
 	}
 	var user database.User
-	conf := configure.GetConf()
 	if !DB.Where("email = ?", loginEOU).Or("name = ?", loginEOU).First(&user).RecordNotFound() {
-		b := md5.Sum([]byte(loginPass + conf.String("DatabaseSalt")))
+		b := md5.Sum([]byte(loginPass + configure.Viper().GetString("DatabaseSalt")))
 		if hex.EncodeToString(b[:]) == user.Password {
 			this.SetSession("LST", session.GeneToken(user.Name, loginRemember))
 			this.SetSession("ID", user.ID)
 			this.SetSession("UN", user.Name)
 			DelayRedirect(DelayInfo{
-				URL:    configure.WebHostName,
+				URL:    configure.Viper().GetString("WebHostName"),
 				Detail: "正在跳转到主页",
 				Title:  "您已成功登录！",
 			}, &this.Controller)

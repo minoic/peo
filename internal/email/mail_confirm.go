@@ -9,7 +9,7 @@ import (
 )
 
 func ConfirmKey(key string) (database.User, bool) {
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var keyInfo database.RegConfirmKey
 	if !DB.Where("KeyString = ?", key).First(&keyInfo).RecordNotFound() {
 		if keyInfo.ValidTime.After(time.Now()) {
@@ -38,7 +38,7 @@ func ConfirmRegister(user database.User) error {
 		UserID:    user.ID,
 		ValidTime: time.Now().Add(30 * time.Minute),
 	}
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	DB.Create(&key)
 	sendConfirmMail(key)
 	return nil

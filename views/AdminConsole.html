@@ -11,9 +11,9 @@
 <div id="main-container" class="no-margin">
     <div class="padding-lg">
         <div class="row">
-            <div class="col-lg-6 col-md-6">
+            <div class="col-xl-6 col-lg-6 col-md-12">
                 <div class="row fadeInDown animation-delay1">
-                    <div class="col-md-4 col-sm-4 col-xs-6">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
                         <a href="/new-ware">
                             <div class="panel panel-default panel-stat2 bg-warning" data-toggle="tooltip"
                                  data-placement="top" title="" data-original-title="点击添加商品">
@@ -23,13 +23,13 @@
 								</span>
                                     <div class="pull-right text-right">
                                         <div class="value">{{.specAmount}}</div>
-                                        <div class="title">商品</div>
+                                        <div class="title">商品（点击添加）</div>
                                     </div>
                                 </div>
                             </div><!-- /panel -->
                         </a>
                     </div>
-                    <div class="col-md-4 col-sm-4 col-xs-6">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
                         <a>
                             <div class="panel panel-default panel-stat2 bg-primary">
                                 <div class="panel-body">
@@ -44,7 +44,7 @@
                             </div><!-- /panel -->
                         </a>
                     </div>
-                    <div class="col-md-4 col-sm-4 col-xs-6">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
                         <div class="panel panel-default panel-stat2 bg-dark">
                             <div class="panel-body">
 								<span class="stat-icon">
@@ -57,20 +57,22 @@
                             </div>
                         </div><!-- /panel -->
                     </div>
-                    <div class="col-md-4 col-sm-4 col-xs-6">
-                            <div class="panel panel-default panel-stat2" title="" >
-                                <div class="panel-body">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                            <a href="/admin-settings">
+                                <div class="panel panel-default panel-stat2" title="" >
+                                    <div class="panel-body">
 								<span class="stat-icon">
 									<i class="fa fa-briefcase fa-lg"></i>
 								</span>
-                                    <div class="pull-right text-right">
-                                        <div class="value">{{.packAmount}}</div>
-                                        <div class="title">整合包</div>
+                                        <div class="pull-right text-right">
+                                            <div class="value">设置</div>
+                                            <div class="title">点击跳转</div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div><!-- /panel -->
+                                </div><!-- /panel -->
+                            </a>
                     </div>
-                    <div class="col-md-4 col-sm-4 col-xs-6">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
                         <a href="#formModal" data-toggle="modal">
                             <div class="panel panel-default panel-stat2 bg-success" data-toggle="tooltip"
                                  data-placement="top" title="" data-original-title="点击添加 KEY">
@@ -80,13 +82,13 @@
 								</span>
                                     <div class="pull-right text-right">
                                         <div class="value">{{.keyAmount}}</div>
-                                        <div class="title">有效KEY</div>
+                                        <div class="title">有效KEY（点击添加）</div>
                                     </div>
                                 </div>
                             </div><!-- /panel -->
                         </a>
                     </div>
-                    <div class="col-md-4 col-sm-4 col-xs-6">
+                    <div class="col-md-4 col-sm-6 col-xs-12">
                         <div class="panel panel-default panel-stat2 bg-info">
                             <div class="panel-body">
 								<span class="stat-icon">

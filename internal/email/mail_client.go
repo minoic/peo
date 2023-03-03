@@ -8,26 +8,23 @@ import (
 )
 
 func getSTMPClient() *mail.SMTPServer {
-	conf := configure.GetConf()
-	temp := conf.String("SMTPEncryption")
+
+	temp := configure.Viper().GetString("SMTPEncryption")
 	encryption := mail.EncryptionTLS
 	if temp == "SSL" {
 		encryption = mail.EncryptionSSL
 	} else if temp != "TLS" && temp != "SSL" {
 		glgf.Error("wrong SMTP encryption")
 	}
-	port, err := conf.Int("SMTPPort")
-	if err != nil {
-		glgf.Error("cant get SMTPPort")
-	}
+	port := configure.Viper().GetInt("SMTPPort")
 	return &mail.SMTPServer{
 		// Authentication: mail.AuthPlain,
 		Encryption:     encryption,
-		Username:       conf.String("SMTPUsername"),
-		Password:       conf.String("SMTPUserPassword"),
+		Username:       configure.Viper().GetString("SMTPUsername"),
+		Password:       configure.Viper().GetString("SMTPUserPassword"),
 		ConnectTimeout: 10 * time.Second,
 		SendTimeout:    20 * time.Second,
-		Host:           conf.String("SMTPHost"),
+		Host:           configure.Viper().GetString("SMTPHost"),
 		Port:           port,
 		KeepAlive:      false,
 	}

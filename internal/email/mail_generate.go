@@ -10,9 +10,8 @@ func getProd() hermes.Hermes {
 	return hermes.Hermes{
 		Theme: new(hermes.Flat),
 		Product: hermes.Product{
-			Name:        configure.WebApplicationName + " Mail",
-			Link:        configure.WebHostName,
-			Logo:        configure.GetConf().String("SMTPLogo"),
+			Name:        configure.Viper().GetString("WebApplicationName") + " Mail",
+			Link:        configure.Viper().GetString("WebHostName"),
 			Copyright:   "Copyright 2021 MinoIC. All rights reserved.",
 			TroubleText: "如果点击链接无效，请复制下列链接并在浏览器中打开：",
 		},
@@ -25,7 +24,7 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 		Body: hermes.Body{
 			Name: userName,
 			Intros: []string{
-				"欢迎来到 " + configure.WebApplicationName,
+				"欢迎来到 " + configure.Viper().GetString("WebApplicationName"),
 			},
 			Actions: []hermes.Action{
 				{
@@ -33,7 +32,7 @@ func genRegConfirmMail(userName string, key string) (string, string) {
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "点击确认注册",
-						Link:  configure.WebHostName + "/reg/confirm/" + key,
+						Link:  configure.Viper().GetString("WebHostName") + "/reg/confirm/" + key,
 					},
 				},
 			},
@@ -58,7 +57,7 @@ func genForgetPasswordEmail(key string) (string, string) {
 	email := hermes.Email{
 		Body: hermes.Body{
 			Intros: []string{
-				configure.WebApplicationName + " 账户管理",
+				configure.Viper().GetString("WebApplicationName") + " 账户管理",
 				"您正在修改密码，验证码为：" + key,
 			},
 			Outros: []string{

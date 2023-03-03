@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <title>{{.webApplicationName}} 管理员设置页面</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {{template "tpls/perfectCSS.html" .}}
+</head>
+<body>
+{{template "tpls/navbar.html" .}}
+<div id="main-container" class="no-margin">
+  <div class="padding-lg">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="panel panel-default">
+          <div class="panel-heading"><h4><strong>修改设置</strong></h4>
+            <span>
+              编译时间：{{.BuildTime}}<br>
+              Go版本：{{.GoVersion}}<br>
+              Mysql连接：{{.MysqlStats}}<br>
+              Redis连接：{{.RedisStats}}
+            </span>
+          </div>
+          <div class="panel-body">
+            <form role="form" method="post" id="new-ware">
+              {{.xsrfData}}
+              {{range .options}}
+              {{template "tpls/formgroup.html" .}}
+              {{end}}
+            </form>
+            <hr/>
+            {{if .hasError}}
+            <div class="alert alert-danger">
+              <strong>修改失败！</strong> {{.hasErrorText}}
+            </div>
+            {{end}}
+            <button type="submit" form="new-ware" class="btn btn-success btn-sm">提交</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{{template "tpls/perfectJS.html" .}}
+</body>
+</html>

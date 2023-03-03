@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -14,19 +14,19 @@ import (
 )
 
 type OrderInfoController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *OrderInfoController) Prepare() {
 	this.TplName = "Order.html"
 	this.Data["u"] = 0
-	if !session.SessionIslogged(this.StartSession()) {
+	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
 	orderIDString := this.Ctx.Input.Param(":orderID")
 	orderID, _ := strconv.Atoi(orderIDString)
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	var (
 		spec  database.WareSpec
 		order database.Order
@@ -53,7 +53,7 @@ func (this *OrderInfoController) Prepare() {
 		this.Abort("404")
 	}
 	sess := this.StartSession()
-	user, err := session.SessionGetUser(sess)
+	user, err := session.GetUser(sess)
 	if err != nil || user == (database.User{}) {
 		this.Abort("401")
 		return
@@ -67,7 +67,7 @@ func (this *OrderInfoController) Prepare() {
 	this.Data["pricePerMonth"] = spec.PricePerMonth
 	this.Data["orderID"] = order.ID
 	this.Data["orderCreateTime"] = order.CreatedAt.Format("2006-01-02 15:04:05")
-	this.Data["adminAddress"] = configure.AdminAddress
+	this.Data["adminAddress"] = configure.Viper().GetString("WebAdminAddress")
 	switch spec.ValidDuration {
 	case 3 * 24 * time.Hour:
 		this.Data["typeText"] = "试用"
@@ -138,7 +138,7 @@ func (this *OrderInfoController) PayByBalance() {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
 		return
 	}
-	user, err := session.SessionGetUser(this.StartSession())
+	user, err := session.GetUser(this.StartSession())
 	if err != nil || user == (database.User{}) {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
@@ -149,7 +149,7 @@ func (this *OrderInfoController) PayByBalance() {
 		return
 	}
 	var order database.Order
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	if err = DB.Where("id = ?", orderID).First(&order).Error; err != nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取订单"))
 		return

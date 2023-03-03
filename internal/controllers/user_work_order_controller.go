@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"context"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/database"
@@ -12,11 +13,11 @@ import (
 )
 
 type UserWorkOrderController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (this *UserWorkOrderController) Prepare() {
-	if !session.SessionIslogged(this.StartSession()) {
+	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
@@ -31,17 +32,17 @@ func (this *UserWorkOrderController) Get() {
 }
 
 func (this *UserWorkOrderController) NewWorkOrder() {
-	user, err := session.SessionGetUser(this.StartSession())
+	user, err := session.GetUser(this.StartSession())
 	if err != nil || user == (database.User{}) {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
 		return
 	}
-	if bm.IsExist("WORKORDER" + user.Name) {
+	if database.Redis().Get(context.Background(), "WORKORDER"+user.Name).Err() == nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 10 秒钟只能发送一条工单"))
 		return
 	}
-	_ = bm.Put("WORKORDER"+user.Name, 0, 10*time.Second)
+	database.Redis().Set(context.Background(), "WORKORDER"+user.Name, 0, 10*time.Second)
 	title := this.GetString("title")
 	text := this.GetString("text")
 	if title == "" || text == "" {
@@ -49,7 +50,7 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 		return
 	}
 	/* valid post */
-	DB := database.GetDatabase()
+	DB := database.Mysql()
 	wo := database.WorkOrder{
 		Model:      gorm.Model{},
 		UserID:     user.ID,
