@@ -6,6 +6,7 @@ import (
 	"github.com/beego/beego/v2/client/cache"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/captcha"
+	"github.com/gofrs/uuid/v5"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
