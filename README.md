@@ -48,8 +48,8 @@
 
 #### Docker（推荐）
 
-1.
-安装 [Docker](https://www.runoob.com/docker/ubuntu-docker-install.html)、[Docker Compose](https://www.runoob.com/docker/docker-compose.html)。
+1. 安装 [Docker](https://www.runoob.com/docker/ubuntu-docker-install.html)、
+   [Docker Compose](https://www.runoob.com/docker/docker-compose.html)。
 2. 下载 [docker-compose.yml](./docker-compose.yml) 至任意文件夹。
 3. 在该文件夹内打开终端，运行
 
