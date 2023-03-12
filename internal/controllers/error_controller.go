@@ -19,7 +19,7 @@ func (this *ErrorController) Error400() {
 
 func (this *ErrorController) Error401() {
 	DelayRedirect(DelayInfo{
-		URL:    "/",
+		URL:    "/login",
 		Detail: "未经授权，请求要求验证身份",
 		Title:  "401 Unauthorized",
 	}, &this.Controller, 401)

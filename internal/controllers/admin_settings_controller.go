@@ -36,7 +36,6 @@ func (this *AdminSettingsController) Prepare() {
 		this.Data["MysqlStats"] = "连接成功"
 	} else {
 		this.Data["MysqlStats"] = "连接失败：" + err.Error()
-
 	}
 	if err := database.Redis().Ping(context.Background()).Err(); err == nil {
 		this.Data["RedisStats"] = "连接成功"

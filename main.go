@@ -7,8 +7,6 @@ import (
 	"github.com/minoic/peo/internal/cron"
 )
 
-const Version = "v0.2.0"
-
 var (
 	BUILD_TIME string
 	GO_VERSION string

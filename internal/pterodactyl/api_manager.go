@@ -2,9 +2,9 @@ package pterodactyl
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"io"
 	"net/http"
 	"strconv"
@@ -28,8 +28,6 @@ func NewClient(url string, token string) *Client {
 func (this *Client) HostName() string {
 	return this.url
 }
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func (this *Client) api(data interface{}, endPoint string, method string) ([]byte, error) {
 	/* Send requests to pterodactyl panel */
@@ -178,6 +176,26 @@ func (this *Client) GetAllEggs(nestID int) ([]Egg, error) {
 	dec := struct {
 		Data []struct {
 			Attributes Egg `json:"attributes"`
+		} `json:"data"`
+	}{}
+	if err := json.Unmarshal(body, &dec); err == nil {
+		for _, v := range dec.Data {
+			ret = append(ret, v.Attributes)
+		}
+		return ret, err
+	}
+	return nil, err
+}
+
+func (this *Client) GetAllNodes() ([]Node, error) {
+	body, err := this.api("", "nodes", "GET")
+	if err != nil {
+		return nil, err
+	}
+	var ret []Node
+	dec := struct {
+		Data []struct {
+			Attributes Node `json:"attributes"`
 		} `json:"data"`
 	}{}
 	if err := json.Unmarshal(body, &dec); err == nil {

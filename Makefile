@@ -1,8 +1,8 @@
 NAME=peo
-BINDIR=dist
-VERSION=$(shell cat ./cmd/main.go | grep 'Version =' | sed 's/.*\"\(.*\)\".*/\1/g')
-GOBUILD=CGO_ENABLED=0 go build --ldflags="-s -w" -v -a
-GOFILES=./cmd/*.go
+BINDIR=build
+VERSION=v0.2.0
+GOBUILD=CGO_ENABLED=0 go build --ldflags="-s -w -X 'main.GO_VERSION=$(go version)' -X 'main.BUILD_TIME=`TZ=Asia/Shanghai date "+%F %T"`'" -v -a
+GOFILES=main.go
 PACKFILE=views static conf README.md
 
 PLATFORM_LIST = \

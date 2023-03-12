@@ -8,6 +8,7 @@ import (
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/message"
 	"github.com/minoic/peo/internal/pterodactyl"
+	"math/rand"
 	"strconv"
 	"time"
 )
@@ -111,6 +112,13 @@ func SellPaymentCheck(orderID uint, keyString string, selectedIP int, hostName s
 	case 365 * 24 * time.Hour:
 		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
 	}
+	if spec.Node == 0 {
+		nodes, err := pterodactyl.ClientFromConf().GetAllNodes()
+		if err != nil {
+			return err
+		}
+		spec.Node = nodes[rand.Intn(len(nodes))].Id
+	}
 	err = cli.CreateServer(pterodactyl.Server{
 		ExternalId:  user.Name + strconv.Itoa(int(orderID)),
 		Name:        user.Name + strconv.Itoa(int(orderID)),
@@ -204,6 +212,13 @@ func SellPaymentCheckByBalance(order *database.Order, user *database.User, selec
 		exp = time.Now().AddDate(0, 3, 0).Format("2006-01-02")
 	case 365 * 24 * time.Hour:
 		exp = time.Now().AddDate(1, 0, 0).Format("2006-01-02")
+	}
+	if spec.Node == 0 {
+		nodes, err := pterodactyl.ClientFromConf().GetAllNodes()
+		if err != nil {
+			return err
+		}
+		spec.Node = nodes[rand.Intn(len(nodes))].Id
 	}
 	err = cli.CreateServer(pterodactyl.Server{
 		ExternalId:  user.Name + strconv.Itoa(int(order.ID)),

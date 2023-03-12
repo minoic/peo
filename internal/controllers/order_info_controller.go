@@ -34,21 +34,6 @@ func (this *OrderInfoController) Prepare() {
 	if DB.Where("id = ?", orderID).First(&order).RecordNotFound() {
 		this.Abort("404")
 	}
-	/*	order=database.Order{
-		Model:        gorm.Model{
-			ID:        333,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Time{},
-			DeletedAt: nil,
-		},
-		SpecID:       2,
-		UserID:       1,
-		AllocationID: 12,
-		OriginPrice:  100,
-		FinalPrice:   80,
-		Paid:         false,
-		Confirmed:    false,
-	}*/
 	if DB.Where("id = ?", order.SpecID).First(&spec).RecordNotFound() {
 		this.Abort("404")
 	}

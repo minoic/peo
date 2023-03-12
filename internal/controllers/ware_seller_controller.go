@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -36,7 +37,6 @@ var (
 )
 
 func RefreshWareInfo() {
-	st := time.Now()
 	wares1 = []ware{}
 	wares2 = []ware{}
 	wares3 = []ware{}
@@ -44,12 +44,11 @@ func RefreshWareInfo() {
 		waresInDB []database.WareSpec
 		emailText string
 	)
-
 	DB := database.Mysql()
 	if configure.Viper().GetBool("SMTPEnabled") {
 		emailText = "邮件提醒！"
 	}
-	if DB.Find(&waresInDB).Error == nil {
+	if err := DB.Find(&waresInDB).Error; err == nil {
 		for _, w := range waresInDB {
 			nest, err := pterodactyl.ClientFromConf().GetNest(w.Nest)
 			if err != nil {
@@ -113,7 +112,7 @@ func RefreshWareInfo() {
 				wares3 = append(wares3, nw)
 			}
 		}
-	} else {
+	} else if err == gorm.ErrRecordNotFound {
 		wares1 = append(wares1, ware{
 			WareName:          "没有商品",
 			WarePricePerMonth: "9999",
@@ -123,8 +122,17 @@ func RefreshWareInfo() {
 			},
 			},
 		})
+	} else {
+		wares1 = append(wares1, ware{
+			WareName:          "数据库错误",
+			WarePricePerMonth: "9999",
+			Intros: []intro{{
+				First:  "去修复一下数据库吧",
+				Second: "这里就会显示",
+			},
+			},
+		})
 	}
-	glgf.Info("Refreshed Ware Info - ", time.Now().Sub(st).String())
 }
 
 func (this *WareSellerController) Get() {
@@ -139,16 +147,3 @@ func (this *WareSellerController) Get() {
 	this.Data["wares2"] = wares2
 	this.Data["wares3"] = wares3
 }
-
-/*
-wareTitle/wareDetail/webApplicationName string
-bottomLink/bottomText string
-wares []ware
-ware struct{
-	wareName string
-	warePricePerMonth float
-	warePricePerHour float
-	intros []item
-}
-
-*/

@@ -7,7 +7,6 @@ require (
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/hako/durafmt v0.0.0-20191009132224-3f39dc1ed9f4
 	github.com/jinzhu/gorm v1.9.16
-	github.com/json-iterator/go v1.1.12
 	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/minoic/glgf v0.0.5
@@ -43,6 +42,7 @@ require (
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kpango/fastime v1.0.16 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-runewidth v0.0.3 // indirect
