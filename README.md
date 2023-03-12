@@ -1,6 +1,6 @@
 ## peo
 
-[![](https://img.shields.io/docker/pulls/minoic/peo)](https://hub.docker.com/r/minoic/peo) [![](https://img.shields.io/github/stars/minoic/peo?style=social)](https://github.com/minoic/peo) [![](https://img.shields.io/github/release-date/minoic/peo)](https://github.com/minoic/peo/releases)
+[![](https://img.shields.io/docker/v/minoic/peo?label=Docker%20Image)](https://hub.docker.com/r/minoic/peo) [![](https://img.shields.io/github/stars/minoic/peo?style=social)](https://github.com/minoic/peo) [![](https://img.shields.io/github/release-date/minoic/peo)](https://github.com/minoic/peo/releases)
 
 🎮用于建立翼龙面板的自动售卖系统和附加控制系统，自动化你的翼龙面板出售。
 
