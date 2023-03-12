@@ -18,7 +18,9 @@ services:
     restart: always
     hostname: redis
     volumes:
-      - ./dist/redis/redis.conf:/etc/redis/redis.conf
+# 若要使用持久化redis持久化(append only)功能，则下载 https://github.com/minoic/peo/blob/master/conf/redis.conf
+# 到文件夹 ./dist/redis 并将下一行解除注释
+#      - ./dist/redis/redis.conf:/etc/redis/redis.conf
       - ./dist/redis/data:/data
 
   peo:
@@ -30,7 +32,6 @@ services:
     hostname: peo
     volumes:
       - ./dist/conf:/conf
-      - ./dist/log:/log
     ports:
       - "8080:8080"
-      - "8088:8088"
+#      - "8088:8088" # 管理员页面，若要开启则解除注释

@@ -12,7 +12,6 @@ import (
 	"github.com/minoic/peo/internal/email"
 	"github.com/minoic/peo/internal/message"
 	"github.com/minoic/peo/internal/pterodactyl"
-	uuid "github.com/satori/go.uuid"
 	"strings"
 )
 
@@ -82,8 +81,7 @@ func (this *RegController) Post() {
 		this.Data["hasErrorText"] = "您输入的邮箱已被占用！"
 		return
 	} else {
-		newUuid := uuid.NewV4()
-
+		newUuid, _ := uuid.NewV4()
 		b := md5.Sum([]byte(registerPassword + configure.Viper().GetString("DatabaseSalt")))
 		newUser := database.User{
 			Name:           registerName,
@@ -107,13 +105,13 @@ func (this *RegController) Post() {
 			if err := email.ConfirmRegister(newUser); err != nil {
 				glgf.Error(err)
 				DelayRedirect(DelayInfo{
-					URL:    configure.Viper().GetString("WebHostName") + "/reg",
+					URL:    "/reg",
 					Detail: "即将跳转到注册页面",
 					Title:  "邮件发送失败，请联系网站管理员！",
 				}, &this.Controller)
 			} else {
 				DelayRedirect(DelayInfo{
-					URL:    configure.Viper().GetString("WebHostName") + "/login",
+					URL:    "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "请前往您的邮箱进行验证！",
 				}, &this.Controller)
@@ -133,14 +131,14 @@ func (this *RegController) Post() {
 				glgf.Error("cant create pterodactyl user for " + newUser.Name)
 				message.Send("ADMIN", newUser.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
 				DelayRedirect(DelayInfo{
-					URL:    configure.Viper().GetString("WebHostName") + "/login",
+					URL:    "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册成功，但开户失败，请手动开通！",
 				}, &this.Controller)
 			} else {
 				DB.Model(&newUser).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
-					URL:    configure.Viper().GetString("WebHostName") + "/login",
+					URL:    "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册成功！",
 				}, &this.Controller)
@@ -171,7 +169,7 @@ func (this *RegController) MailConfirm() {
 				glgf.Error("cant create pterodactyl user for " + user.Name)
 				message.Send("ADMIN", user.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
 				DelayRedirect(DelayInfo{
-					URL:    configure.Viper().GetString("WebHostName") + "/login",
+					URL:    "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册验证成功，但开户失败，请联系网站管理员！",
 				}, &this.Controller)
@@ -181,21 +179,21 @@ func (this *RegController) MailConfirm() {
 					"龙面板的账户名为您的邮箱，密码为您的用户名，登录后请及时修改密码！")
 				DB.Model(&user).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
-					URL:    configure.Viper().GetString("WebHostName") + "/login",
+					URL:    "/login",
 					Detail: "即将跳转到登陆页面",
 					Title:  "注册验证成功！",
 				}, &this.Controller)
 			}
 		} else {
 			DelayRedirect(DelayInfo{
-				URL:    configure.Viper().GetString("WebHostName") + "/login",
+				URL:    "/login",
 				Detail: "即将跳转到登陆页面",
 				Title:  "注册验证成功！",
 			}, &this.Controller)
 		}
 	} else {
 		DelayRedirect(DelayInfo{
-			URL:    configure.Viper().GetString("WebHostName") + "/login",
+			URL:    "/login",
 			Detail: "即将跳转到登陆页面",
 			Title:  "注册验证失败！请重新验证！",
 		}, &this.Controller)

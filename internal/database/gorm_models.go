@@ -1,9 +1,9 @@
 package database
 
 import (
+	"github.com/gofrs/uuid/v5"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/peo/internal/configure"
-	uuid "github.com/satori/go.uuid"
 	"html/template"
 	"time"
 )

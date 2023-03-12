@@ -1,8 +1,4 @@
 ############################
-#Please rename this file to settings.config after edited it
-############################
-
-############################
 #Basic Settings
 ############################
 # hostname to visit your web site
@@ -25,14 +21,13 @@ PterodactylToken = ""
 ############################
 #Database Settings
 ############################
-#Fill the account info if database = "MYSQL"
 DatabaseSalt = "PEOSALT"
 MYSQLHost = "mysql:3306"
 MYSQLUsername = "root"
 MYSQLUserPassword = "PEOMYSQLPASSWORD"
 MYSQLDatabaseName = "peo"
-RedisHost = "redis:6379"
 SqlTablePrefix = "pe_"
+RedisHost = "redis:6379"
 
 ############################
 #SMTP settings

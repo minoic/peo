@@ -53,7 +53,7 @@ func (this *UserSettingsController) Prepare() {
 		this.Data["pteUserEmail"] = "请先创建用户"
 		this.Data["pteUser2FA"] = false
 		this.Data["pteUserCreatedAt"] = "请先创建用户"
-		this.Data["pteUserCreateURL"] = configure.Viper().GetString("WebHostName") + "/user-settings/create-pterodactyl-user"
+		this.Data["pteUserCreateURL"] = "/user-settings/create-pterodactyl-user"
 	}
 	this.Data["pteUserPassword"] = "默认密码为注册时输入的用户名"
 }

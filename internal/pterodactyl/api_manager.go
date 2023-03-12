@@ -75,9 +75,10 @@ func (this *Client) api(data interface{}, endPoint string, method string) ([]byt
 	return body, nil
 }
 
-func (this *Client) TestConnection() {
-	test, _ := this.api("", "nodes", "GET")
+func (this *Client) TestConnection() error {
+	test, err := this.api("", "nodes", "GET")
 	fmt.Print("PterodactylAPI returns: ", test)
+	return err
 }
 
 func (this *Client) GetUser(ID interface{}, isExternal bool) (*User, error) {

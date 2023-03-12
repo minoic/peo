@@ -6,6 +6,7 @@ import (
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
+	"github.com/minoic/peo/internal/pterodactyl"
 	"github.com/minoic/peo/internal/session"
 	"github.com/spf13/cast"
 )
@@ -41,6 +42,11 @@ func (this *AdminSettingsController) Prepare() {
 		this.Data["RedisStats"] = "连接成功"
 	} else {
 		this.Data["RedisStats"] = "连接失败：" + err.Error()
+	}
+	if err := pterodactyl.ClientFromConf().TestConnection(); err == nil {
+		this.Data["PterodactylStats"] = "连接成功"
+	} else {
+		this.Data["PterodactylStats"] = "连接失败：" + err.Error()
 	}
 	this.Data["options"] = this.getSettings()
 }

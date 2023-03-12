@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/beego/beego/v2/server/web"
-	"github.com/minoic/peo/internal/configure"
 	"strconv"
 )
 
@@ -33,5 +32,5 @@ func DelayRedirect(info DelayInfo, c *web.Controller, code ...int) {
 }
 
 func DelayRedirectGetURL(info DelayInfo) string {
-	return configure.Viper().GetString("WebHostName") + "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
+	return "/delay/?URL=" + info.URL + "&title=" + info.Title + "&detail=" + info.Detail
 }

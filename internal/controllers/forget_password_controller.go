@@ -46,7 +46,7 @@ func (this *ForgetPasswordController) Post() {
 				b := md5.Sum([]byte(password + configure.Viper().GetString("DatabaseSalt")))
 				DB.Model(&user).Update("Password", hex.EncodeToString(b[:]))
 				DelayRedirect(DelayInfo{
-					URL:    configure.Viper().GetString("WebHostName") + "/login",
+					URL:    "/login",
 					Detail: "正在跳转到登录页面",
 					Title:  "修改成功 😀",
 				}, &this.Controller)

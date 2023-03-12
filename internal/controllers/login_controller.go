@@ -42,7 +42,7 @@ func (this *LoginController) Post() {
 			this.SetSession("ID", user.ID)
 			this.SetSession("UN", user.Name)
 			DelayRedirect(DelayInfo{
-				URL:    configure.Viper().GetString("WebHostName"),
+				URL:    "/",
 				Detail: "正在跳转到主页",
 				Title:  "您已成功登录！",
 			}, &this.Controller)

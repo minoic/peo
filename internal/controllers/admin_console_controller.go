@@ -6,7 +6,6 @@ import (
 	"github.com/hako/durafmt"
 	"github.com/mholt/archiver"
 	"github.com/minoic/glgf"
-	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/cryptoo"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/email"
@@ -68,7 +67,7 @@ func (this *AdminConsoleController) Get() {
 				ServerName:            entity.ServerExternalID,
 				ServerConsoleHostName: template.URL(pterodactyl.ClientFromConf().HostName() + "/server/" + pteServer.Identifier),
 				ServerIdentifier:      pteServer.Identifier,
-				DeleteURL:             template.URL(configure.Viper().GetString("WebHostName") + "/admin-console/delete-confirm/" + strconv.Itoa(int(entity.ID))),
+				DeleteURL:             template.URL("/admin-console/delete-confirm/" + strconv.Itoa(int(entity.ID))),
 				ServerOwner:           entity.UserExternalID,
 				ServerEXP:             entity.ValidDate.Format("2006-01-02"),
 				ServerHostName:        entity.HostName,

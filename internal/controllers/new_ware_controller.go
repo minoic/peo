@@ -4,7 +4,6 @@ import (
 	"github.com/beego/beego/v2/server/web"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
-	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/pterodactyl"
 	"github.com/minoic/peo/internal/session"
@@ -370,7 +369,7 @@ func (this *NewWareController) Post() {
 			DB.Create(&wareTemp)
 		}
 		DelayRedirect(DelayInfo{
-			URL:    configure.Viper().GetString("WebHostName") + "/new-ware",
+			URL:    "/new-ware",
 			Detail: "正在跳转回添加页面",
 			Title:  "添加商品成功！",
 		}, &this.Controller)
