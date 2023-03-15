@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/minoic/glgf"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"strconv"
+	"strings"
 )
 
 // Client Pterodactyl API client
@@ -20,8 +23,7 @@ type Client struct {
 
 // NewClient initial a new client instance
 func NewClient(url string, token string) *Client {
-	for stringLen := len(url); url[stringLen-1] == '/'; stringLen -= 1 {
-	}
+	strings.TrimRight(url, "/")
 	return &Client{url: url, token: token}
 }
 
@@ -37,18 +39,18 @@ func (this *Client) api(data interface{}, endPoint string, method string) ([]byt
 		req *http.Request
 	)
 	if method == "POST" || method == "PATCH" {
-		ujson, err := json.Marshal(data)
+		var buf bytes.Buffer
+		err := json.NewEncoder(&buf).Encode(data)
 		if err != nil {
 			fmt.Print("cant marshal data:" + err.Error())
 		}
-		ubody := bytes.NewReader(ujson)
-		req, err = http.NewRequest(method, url, ubody)
+		req, err = http.NewRequest(method, url, &buf)
 		if err != nil {
 			return nil, err
 		}
 		req.Header.Set("Authorization", "Bearer "+this.token)
 		req.Header.Set("Accept", "Application/vnd.pterodactyl.v1+json")
-		req.ContentLength = int64(len(ujson))
+		req.ContentLength = int64(buf.Len())
 		req.Header.Set("Content-Type", "application/json")
 	} else {
 		req, err = http.NewRequest(method, url, nil)
@@ -73,9 +75,52 @@ func (this *Client) api(data interface{}, endPoint string, method string) ([]byt
 	return body, nil
 }
 
+func (this *Client) Login(Email string, Password string) (string, error) {
+	jar, _ := cookiejar.New(nil)
+	cli := http.Client{Jar: jar}
+	get, err := cli.Get(this.url + "/sanctum/csrf-cookie")
+	if err != nil {
+		return "", err
+	}
+	buf := bytes.Buffer{}
+	err = json.NewEncoder(&buf).Encode(map[string]interface{}{
+		"user":                 Email,
+		"password":             Password,
+		"g-recaptcha-response": "",
+	})
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", this.url+"/auth/login", &buf)
+	if err != nil {
+		return "", err
+	}
+	for _, c := range get.Cookies() {
+		if c.Name == "XSRF-TOKEN" {
+			glgf.Debug("xsrf found", c.Value)
+			req.Header.Set("x-xsrf-token", strings.ReplaceAll(c.Value, "%3D", "="))
+			req.Header.Set("origin", this.url)
+			req.Header.Set("accept", "application/json")
+			req.Header.Set("accept-encoding", "gzip, deflate, br")
+			req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.69")
+			req.Header.Set("content-type", "application/json")
+		}
+	}
+	resp, err := cli.Do(req)
+	if err != nil {
+		return "", err
+	}
+	for _, c := range resp.Cookies() {
+		if c.Name == "pterodactyl_session" {
+			return c.Value, nil
+		}
+	}
+	return "", errors.New("cant find pterodactyl_session in header")
+}
+
 func (this *Client) TestConnection() error {
 	test, err := this.api("", "nodes", "GET")
-	fmt.Print("PterodactylAPI returns: ", test)
+	fmt.Print("PterodactylAPI returns: ", string(test))
 	return err
 }
 
@@ -405,6 +450,22 @@ NestId:     1,
 EggId:      17,
 PackId:     0,
 })*/
+
+func (this *Client) ChangePassword(externalID string, pwd string) error {
+	user, err := this.GetUser(externalID, true)
+	if err != nil {
+		return err
+	}
+	_, err = this.api(map[string]interface{}{
+		"password":   pwd,
+		"email":      user.Email,
+		"username":   user.UserName,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"language":   user.Language,
+	}, "users/"+strconv.Itoa(user.Uid), "PATCH")
+	return err
+}
 
 func (this *Client) CreateServer(serverInfo Server) error {
 	eggInfo, err := this.GetEgg(serverInfo.NestId, serverInfo.EggId)

@@ -58,3 +58,5 @@ AliPayPrivateKey = ""
 AliPayAppID = ""
 # toggle album
 AlbumEnabled = false
+SocialLink = "https://github.com/minoic/peo"
+SocialLinkTitle = "社区"

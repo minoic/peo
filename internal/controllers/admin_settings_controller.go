@@ -9,6 +9,7 @@ import (
 	"github.com/minoic/peo/internal/pterodactyl"
 	"github.com/minoic/peo/internal/session"
 	"github.com/spf13/cast"
+	"strings"
 )
 
 type AdminSettingsController struct {
@@ -53,11 +54,11 @@ func (this *AdminSettingsController) Prepare() {
 func (this *AdminSettingsController) Get() {}
 
 func (this *AdminSettingsController) Post() {
-	configure.Viper().Set("WebHostName", this.GetString("WebHostName"))
+	configure.Viper().Set("WebHostName", strings.TrimRight(this.GetString("WebHostName"), "/"))
 	configure.Viper().Set("WebApplicationName", this.GetString("WebApplicationName"))
 	configure.Viper().Set("WebDescription", this.GetString("WebDescription"))
 	configure.Viper().Set("WebAdminAddress", this.GetString("WebAdminAddress"))
-	configure.Viper().Set("PterodactylHostname", this.GetString("PterodactylHostname"))
+	configure.Viper().Set("PterodactylHostname", strings.TrimRight(this.GetString("PterodactylHostname"), "/"))
 	configure.Viper().Set("PterodactylToken", this.GetString("PterodactylToken"))
 	configure.Viper().Set("DatabaseSalt", this.GetString("DatabaseSalt"))
 	configure.Viper().Set("MYSQLHost", this.GetString("MYSQLHost"))
@@ -79,6 +80,8 @@ func (this *AdminSettingsController) Post() {
 	configure.Viper().Set("AliPayPrivateKey", this.GetString("AliPayPrivateKey"))
 	configure.Viper().Set("AliPayAppID", this.GetString("AliPayAppID"))
 	configure.Viper().Set("AlbumEnabled", cast.ToBool(this.GetString("AlbumEnabled")))
+	configure.Viper().Set("SocialLink", this.GetString("SocialLink"))
+	configure.Viper().Set("SocialLinkTitle", this.GetString("SocialLinkTitle"))
 	err := configure.Viper().WriteConfig()
 	if err != nil {
 		glgf.Error(err)
@@ -127,7 +130,7 @@ func (this *AdminSettingsController) getSettings() []InputField {
 		{
 			Name:           "PterodactylHostname",
 			FriendlyName:   "翼龙面板地址",
-			Description:    "用于连接受控的翼龙面板",
+			Description:    "用于连接受控的翼龙面板，注：若要用户跳转时自动登录到翼龙面板，需要开启SSL（HTTPS），且两个网站为同一个域名的子域名（peo.A.com、pte.A.com）。",
 			Type:           "text",
 			AdditionalTags: "",
 			Required:       false,
@@ -321,6 +324,24 @@ func (this *AdminSettingsController) getSettings() []InputField {
 			AdditionalTags: "",
 			Required:       false,
 			Default:        configure.Viper().GetString("AlbumEnabled"),
+		},
+		{
+			Name:           "SocialLink",
+			FriendlyName:   "社区链接",
+			Description:    "若为空则关闭顶栏社区按钮",
+			Type:           "text",
+			AdditionalTags: "",
+			Required:       false,
+			Default:        configure.Viper().GetString("SocialLink"),
+		},
+		{
+			Name:           "SocialLinkTitle",
+			FriendlyName:   "社区链接标题",
+			Description:    "可更改按钮标题",
+			Type:           "text",
+			AdditionalTags: "",
+			Required:       false,
+			Default:        configure.Viper().GetString("SocialLinkTitle"),
 		},
 	}
 }

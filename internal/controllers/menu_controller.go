@@ -5,7 +5,6 @@ import (
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/message"
-	"github.com/minoic/peo/internal/pterodactyl"
 	"github.com/minoic/peo/internal/session"
 	"github.com/spf13/cast"
 	"html/template"
@@ -29,8 +28,12 @@ func handleNavbar(this *web.Controller) {
 		this.Data["unReadNum"] = message.UnReadNum(user.ID)
 		this.Data["isAdmin"] = user.IsAdmin
 	}
+	link := configure.Viper().GetString("SocialLink")
+	this.Data["linkEnabled"] = len(link) != 0
+	this.Data["link"] = link
+	this.Data["linkTitle"] = configure.Viper().GetString("SocialLinkTitle")
 }
 
 func handleSidebar(this *web.Controller) {
-	this.Data["dashboard"] = pterodactyl.ClientFromConf().HostName()
+	this.Data["dashboard"] = "/delay/login"
 }

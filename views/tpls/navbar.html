@@ -30,9 +30,11 @@
                         <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> 控制台</a>
                     </li>
                 {{end}}
-                <li>
-                    <a href="https://github.com/minoic/peo" target="_blank"><i class="fa fa-external-link fa-lg"></i> 社区 </a>
-                </li>
+                {{if .linkEnabled}}
+                    <li>
+                        <a href="{{.link}}" target="_blank"><i class="fa fa-external-link fa-lg"></i> {{.linkTitle}} </a>
+                    </li>
+                {{end}}
                 {{if .notLoggedIn}}
                     <li>
                         <a href="/login"><i class="fa fa-check fa-lg"></i> <strong>登录/注册</strong></a>

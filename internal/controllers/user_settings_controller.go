@@ -70,7 +70,6 @@ func (this *UserSettingsController) UpdateUserPassword() {
 	newPassword := this.GetString("newPassword")
 	confirmPassword := this.GetString("confirmPassword")
 	DB := database.Mysql()
-
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		this.Data["hasError"] = true
@@ -81,8 +80,22 @@ func (this *UserSettingsController) UpdateUserPassword() {
 	if hex.EncodeToString(b[:]) == user.Password {
 		if newPassword == confirmPassword {
 			b2 := md5.Sum([]byte(newPassword + configure.Viper().GetString("DatabaseSalt")))
-			DB.Model(&user).Update("password", hex.EncodeToString(b2[:]))
+			err := DB.Model(&user).Update("password", hex.EncodeToString(b2[:])).Error
+			if err != nil {
+				glgf.Error(err)
+				this.Data["hasError"] = true
+				this.Data["hasErrorText"] = "数据库错误"
+				return
+			}
 			message.Send("ADMIN", user.ID, "您刚刚成功修改了密码！")
+			err = pterodactyl.ClientFromConf().ChangePassword(user.Name, newPassword)
+			if err != nil {
+				glgf.Error(err)
+				this.Data["hasError"] = true
+				this.Data["hasErrorText"] = "未能成功更改翼龙面板密码"
+				return
+			}
+			message.Send("ADMIN", user.ID, "您刚刚成功修改了翼龙面板密码！")
 			this.Redirect("/user-settings", 302)
 		} else {
 			this.Data["hasError"] = true
@@ -94,6 +107,7 @@ func (this *UserSettingsController) UpdateUserPassword() {
 		this.Data["hasErrorText"] = "旧密码输入错误"
 		// this.Redirect("/user-settings",302)
 	}
+
 }
 
 func (this *UserSettingsController) UpdateUserEmail() {

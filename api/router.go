@@ -32,6 +32,7 @@ func InitRouter() {
 	web.Router("/order/:orderID", &controllers.OrderInfoController{})
 	web.Router("/order/:orderID/pay-by-balance", &controllers.OrderInfoController{}, "get:PayByBalance")
 	web.Router("/delay", &controllers.DelayController{})
+	web.Router("/delay/login", &controllers.DelayLoginController{})
 	web.Router("/user-settings", &controllers.UserSettingsController{})
 	web.Router("/user-settings/change-password", &controllers.UserSettingsController{}, "post:UpdateUserPassword")
 	web.Router("/user-settings/change-email", &controllers.UserSettingsController{}, "post:UpdateUserEmail")

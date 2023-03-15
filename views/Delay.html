@@ -152,7 +152,7 @@
             <br><br>
         </div>
         <a id="js-alert-btn" class="alert-btn"
-           href="javascript:top.location.href=&#39;{{.URL}}&#39;">立即跳转</a>
+           href="javascript:window.location.href=&#39;{{.URL}}&#39;">立即跳转</a>
     </div>
 
 </div>
@@ -162,7 +162,7 @@
         var t = document.getElementById("js-sec-text").innerHTML,
             n = document.getElementById("js-sec-circle");
         setInterval(function () {
-                if (0 === t) top.location.href = '{{.URL}}';
+                if (0 === t) window.location.href = '{{.URL}}';
                 else {
                     t--;
                     document.getElementById("js-sec-text").innerHTML = t;

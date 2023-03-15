@@ -32,7 +32,6 @@ type serverInfo struct {
 	ServerPlayerMax    int
 	ServerHostName     string
 	ServerIdentifier   string
-	ConsoleHostName    string
 	ServerFMLType      string
 	ServerVersion      string
 	ServerIndex        string
@@ -54,6 +53,7 @@ func (this *UserConsoleController) Prepare() {
 	handleSidebar(&this.Controller)
 	this.Data["i"] = 1
 	this.Data["u"] = 3
+
 }
 
 var (
@@ -84,7 +84,6 @@ func RefreshServerInfo() {
 			defer wg.Done()
 			pongTemp, err := status.Ping(host)
 			if err != nil {
-				glgf.Error("mc ping", host, err)
 				pongsSync.pongs[index] = status.Pong{}
 			} else {
 				pongsSync.pongs[index] = *pongTemp
@@ -123,7 +122,6 @@ func RefreshServerInfo() {
 				ServerRenewURL:     template.URL(configure.Viper().GetString("WebHostName") + "/user-console/renew/" + strconv.Itoa(int(entities[i].ID))),
 				ServerRenew2URL:    template.URL(configure.Viper().GetString("WebHostName") + "/user-console/renew2/" + strconv.Itoa(int(entities[i].ID))),
 				ServerReinstallURL: template.URL(configure.Viper().GetString("WebHostName") + "/user-console/reinstall/" + strconv.Itoa(int(entities[i].ID))),
-				ConsoleHostName:    cli.HostName(),
 			}
 		} else {
 			/* server is online*/
@@ -138,7 +136,6 @@ func RefreshServerInfo() {
 				ServerPlayerMax:    p.Players.Max,
 				ServerHostName:     entities[i].HostName,
 				ServerIdentifier:   pteServer.Identifier,
-				ConsoleHostName:    cli.HostName(),
 				ServerFMLType:      p.ModInfo.ModType,
 				ServerVersion:      p.Version.Name,
 				ServerIndex:        strconv.Itoa(i),

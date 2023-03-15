@@ -27,6 +27,7 @@ func init() {
 		&RechargeKey{},
 		&WorkOrder{},
 		&GalleryItem{},
+		&PterodactylPassword{},
 	)
 	return
 }
@@ -160,4 +161,10 @@ type GalleryItem struct {
 	Likes           uint
 	ReviewPassed    bool
 	ImgSource       template.URL
+}
+
+type PterodactylPassword struct {
+	gorm.Model
+	UserID   uint `gorm:"index"`
+	Password string
 }

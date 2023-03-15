@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"path"
+	"strings"
 )
 
 var (
@@ -70,6 +71,8 @@ func ReloadConfig() {
 	if err != nil {
 		panic(err)
 	}
+	v.Set("WebHostName", strings.TrimRight(v.GetString("WebHostName"), "/"))
+	v.Set("PterodactylHostname", strings.TrimRight(v.GetString("PterodactylHostname"), "/"))
 }
 
 func Viper() *viper.Viper {

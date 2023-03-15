@@ -1,0 +1,37 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    hostname: mysql
+    volumes:
+      - ./dist/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: PEOMYSQLPASSWORD
+      MYSQL_DATABASE: peo
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+
+  redis:
+    image: redis:alpine
+    restart: always
+    hostname: redis
+    volumes:
+# 若要使用持久化redis持久化(append only)功能，则下载 https://github.com/minoic/peo/blob/master/conf/redis.conf
+# 到文件夹 ./dist/redis 并将下一行解除注释
+      - ./dist/redis/redis.conf:/etc/redis/redis.conf
+      - ./dist/redis/data:/data
+
+  peo:
+    build: .
+    restart: always
+    depends_on:
+      - redis
+      - mysql
+    hostname: peo
+    volumes:
+      - ./dist/conf:/conf
+    ports:
+      - "8080:8080"
+      - "8088:8088" # 管理员页面，若要开启则解除注释
