@@ -58,7 +58,7 @@ func (this *DelayLoginController) Get() {
 	}
 	_, after, _ := strings.Cut(configure.Viper().GetString("WebHostName"), ".")
 	this.Ctx.SetCookie("pterodactyl_session", token, 43200, "/", "."+after, true, false, "None")
-	this.Redirect(configure.Viper().GetString("PterodactylHostname")+"/server/c6669182", 302)
+	this.Redirect(configure.Viper().GetString("PterodactylHostname")+"/auth/login", 302)
 	//this.Redirect("/", 302)
 }
 
