@@ -61,11 +61,6 @@ func (this *UserSettingsController) Prepare() {
 func (this *UserSettingsController) Get() {}
 
 func (this *UserSettingsController) UpdateUserPassword() {
-	if !this.CheckXSRFCookie() {
-		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "XSRF 验证失败！"
-		return
-	}
 	oldPassword := this.GetString("oldPassword")
 	newPassword := this.GetString("newPassword")
 	confirmPassword := this.GetString("confirmPassword")
@@ -111,11 +106,6 @@ func (this *UserSettingsController) UpdateUserPassword() {
 }
 
 func (this *UserSettingsController) UpdateUserEmail() {
-	if !this.CheckXSRFCookie() {
-		this.Data["hasError2"] = true
-		this.Data["hasErrorText2"] = "XSRF 验证失败！"
-		return
-	}
 	newEmail := this.GetString("email")
 	cpt := database.Redis().Get(context.Background(), "CHANGE_EMAIL"+newEmail).String()
 	cptInput := this.GetString("captcha")
@@ -211,27 +201,4 @@ func (this *UserSettingsController) GalleryPost() {
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
-}
-
-func (this *UserSettingsController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
-	}
-	return true
 }

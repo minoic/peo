@@ -28,11 +28,6 @@ func (this *ForgetPasswordController) Get() {
 func (this *ForgetPasswordController) Post() {
 	this.TplName = "ForgetPassword.html"
 	handleNavbar(&this.Controller)
-	if !this.CheckXSRFCookie() {
-		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "XSRF 验证失败！"
-		return
-	}
 	userEmail := this.GetString("email")
 	password := this.GetString("password")
 	passwordConfirm := this.GetString("passwordConfirm")
@@ -80,27 +75,4 @@ func (this *ForgetPasswordController) SendMail() {
 			glgf.Error(err)
 		}
 	}
-}
-
-func (this *ForgetPasswordController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
-	}
-	return true
 }

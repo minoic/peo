@@ -52,10 +52,6 @@ func (this *UserRechargeController) Get() {
 }
 
 func (this *UserRechargeController) RechargeByKey() {
-	if !this.CheckXSRFCookie() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
-		return
-	}
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
@@ -133,10 +129,6 @@ func (this *UserRechargeController) RechargeByKey() {
 }
 
 func (this *UserRechargeController) CreateZFB() {
-	if !this.CheckXSRFCookie() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
-		return
-	}
 	if configure.AliClient == nil {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))
 		return
@@ -182,27 +174,4 @@ func (this *UserRechargeController) CreateZFB() {
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte(base64.StdEncoding.EncodeToString(img)))
-}
-
-func (this *UserRechargeController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
-	}
-	return true
 }

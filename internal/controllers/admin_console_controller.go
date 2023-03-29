@@ -167,10 +167,6 @@ func (this *AdminConsoleController) DeleteConfirm() {
 }
 
 func (this *AdminConsoleController) NewKey() {
-	if !this.CheckXSRFCookie() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
-		return
-	}
 	keyAmount, err := this.GetInt("key_amount", 1)
 	if err != nil || keyAmount <= 0 || keyAmount >= 100 {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入不合理的 KEY 数量"))
@@ -338,10 +334,6 @@ func (this *AdminConsoleController) GetKeys() {
 }
 
 func (this *AdminConsoleController) CloseWorkOrder() {
-	if !this.CheckXSRFCookie() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
-		return
-	}
 	orderID, err := this.GetInt("workOrderID")
 	if err != nil || orderID < 0 {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取工单 ID 失败"))
@@ -372,10 +364,6 @@ func (this *AdminConsoleController) CloseWorkOrder() {
 }
 
 func (this *AdminConsoleController) GalleryPass() {
-	if !this.CheckXSRFCookie() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
-		return
-	}
 	itemID, err := this.GetInt("itemID")
 	if err != nil {
 		glgf.Error(err)
@@ -399,10 +387,6 @@ func (this *AdminConsoleController) GalleryPass() {
 }
 
 func (this *AdminConsoleController) GalleryDelete() {
-	if !this.CheckXSRFCookie() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
-		return
-	}
 	itemID, err := this.GetInt("itemID")
 	if err != nil {
 		glgf.Error(err)
@@ -423,27 +407,4 @@ func (this *AdminConsoleController) GalleryDelete() {
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
-}
-
-func (this *AdminConsoleController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
-	}
-	return true
 }

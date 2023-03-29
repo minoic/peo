@@ -46,7 +46,7 @@
 #### 二进制文件
 
 1. 从 [release](https://github.com/minoic/peo/releases) 下载对应系统的发布软件包，解压。
-2. 修改且仅修改 `conf/settings.toml` 中的配置，主要包含redis（必要）、mysql（必要），其余配置可在网站中修改。
+2. 修改且仅修改 `conf/settings.toml` 中的配置，主要包含 Database Settings 中的内容（Mysql、Redis），其余配置可在网站中修改。
 3. 运行可执行文件。
 
 #### Docker（推荐）

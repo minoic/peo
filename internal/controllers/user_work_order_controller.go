@@ -79,26 +79,3 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 	/* end of send messages*/
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
-
-func (this *UserWorkOrderController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
-	}
-	return true
-}

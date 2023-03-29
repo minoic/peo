@@ -39,11 +39,6 @@ func (this *RegController) Get() {
 func (this *RegController) Post() {
 	this.TplName = "Register.html"
 	handleNavbar(&this.Controller)
-	if !this.CheckXSRFCookie() {
-		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "XSRF 验证失败！"
-		return
-	}
 	// glgf.Info("user posted!")
 	registerEmail := this.GetString("registerEmail")
 	registerPassword := this.GetString("registerPassword")
@@ -129,7 +124,7 @@ func (this *RegController) Post() {
 				LastName:   "_",
 			})
 			if err != nil {
-				glgf.Error("cant create pterodactyl user for " + newUser.Name)
+				glgf.Error("cant create pterodactyl user for "+newUser.Name, err)
 				message.Send("ADMIN", newUser.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
 				DelayRedirect(DelayInfo{
 					URL:    "/login",
@@ -209,29 +204,6 @@ func checkUserName(userName string) bool {
 		if !strings.ContainsAny(validChar, string(userName[i])) {
 			return false
 		}
-	}
-	return true
-}
-
-func (this *RegController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
 	}
 	return true
 }

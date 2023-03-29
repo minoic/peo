@@ -92,11 +92,6 @@ func (this *OrderInfoController) Prepare() {
 func (this *OrderInfoController) Get() {}
 
 func (this *OrderInfoController) Post() {
-	if !this.CheckXSRFCookie() {
-		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "XSRF 验证失败！"
-		return
-	}
 	key := this.GetString("key")
 	orderIDstring := this.Ctx.Input.Param(":orderID")
 	orderIDint, _ := strconv.Atoi(orderIDstring)
@@ -119,10 +114,6 @@ func (this *OrderInfoController) Post() {
 }
 
 func (this *OrderInfoController) PayByBalance() {
-	if !this.CheckXSRFCookie() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("XSRF 验证失败"))
-		return
-	}
 	user, err := session.GetUser(this.StartSession())
 	if err != nil || user == (database.User{}) {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
@@ -157,27 +148,4 @@ func (this *OrderInfoController) PayByBalance() {
 	} else {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 	}
-}
-
-func (this *OrderInfoController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
-	}
-	return true
 }

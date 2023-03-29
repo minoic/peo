@@ -194,11 +194,6 @@ func (this *NewWareController) Get() {}
 
 // todo: add nest/egg select instead of input ID
 func (this *NewWareController) Post() {
-	if !this.CheckXSRFCookie() {
-		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "XSRF 验证失败！"
-		return
-	}
 	cli := pterodactyl.ClientFromConf()
 	// formText,_:=template.ParseFiles("tpls/forms/formgroup.html")
 	ware := database.WareSpec{
@@ -364,27 +359,4 @@ func (this *NewWareController) Post() {
 			Title:  "添加商品成功！",
 		}, &this.Controller)
 	}
-}
-
-func (this *NewWareController) CheckXSRFCookie() bool {
-	if !this.EnableXSRF {
-		return true
-	}
-	token := this.GetString("_xsrf")
-	if token == "" {
-		token = this.Ctx.Input.Query("_xsrf")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Xsrftoken")
-	}
-	if token == "" {
-		token = this.Ctx.Request.Header.Get("X-Csrftoken")
-	}
-	if token == "" {
-		return false
-	}
-	if this.XSRFToken() != token {
-		return false
-	}
-	return true
 }
