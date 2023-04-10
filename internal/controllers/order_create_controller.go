@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/orderform"
 	"github.com/minoic/peo/internal/session"
@@ -10,6 +11,7 @@ import (
 
 type OrderCreateController struct {
 	web.Controller
+	i18n.Locale
 }
 
 func (this *OrderCreateController) Prepare() {

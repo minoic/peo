@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -14,6 +15,7 @@ import (
 
 type AdminSettingsController struct {
 	web.Controller
+	i18n.Locale
 }
 
 var (
@@ -23,6 +25,7 @@ var (
 
 func (this *AdminSettingsController) Prepare() {
 	this.TplName = "AdminSettings.html"
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.Data["u"] = 4
 	handleNavbar(&this.Controller)
 	sess := this.StartSession()
@@ -82,6 +85,7 @@ func (this *AdminSettingsController) Post() {
 	configure.Viper().Set("AlbumEnabled", cast.ToBool(this.GetString("AlbumEnabled")))
 	configure.Viper().Set("SocialLink", this.GetString("SocialLink"))
 	configure.Viper().Set("SocialLinkTitle", this.GetString("SocialLinkTitle"))
+	configure.Viper().Set("Language", this.GetString("Language"))
 	err := configure.Viper().WriteConfig()
 	if err != nil {
 		glgf.Error(err)
@@ -342,6 +346,15 @@ func (this *AdminSettingsController) getSettings() []InputField {
 			AdditionalTags: "",
 			Required:       false,
 			Default:        configure.Viper().GetString("SocialLinkTitle"),
+		},
+		{
+			Name:           "Language",
+			FriendlyName:   "语言",
+			Description:    "目前支持：zh-CN,en-US",
+			Type:           "text",
+			AdditionalTags: "",
+			Required:       false,
+			Default:        configure.Viper().GetString("Language"),
 		},
 	}
 }

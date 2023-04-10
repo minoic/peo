@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/controllers"
 )
@@ -13,6 +14,8 @@ func InitRouter() {
 	web.BConfig.Listen.AdminPort = 8088
 	web.BConfig.WebConfig.Session.SessionProvider = "redis"
 	web.BConfig.WebConfig.Session.SessionProviderConfig = configure.Viper().GetString("RedisHost")
+	web.AddFuncMap("i18n", i18n.Tr)
+	i18n.SetMessage("zh-CN", "conf/locale_zh-CN.ini")
 	web.Router("/", &controllers.WareSellerController{})
 	web.Router("/gallery-show", &controllers.GalleryShowController{})
 	web.Router("/alipay", &controllers.CallbackController{})

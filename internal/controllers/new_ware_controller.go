@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/database"
@@ -165,6 +166,7 @@ var wareInfo = []InputField{
 
 type NewWareController struct {
 	web.Controller
+	i18n.Locale
 }
 
 type InputField struct {

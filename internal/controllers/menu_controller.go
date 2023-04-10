@@ -10,30 +10,30 @@ import (
 	"html/template"
 )
 
-func handleNavbar(this *web.Controller) {
-	this.Data["xsrfData"] = template.HTML(this.XSRFFormHTML())
-	this.Data["webHostName"] = configure.Viper().GetString("WebHostName")
-	this.Data["webApplicationName"] = configure.Viper().GetString("WebApplicationName")
-	this.Data["webApplicationAuthor"] = "minoic <minoic2020@gmail.com>"
-	this.Data["webDescription"] = configure.Viper().GetString("webDescription")
-	this.Data["AlbumEnabled"] = cast.ToBool(configure.Viper().GetString("AlbumEnabled"))
-	sess := this.StartSession()
+func handleNavbar(controller *web.Controller) {
+	controller.Data["xsrfData"] = template.HTML(controller.XSRFFormHTML())
+	controller.Data["webHostName"] = configure.Viper().GetString("WebHostName")
+	controller.Data["webApplicationName"] = configure.Viper().GetString("WebApplicationName")
+	controller.Data["webApplicationAuthor"] = "minoic <minoic2020@gmail.com>"
+	controller.Data["webDescription"] = configure.Viper().GetString("webDescription")
+	controller.Data["AlbumEnabled"] = cast.ToBool(configure.Viper().GetString("AlbumEnabled"))
+	sess := controller.StartSession()
 	if !session.Logged(sess) {
-		this.Data["notLoggedIn"] = true
+		controller.Data["notLoggedIn"] = true
 	} else {
 		user, err := session.GetUser(sess)
 		if err != nil {
 			glgf.Error(err)
 		}
-		this.Data["unReadNum"] = message.UnReadNum(user.ID)
-		this.Data["isAdmin"] = user.IsAdmin
+		controller.Data["unReadNum"] = message.UnReadNum(user.ID)
+		controller.Data["isAdmin"] = user.IsAdmin
 	}
 	link := configure.Viper().GetString("SocialLink")
-	this.Data["linkEnabled"] = len(link) != 0
-	this.Data["link"] = link
-	this.Data["linkTitle"] = configure.Viper().GetString("SocialLinkTitle")
+	controller.Data["linkEnabled"] = len(link) != 0
+	controller.Data["link"] = link
+	controller.Data["linkTitle"] = configure.Viper().GetString("SocialLinkTitle")
 }
 
-func handleSidebar(this *web.Controller) {
-	this.Data["dashboard"] = "/delay/login"
+func handleSidebar(controller *web.Controller) {
+	controller.Data["dashboard"] = "/delay/login"
 }

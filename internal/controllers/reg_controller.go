@@ -6,6 +6,7 @@ import (
 	"github.com/beego/beego/v2/client/cache"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/captcha"
+	"github.com/beego/i18n"
 	"github.com/gofrs/uuid/v5"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
@@ -29,6 +30,7 @@ func init() {
 
 type RegController struct {
 	web.Controller
+	i18n.Locale
 }
 
 func (this *RegController) Get() {

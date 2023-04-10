@@ -3,9 +3,11 @@ package controllers
 import (
 	"compress/flate"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/hako/durafmt"
 	"github.com/mholt/archiver"
 	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/cryptoo"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/email"
@@ -21,10 +23,12 @@ import (
 
 type AdminConsoleController struct {
 	web.Controller
+	i18n.Locale
 }
 
 func (this *AdminConsoleController) Prepare() {
 	this.TplName = "AdminConsole.html"
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.Data["u"] = 4
 	handleNavbar(&this.Controller)
 	sess := this.StartSession()

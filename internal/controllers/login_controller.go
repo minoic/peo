@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -12,6 +13,7 @@ import (
 
 type LoginController struct {
 	web.Controller
+	i18n.Locale
 }
 
 func (this *LoginController) Get() {

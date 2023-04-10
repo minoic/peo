@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
@@ -19,6 +20,7 @@ import (
 
 type UserRechargeController struct {
 	web.Controller
+	i18n.Locale
 }
 
 func (this *UserRechargeController) Prepare() {

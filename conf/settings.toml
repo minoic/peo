@@ -60,3 +60,4 @@ AliPayAppID = ""
 AlbumEnabled = false
 SocialLink = "https://github.com/minoic/peo"
 SocialLinkTitle = "社区"
+Language = "zh-CN"

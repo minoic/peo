@@ -1,6 +1,6 @@
 NAME=peo
 BINDIR=build
-VERSION=v0.2.1
+VERSION=v0.2.2
 GOBUILD=CGO_ENABLED=0 go build --ldflags="-s -w -X 'main.GO_VERSION=$(go version)' -X 'main.BUILD_TIME=`TZ=Asia/Shanghai date "+%F %T"`'" -v -a
 GOFILES=main.go
 PACKFILE=views static conf README.md

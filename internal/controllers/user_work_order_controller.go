@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/database"
@@ -14,6 +15,7 @@ import (
 
 type UserWorkOrderController struct {
 	web.Controller
+	i18n.Locale
 }
 
 func (this *UserWorkOrderController) Prepare() {

@@ -2,19 +2,20 @@ package controllers
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/pterodactyl"
 	"github.com/spf13/cast"
-	"html/template"
 	"strconv"
 	"time"
 )
 
 type WareSellerController struct {
 	web.Controller
+	i18n.Locale
 }
 
 type ware struct {
@@ -46,7 +47,7 @@ func RefreshWareInfo() {
 	)
 	DB := database.Mysql()
 	if configure.Viper().GetBool("SMTPEnabled") {
-		emailText = "邮件提醒！"
+		emailText = i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.email_text")
 	}
 	if err := DB.Find(&waresInDB).Error; err == nil {
 		for _, w := range waresInDB {
@@ -61,30 +62,30 @@ func RefreshWareInfo() {
 				Intros: []intro{
 					{
 						First:  strconv.Itoa(w.Cpu / 100),
-						Second: "个CPU核心",
+						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.cpu"),
 					},
 					{
 						First:  strconv.Itoa(w.Memory),
-						Second: "MB物理内存",
+						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.memory"),
 					},
 					{
 						First:  strconv.Itoa(w.Disk),
-						Second: "MB存储空间",
+						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.disk"),
 					},
 					{
 						First:  cast.ToString(w.Backups),
-						Second: "个服务器备份",
+						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.backups"),
 					},
 					{
 						First:  "Docker",
-						Second: "虚拟化隔离",
+						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.virtual_env"),
 					},
 					{
 						First:  nest.Description,
 						Second: "",
 					},
 					{
-						First:  "到期后帮您保留" + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + "天",
+						First:  i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.save") + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + i18n.Tr(configure.Viper().GetString("Language"), "days"),
 						Second: emailText,
 					},
 				},
@@ -114,21 +115,21 @@ func RefreshWareInfo() {
 		}
 	} else if err == gorm.ErrRecordNotFound {
 		wares1 = append(wares1, ware{
-			WareName:          "没有商品",
+			WareName:          "empty",
 			WarePricePerMonth: "9999",
 			Intros: []intro{{
-				First:  "去添加一些商品",
-				Second: "这里就会显示",
+				First:  "add some in admin console page",
+				Second: "they will show here",
 			},
 			},
 		})
 	} else {
 		wares1 = append(wares1, ware{
-			WareName:          "数据库错误",
+			WareName:          "database error",
 			WarePricePerMonth: "9999",
 			Intros: []intro{{
-				First:  "去修复一下数据库吧",
-				Second: "这里就会显示",
+				First:  "repair your database",
+				Second: "",
 			},
 			},
 		})
@@ -136,12 +137,11 @@ func RefreshWareInfo() {
 }
 
 func (this *WareSellerController) Get() {
+	// this.Data["langTemplateKey"] = this.Ctx.Request.Header.Get("Accept-Language")
 	this.TplName = "WareSeller.html"
-	this.Data["wareTitle"] = template.HTML("MinoIC - Minecraft 面板服")
-	this.Data["wareDetail"] = template.HTML(``)
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.Data["u"] = 1
 	handleNavbar(&this.Controller)
-	this.Ctx.ResponseWriter.Flush()
 	// glgf.Debug(wares)
 	this.Data["wares1"] = wares1
 	this.Data["wares2"] = wares2

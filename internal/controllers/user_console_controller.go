@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/hako/durafmt"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
@@ -19,6 +20,7 @@ import (
 
 type UserConsoleController struct {
 	web.Controller
+	i18n.Locale
 }
 
 type serverInfo struct {
@@ -53,7 +55,7 @@ func (this *UserConsoleController) Prepare() {
 	handleSidebar(&this.Controller)
 	this.Data["i"] = 1
 	this.Data["u"] = 3
-
+	this.Data["lang"] = configure.Viper().GetString("Language")
 }
 
 var (
@@ -61,8 +63,8 @@ var (
 	waiting   = serverInfo{
 		ServerIsOnline:    false,
 		ServerIconData:    "",
-		ServerName:        "正在加载",
-		ServerDescription: "后台正在等待第一次获取信息",
+		ServerName:        i18n.Tr(configure.Viper().GetString("Language"), "loading"),
+		ServerDescription: i18n.Tr(configure.Viper().GetString("Language"), "backend_waiting"),
 	}
 )
 
@@ -115,7 +117,7 @@ func RefreshServerInfo() {
 				ServerIsOnline:     false,
 				ServerName:         pteServer.Name,
 				ServerEXP:          entities[i].ValidDate.Format("2006-01-02 15:04:05"),
-				ServerDescription:  "服务器已离线",
+				ServerDescription:  i18n.Tr(configure.Viper().GetString("Language"), "offline"),
 				ServerHostName:     entities[i].HostName,
 				ServerIdentifier:   pteServer.Identifier,
 				ServerIndex:        strconv.Itoa(i),
@@ -160,7 +162,7 @@ func RefreshServerInfo() {
 			info.ServerEggs = append(info.ServerEggs, pterodactyl.Egg{
 				Id:   -1,
 				Nest: pteServer.NestId,
-				Name: "无可用的安装包",
+				Name: i18n.Tr(configure.Viper().GetString("Language"), "no_packs"),
 			})
 		}
 		entityMap.Store(entities[i].ID, info)
@@ -208,11 +210,11 @@ func (this *UserConsoleController) Renew() {
 	entityIDString := this.Ctx.Input.Param(":entityID")
 	entityID, err := strconv.Atoi(entityIDString)
 	if database.Redis().Get(context.Background(), "RENEW"+entityIDString).Err() == nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("同一个服务器 10 秒内只能续费一次"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "renew_limit")))
 		return
 	}
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取服务器编号"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server_id")))
 		return
 	}
 	DB := database.Mysql()
@@ -222,30 +224,30 @@ func (this *UserConsoleController) Renew() {
 		spec   database.WareSpec
 	)
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("找不到指定服务器"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server")))
 		return
 	}
 	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无效的 KEY"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "invalid_key")))
 		return
 	}
 	if DB.Where("id = ?", key.SpecID).First(&spec).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取对应商品"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_ware_spec")))
 		return
 	}
 	if key.SpecID != entity.SpecID {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("该 KEY 不能用来续费本服务器"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "wrong_key_type")))
 		return
 	}
 	/* correct renew post */
 	if err = database.Redis().Set(context.Background(), "RENEW"+entityIDString, "", 10*time.Second).Err(); err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("缓存设置失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(err.Error()))
 		return
 	}
 	if DB.Delete(&key).Error != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库处理失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(err.Error()))
 		return
 	}
 	startDate := entity.ValidDate
@@ -254,13 +256,13 @@ func (this *UserConsoleController) Renew() {
 	}
 	if DB.Model(&entity).Update("valid_date", startDate.Add(spec.ValidDuration)).Update("delete_status", 0).Error != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_edit_server")))
 		DB.Create(&key)
 		return
 	}
 	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID, true)
 	if err != nil {
-		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 		return
 	}
@@ -271,11 +273,11 @@ func (this *UserConsoleController) Renew() {
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
 		glgf.Error(err)
-		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
 	}
 	if err = pterodactyl.ClientFromConf().UnsuspendServer(entity.ServerExternalID); err != nil {
 		glgf.Error(err)
-		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但更改暂停状态失败，请联系管理员修改！")
+		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_unsuspend"))
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
@@ -284,43 +286,43 @@ func (this *UserConsoleController) Renew2() {
 	entityID := this.Ctx.Input.Param(":entity")
 	eid, err := strconv.Atoi(entityID)
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取服务器编号"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server_id")))
 		return
 	}
 	DB := database.Mysql()
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		glgf.Warn(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取用户信息失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_user")))
 		return
 	}
 	var entity database.WareEntity
 	if DB.Where("id = ?", eid).First(&entity).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("找不到指定服务器"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server")))
 		return
 	}
 	var spec database.WareSpec
 	if DB.Where("id = ?", entity.SpecID).First(&spec).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取对应商品"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_ware_spec")))
 		return
 	}
 	cost := spec.PricePerMonth * uint(100-spec.Discount) / 100
 	if cost > user.Balance {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("余额不足"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "not_enough_balance")))
 		return
 	}
 	if err := DB.Model(&user).Update("balance", user.Balance-cost).Error; err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库错误"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(err.Error()))
 		return
 	}
 	if DB.Model(&entity).Update("valid_date", entity.ValidDate.AddDate(0, 1, 0)).Update("delete_status", 0).Error != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("修改服务有效期失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_edit_server")))
 		return
 	}
 	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID, true)
 	if err != nil {
-		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 		return
 	}
@@ -331,7 +333,7 @@ func (this *UserConsoleController) Renew2() {
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
 		glgf.Error(err)
-		message.Send("ADMIN", entity.UserID, "您的服务器已续费，但翼龙面板备注修改失败，您可以联系管理员修改！")
+		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
@@ -340,11 +342,11 @@ func (this *UserConsoleController) Reinstall() {
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		// glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "login")))
 		return
 	}
 	if database.Redis().Get(context.Background(), "REINSTALL"+user.Name).Err() == nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("您每 10 秒只能重装一次服务器"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "reinstall_limit")))
 		return
 	}
 	entityID := this.Ctx.Input.Param(":entityID")
@@ -352,31 +354,27 @@ func (this *UserConsoleController) Reinstall() {
 	eggID, err := strconv.Atoi(eggIDstring)
 	if err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入了无效的PackID"))
-		return
-	}
-	if eggID == -1 {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法安装这个包"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(err.Error()))
 		return
 	}
 	DB := database.Mysql()
 	var entity database.WareEntity
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("找不到指定服务器"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server")))
 		return
 	}
 	if entity.UserID != user.ID && !user.IsAdmin {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("您没有权限操作他人服务器"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_permission")))
 		return
 	}
 	if err = pterodactyl.ClientFromConf().UpdateServerStartup(entity.ServerExternalID, eggID); err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("更新服务器失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_update_server")))
 		return
 	}
 	if err = pterodactyl.ClientFromConf().ReinstallServer(entity.ServerExternalID); err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("重装服务器失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_reinstall_server")))
 		return
 	}
 	_ = database.Redis().Set(context.Background(), "REINSTALL"+user.Name, "", 10*time.Second)

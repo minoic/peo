@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
@@ -14,6 +15,7 @@ import (
 
 type DelayController struct {
 	web.Controller
+	i18n.Locale
 }
 
 type DelayInfo struct {
@@ -23,6 +25,7 @@ type DelayInfo struct {
 }
 
 func (this *DelayController) Get() {
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.TplName = "Delay.html"
 	this.Data["detail"] = this.GetString("detail")
 	this.Data["URL"] = this.GetString("URL")

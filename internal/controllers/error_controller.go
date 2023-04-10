@@ -2,10 +2,17 @@ package controllers
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
+	"github.com/minoic/peo/internal/configure"
 )
 
 type ErrorController struct {
 	web.Controller
+	i18n.Locale
+}
+
+func (this *ErrorController) Prepare() {
+	this.Data["lang"] = configure.Viper().GetString("Language")
 }
 
 func (this *ErrorController) Error400() {

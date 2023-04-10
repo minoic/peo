@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
@@ -12,11 +13,12 @@ import (
 
 type CallbackController struct {
 	web.Controller
+	i18n.Locale
 }
 
 func (this *CallbackController) Prepare() {
-	this.EnableXSRF = false
 	this.EnableRender = false
+	this.Data["lang"] = configure.Viper().GetString("Language")
 }
 
 func (this *CallbackController) Post() {

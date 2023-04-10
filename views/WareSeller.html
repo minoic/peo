@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} 商品列表</title>
+    <title>{{.webApplicationName}} {{i18n .lang "ware_list"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -12,13 +12,12 @@
 {{template "tpls/navbar.html" .}}
 <div id="main-container" class="no-margin">
     <div id="wrapper">
-
         <div>
             <div class="section-header fadeInDown animation-delay1">
                 <hr class="left visible-lg">
-                <h3>{{.wareTitle}}</h3>
+                <h3>{{i18n .lang "ware.title"}}</h3>
                 <hr class="right visible-lg">
-                {{.wareDetail}}
+                {{i18n .lang "ware.detail"}}
             </div>
         </div><!-- /.padding -->
         <div class="row fadeInDown animation-delay2">
@@ -76,7 +75,7 @@
                                             </svg>
                                         </div>
                                         <div class="title">
-                                            <span class="m-left-xs"><strong>月付</strong></span>
+                                            <span class="m-left-xs"><strong>{{i18n .lang "ware.monthly"}}</strong></span>
                                         </div>
                                     </div>
                                 </a>
@@ -112,7 +111,7 @@
                                             </svg>
                                         </div>
                                         <div class="title">
-                                            <span class="m-left-xs"><strong>季付</strong></span>
+                                            <span class="m-left-xs"><strong>{{i18n .lang "ware.quarterly"}}</strong></span>
                                         </div>
                                     </div>
                                 </a>
@@ -158,7 +157,7 @@
                                             </svg>
                                         </div>
                                         <div class="title">
-                                            <span class="m-left-xs"><strong>年付</strong></span>
+                                            <span class="m-left-xs"><strong>{{i18n .lang "ware.yearly"}}</strong></span>
                                         </div>
                                     </div>
                                 </a>
