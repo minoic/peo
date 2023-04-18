@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} 商品列表</title>
+    <title>{{.webApplicationName}} {{i18n .lang "gallery.title"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -25,7 +25,7 @@
                                 <div class="image-time">{{.CreatedAt}}</div>
                                 <div class="image-like">
                                     <i class="fa fa-heart"></i>
-                                    {{.Likes}} 个赞
+                                    {{.Likes}} 点赞
                                 </div>
                             </div>
                         </div>

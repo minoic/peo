@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="utf-8">
-  <title>{{.webApplicationName}} 管理员设置页面</title>
+  <title>{{.webApplicationName}} {{i18n .lang "admin_settings.title"}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -13,13 +13,13 @@
     <div class="row">
       <div class="col-lg-8">
         <div class="panel panel-default">
-          <div class="panel-heading"><h4><strong>修改设置</strong></h4>
+          <div class="panel-heading"><h4><strong>{{i18n .lang "admin_settings.edit_settings"}}</strong></h4>
             <span>
-              编译时间：{{.BuildTime}}<br>
-              Go版本：{{.GoVersion}}<br>
-              Mysql连接：{{.MysqlStats}}<br>
-              Redis连接：{{.RedisStats}}<br>
-              翼龙面板连接：{{.PterodactylStats}}
+              {{i18n .lang "admin_settings.build_time"}}：{{.BuildTime}}<br>
+              {{i18n .lang "admin_settings.go_version"}}：{{.GoVersion}}<br>
+              {{i18n .lang "admin_settings.mysql_stats"}}：{{.MysqlStats}}<br>
+              {{i18n .lang "admin_settings.redis_stats"}}：{{.RedisStats}}<br>
+              {{i18n .lang "admin_settings.pterodactyl_stats"}}：{{.PterodactylStats}}
             </span>
           </div>
           <div class="panel-body">
@@ -32,10 +32,10 @@
             <hr/>
             {{if .hasError}}
             <div class="alert alert-danger">
-              <strong>修改失败！</strong> {{.hasErrorText}}
+              <strong>{{i18n .lang "admin_settings.edit_failed"}}</strong> {{.hasErrorText}}
             </div>
             {{end}}
-            <button type="submit" form="new-ware" class="btn btn-success btn-sm">提交</button>
+            <button type="submit" form="new-ware" class="btn btn-success btn-sm">{{i18n .lang "admin_settings.submit"}}</button>
           </div>
         </div>
       </div>

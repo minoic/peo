@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{.webApplicationName}} 添加整合包</title>
+    <title>{{.webApplicationName}} {{i18n .lang "new_pack.title"}}</title>
     {{template "tpls/perfectCSS.html" .}}
 </head>
 <body>
@@ -17,7 +17,7 @@
                 <div class="col-md-1"></div>
                 <div class="col-md-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><h4><strong>添加整合包</strong></h4></div>
+                        <div class="panel-heading"><h4><strong>{{i18n .lang "new_pack.title"}}</strong></h4></div>
                         <div class="panel-body">
                             <form role="form" method="post" id="new-pack">
                                 {{.xsrfData}}
@@ -28,10 +28,10 @@
                             <hr/>
                             {{if .hasError}}
                                 <div class="alert alert-danger">
-                                    <strong>添加失败！</strong> {{.hasErrorText}}
+                                    <strong>{{i18n .lang "new_pack.failed"}}</strong> {{.hasErrorText}}
                                 </div>
                             {{end}}
-                            <button type="submit" form="new-pack" class="btn btn-success btn-sm">确认添加</button>
+                            <button type="submit" form="new-pack" class="btn btn-success btn-sm">{{i18n .lang "new_pack.confirm"}}</button>
                         </div>
                     </div>
                 </div>
@@ -42,13 +42,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion"
                                        href="#collapseOne">
-                                        怎么填比较合适？
+                                        {{i18n .lang "new_pack.tips1"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseOne" class="panel-collapse collapse in" style="height: auto;">
                                 <div class="panel-body">
-                                    在不甚了解的选项中尽量填入我们建议的值，可选选项尽量不填，我们会根据默认值自动处理。
+                                    {{i18n .lang "new_pack.tips2"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -57,13 +57,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle collapsed" data-toggle="collapse"
                                        data-parent="#accordion" href="#collapseTwo">
-                                        确保整合包可以使用
+                                        {{i18n .lang "new_pack.tips3"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseTwo" class="panel-collapse collapse" style="height: auto;">
                                 <div class="panel-body">
-                                    在本站添加整合包前请确认翼龙面板中的对应整合包可以使用，并且及时同步这些数据
+                                    {{i18n .lang "new_pack.tips4"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -72,13 +72,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle collapsed" data-toggle="collapse"
                                        data-parent="#accordion" href="#collapseThree">
-                                        可能会安装失败
+                                        {{i18n .lang "new_pack.tips5"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseThree" class="panel-collapse collapse" style="height: auto;">
                                 <div class="panel-body">
-                                    一次安装可能会失败，并且有一定的延迟，您应该提醒用户多试几次。
+                                    {{i18n .lang "new_pack.tips6"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->

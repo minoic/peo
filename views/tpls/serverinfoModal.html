@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4>MOD ({{.ServerModCount}}个) 加载器：{{.ServerFMLType}} </h4>
+                <h4>MOD ({{.ServerModCount}}) {{i18n .lang "components.loader"}}：{{.ServerFMLType}} </h4>
             </div>
             <div class="modal-body">
                 {{range .ServerModList}}
@@ -18,20 +18,20 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4>使用预购买的KEY续费服务器</h4>
-                <small>您可以在淘宝店或发卡平台购买KEY，每个KEY只能使用一次。<br>如果KEY失效不能使用请联系网站管理员！</small>
-                <h4>使用余额续费服务器</h4>
-                <small>当确保余额足够时，点击下方“余额支付”，每点击一次续费一个月，自动扣除一个月的标价。</small>
+                <h4>{{i18n .lang "components.renew_tips1"}}</h4>
+                <small>{{i18n .lang "components.renew_tips2"}}</small>
+                <h4>{{i18n .lang "components.renew_tips3"}}</h4>
+                <small>{{i18n .lang "components.renew_tips4"}}</small>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal no-margin form-border">
                     <div class="form-group">
                         <div class="col-lg-2 control-label">
-                            <label>激活码</label>
+                            <label>{{i18n .lang "components.cdkey"}}</label>
                         </div>
                         <div class="col-lg-10">
                             <input type="text" class="form-control input-sm" name="key"
-                                   placeholder="输入您购买到的激活码" id="{{.ServerIdentifier}}{{.ServerIndex}}KEY">
+                                   placeholder='{{i18n .lang "components.input_cdkey"}}' id="{{.ServerIdentifier}}{{.ServerIndex}}KEY">
                         </div>
                         <div class="col-lg-2"></div>
                     </div>
@@ -48,7 +48,7 @@
                         alert('续费失败：'+data);
                         }
                         })
-                        ">余额续费</a>
+                        ">{{i18n .lang "components.balance_renew"}}</a>
                 <a class="btn btn-info btn-sm" onclick="
                         $.get('{{.ServerRenewURL}}/'+$('#{{.ServerIdentifier}}{{.ServerIndex}}KEY').val(),function(data) {
                         if (data==='SUCCESS'){
@@ -58,7 +58,7 @@
                         alert('续费失败：'+data);
                         }
                         })
-                        "> 确认续费</a>
+                        ">{{i18n .lang "components.renew_confirm"}}</a>
             </div>
         </div>
     </div><!-- /.modal-content -->
@@ -77,7 +77,7 @@
                 <form class="form-horizontal no-margin form-border">
                     <div class="form-group">
                         <div class="col-lg-2 control-label">
-                            <label>整合包</label>
+                            <label>{{i18n .lang "components.pack"}}</label>
                         </div>
                         <div class="col-lg-10">
                             <select class="form-control" id="{{.ServerIdentifier}}{{.ServerIndex}}REIN">
@@ -106,7 +106,7 @@
                         alert('重装失败：'+data);
                         }
                         })
-                        "> 确认安装</a>
+                        ">{{i18n .lang "components.reinstall_confirm"}}</a>
             </div>
         </div>
     </div><!-- /.modal-content -->

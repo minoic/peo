@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} 管理员控制台</title>
+    <title>{{.webApplicationName}} {{i18n .lang "admin_console.title"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -16,14 +16,14 @@
                     <div class="col-md-4 col-sm-6 col-xs-12">
                         <a href="/new-ware">
                             <div class="panel panel-default panel-stat2 bg-warning" data-toggle="tooltip"
-                                 data-placement="top" title="" data-original-title="点击添加商品">
+                                 data-placement="top" title="" data-original-title='{{i18n .lang "admin_console.tap_add_ware"}}'>
                                 <div class="panel-body">
 								<span class="stat-icon">
 									<i class="fa fa-shopping-cart fa-lg"></i>
 								</span>
                                     <div class="pull-right text-right">
                                         <div class="value">{{.specAmount}}</div>
-                                        <div class="title">商品</div>
+                                        <div class="title">{{i18n .lang "admin_console.ware"}}</div>
                                     </div>
                                 </div>
                             </div><!-- /panel -->
@@ -38,7 +38,7 @@
 								</span>
                                     <div class="pull-right text-right">
                                         <div class="value">{{.entityAmount}}</div>
-                                        <div class="title">服务器</div>
+                                        <div class="title">{{i18n .lang "admin_console.server"}}</div>
                                     </div>
                                 </div>
                             </div><!-- /panel -->
@@ -52,7 +52,7 @@
 								</span>
                                 <div class="pull-right text-right">
                                     <div class="value">{{.userAmount}}</div>
-                                    <div class="title">用户</div>
+                                    <div class="title">{{i18n .lang "admin_console.user"}}</div>
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -65,8 +65,8 @@
 									<i class="fa fa-briefcase fa-lg"></i>
 								</span>
                                         <div class="pull-right text-right">
-                                            <div class="value">设置</div>
-                                            <div class="title">点击跳转</div>
+                                            <div class="value">{{i18n .lang "admin_console.settings"}}</div>
+                                            <div class="title">{{i18n .lang "admin_console.jump"}}</div>
                                         </div>
                                     </div>
                                 </div><!-- /panel -->
@@ -75,7 +75,7 @@
                     <div class="col-md-4 col-sm-6 col-xs-12">
                         <a href="#formModal" data-toggle="modal">
                             <div class="panel panel-default panel-stat2 bg-success" data-toggle="tooltip"
-                                 data-placement="top" title="" data-original-title="点击添加 KEY">
+                                 data-placement="top" title="" data-original-title='{{i18n .lang "admin_console.tap_add_key"}}'>
                                 <div class="panel-body">
 								<span class="stat-icon">
 									<i class="fa fa-key fa-lg"></i>
@@ -96,7 +96,7 @@
 								</span>
                                 <div class="pull-right text-right">
                                     <div class="value">{{.orderAmount}}</div>
-                                    <div class="title">完成订单</div>
+                                    <div class="title">{{i18n .lang "admin_console.complete_order"}}</div>
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -105,7 +105,7 @@
                 {{if .deleteServers}}
                     <div class="panel-primary fadeInDown animation-delay3">
                         <div class="panel-heading">
-                            <strong>待确认删除的过期服务器</strong>
+                            <strong>{{i18n .lang "admin_console.server_waiting_for_delete"}}</strong>
                         </div>
                         <div class="panel-body no-padding" style="height: auto;">
                             <ul class="list-group task-list no-margin collapse in">
@@ -120,9 +120,9 @@
                                                 else {alert('删除失败！'+data);}
                                                 parent.location.reload();
                                                 })">
-                                            <button class="btn-danger btn-sm" type="button">确认删除</button>
+                                            <button class="btn-danger btn-sm" type="button">{{i18n .lang "admin_console.delete_confirm"}}</button>
                                         </a>
-                                        <span>{{.ServerName}} 所有者：{{.ServerOwner}} <br>过期时间：{{.ServerEXP}} 服务器地址：{{.ServerHostName}}</span>
+                                        <span>{{.ServerName}} {{i18n .lang "admin_console.owner"}}：{{.ServerOwner}} <br>{{i18n .lang "admin_console.expire"}}：{{.ServerEXP}} {{i18n .lang "admin_console.server_address"}}：{{.ServerHostName}}</span>
                                     </li>
                                 {{end}}
                             </ul><!-- /list-group -->
@@ -153,7 +153,7 @@
                                                         }
                                                         parent.location.reload();
                                                         })
-                                                        ">通过
+                                                        ">{{i18n .lang "admin_console.pass"}}
                                         </button>
                                     {{end}}
                                     <form id="GIDEL{{.ID}}">
@@ -171,7 +171,7 @@
                                                     }
                                                     parent.location.reload();
                                                     })
-                                                    ">删除
+                                                    ">{{i18n .lang "admin_console.delete"}}
                                     </button>
                                     <h5>{{.ItemName}}</h5>
                                     <div class="text-muted"> {{.CreatedAt}}</div>
@@ -194,7 +194,7 @@
                             <div class="panel panel-default fadeInDown animation-delay2">
                                 <div class="panel-heading">
                                     <a href="#WO{{.ID}}" data-toggle="modal">
-                                        <button class="pull-right btn-success btn">完成</button>
+                                        <button class="pull-right btn-success btn">{{i18n .lang "admin_console.complete"}}</button>
                                     </a>
                                     <h5>{{.UserName}}</h5>
                                     <div class="text-muted"> {{.CreatedAt}}</div>
@@ -217,12 +217,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4>创建新的 KEY</h4>
+                <h4>{{i18n .lang "admin_console.create_cdkey"}}</h4>
                 <small>
-                    创建的 KEY 用于激活指定的商品<br>
-                    您可以选择在发卡平台或淘宝等平台售卖 KEY<br>
-                    请点击按钮提交表单<br>
-                    目前仅支持添加面额为 30 50 100 的余额激活码
+                    {{i18n .lang "admin_console.create_key_tips1"}}<br>
+                    {{i18n .lang "admin_console.create_key_tips2"}}<br>
+                    {{i18n .lang "admin_console.create_key_tips3"}}<br>
+                    {{i18n .lang "admin_console.create_key_tips4"}}
                 </small>
             </div>
             <div class="modal-body">
@@ -230,27 +230,27 @@
                     {{.xsrfData}}
                     <div class="form-group">
                         <div class="col-lg-2 control-label">
-                            <label>数量</label>
+                            <label>{{i18n .lang "admin_console.quantity"}}</label>
                         </div>
                         <div class="col-lg-10">
                             <input type="number" class="form-control input-sm" name="key_amount"
-                                   placeholder="输入想生成 KEY 的数量 ( 1 - 99 的整数 ) 如果留空则为 1 个">
+                                   placeholder='{{i18n .lang "admin_console.input_quantity"}}'>
                         </div>
                         <div class="col-lg-2"></div>
                     </div>
                     <div class="form-group">
                         <div class="col-lg-2 control-label">
-                            <label>KEY 有效期</label>
+                            <label>{{i18n .lang "admin_console.key_validity_period"}}</label>
                         </div>
                         <div class="col-lg-10">
                             <input type="number" class="form-control input-sm" name="valid_duration"
-                                   placeholder="输入 KEY 有效期，如果留空则为 2 个月">
+                                   placeholder='{{i18n .lang "admin_console.input_key_validity_period"}}'>
                         </div>
                         <div class="col-lg-2"></div>
                     </div>
                     <!-- choose -->
                     <div class="form-group">
-                        <label class="col-lg-2 control-label">商品类型</label>
+                        <label class="col-lg-2 control-label">{{i18n .lang "admin_console.ware_type"}}</label>
                         <div class="col-lg-10">
                             <select class="form-control" name="spec_id">
                                 {{range .keySpecs}}
@@ -264,7 +264,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-success btn-sm" type="button"
-                        onclick="window.location='/admin-console/get-keys'">导出 KEY
+                        onclick="window.location='/admin-console/get-keys'">{{i18n .lang "admin_console.export"}} KEY
                 </button>
                 <button class="btn btn-info btn-sm" type="button" onclick="$.get('/admin-console/new-key?'+$('#new-key').serialize(),function(data) {
                                             console.log($('#new-key').serialize());
@@ -275,7 +275,7 @@
                                             }
                                             parent.location.reload();
                                           })
-                                        ">确认添加
+                                        ">{{i18n .lang "admin_console.add_key_confirm"}}
                 </button>
             </div>
         </div>
@@ -287,7 +287,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4>完成工单</h4>
+                    <h4>{{i18n .lang "admin_console.complete_work_order"}}</h4>
                 </div>
                 <div class="modal-body">
                     <form id="WOF{{.ID}}" class="form-horizontal no-margin form-border">
@@ -295,11 +295,11 @@
                         <input type="hidden" name="workOrderID" value="{{.ID}}">
                         <div class="form-group">
                             <div class="col-lg-2 control-label">
-                                <label>消息</label>
+                                <label>{{i18n .lang "admin_console.message"}}</label>
                             </div>
                             <div class="col-lg-10">
                                 <input type="text" class="form-control input-sm" name="closeInfo"
-                                       placeholder="输入完成工单的提醒消息 将会发给用户">
+                                       placeholder='{{i18n .lang "admin_console.input_message"}}'>
                             </div>
                         </div>
                     </form>
@@ -316,7 +316,7 @@
                                     }
                                     parent.location.reload();
                                     })
-                                    ">确认
+                                    ">{{i18n .lang "admin_console.confirm"}}
                     </button>
                 </div>
             </div>

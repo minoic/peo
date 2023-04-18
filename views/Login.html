@@ -2,44 +2,44 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} 登录</title>
+    <title>{{.webApplicationName}} {{i18n .lang "auth.login"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
 
 <body>
 <div class="login-wrapper">
-    <div class="text-center" title="点击返回首页">
+    <div class="text-center" title='{{i18n .lang "auth.return"}}'>
         <h2 class="fadeInUp animation-delay6" style="font-weight:bold">
-            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title="点击返回主页"><i
+            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title='{{i18n .lang "auth.return"}}'><i
                         class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span
-                        style="color:#ccc; text-shadow:0 1px #fff"> 账户</span></a>
+                        style="color:#ccc; text-shadow:0 1px #fff"> {{i18n .lang "auth.account"}}</span></a>
         </h2>
     </div>
     <div class="login-widget animation-delay1">
         <div class="panel panel-default">
             <div class="panel-heading clearfix">
                 <div class="pull-left">
-                    <i class="fa fa-lock fa-lg"></i> 登录
+                    <i class="fa fa-lock fa-lg"></i> {{i18n .lang "auth.login"}}
                 </div>
 
                 <div class="pull-right">
-                    <span style="font-size:11px;">还没有账号？😐</span>
+                    <span style="font-size:11px;">{{i18n .lang "auth.no_account"}}</span>
                     <a class="btn btn-default btn-xs login-link" href="/reg" style="margin-top:-2px;"><i
-                                class="fa fa-plus-circle"></i> 注册</a>
+                                class="fa fa-plus-circle"></i> {{i18n .lang "auth.register"}}</a>
                 </div>
             </div>
             <div class="panel-body">
                 <form class="form-login" method="post">
                     {{.xsrfData}}
                     <div class="form-group">
-                        <label>用户名或邮箱</label>
-                        <input type="text" placeholder="输入您注册时用的用户名或邮箱"
+                        <label>{{i18n .lang "auth.username_or_email"}}</label>
+                        <input type="text" placeholder='{{i18n .lang "input_username_or_email"}}'
                                class="form-control input-sm bounceIn animation-delay2" name="loginEOU">
                     </div>
                     <div class="form-group">
-                        <label>密码</label>
-                        <input type="password" placeholder="输入密码"
+                        <label>{{i18n .lang "auth.password"}}</label>
+                        <input type="password" placeholder='{{i18n .lang "auth.input_password"}}'
                                class="form-control input-sm bounceIn animation-delay4" name="loginPass">
                     </div>
                     <div class="form-group">
@@ -49,22 +49,22 @@
                             <span class="custom-checkbox info bounceIn animation-delay4"></span>
                         </label>
                         <label class="tooltip-test" data-toggle="tooltip" data-placement="bottom"
-                               data-original-title="选中后2个月内不需要登录">记住我的登录</label>
+                               data-original-title='{{i18n .lang "auth.remember_tips"}}'>{{i18n .lang "auth.remember"}}</label>
                     </div>
                     <hr/>
                     {{if .hasError}}
                         <div class="alert alert-danger">
-                            <strong>登录失败！</strong> {{.hasErrorText}}
+                            <strong>{{i18n .lang "auth.login_failed"}}</strong> {{.hasErrorText}}
                         </div>
                     {{end}}
                     <div class="row">
                         <div class="col-lg-8">
                             <a href="/forget-password" class="tooltip-test" data-toggle="tooltip"
-                               data-placement="bottom" data-original-title="点击找回密码😀">忘记密码？</a>
+                               data-placement="bottom" data-original-title='{{i18n .lang "auth.tap_forget"}}'>{{i18n .lang "auth.forget}}</a>
                         </div>
                         <div class="col-lg-4">
                             <button class="btn btn-success btn-sm bounceIn animation-delay5 pull-right" type="submit"><i
-                                        class="fa fa-sign-in"></i> 登录
+                                        class="fa fa-sign-in"></i> {{i18n .lang "auth.login"}}
                             </button>
                         </div>
                     </div>

@@ -12,7 +12,7 @@
                 {{range .Intros}}
                     <li>{{.First}} <strong>{{.Second}}</strong></li>
                 {{end}}
-                <li class="text-center"><a href="#{{.SpecID}}" role="button" data-toggle="modal" class="btn btn-success">购买</a></li>
+                <li class="text-center"><a href="#{{.SpecID}}" role="button" data-toggle="modal" class="btn btn-success">{{i18n .lang "components.buy"}}</a></li>
             </ul>
         </div>
     </div><!-- /pricing-widget -->

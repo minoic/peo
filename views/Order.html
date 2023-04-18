@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} 订单详情</title>
+    <title>{{.webApplicationName}} {{i18n .lang "order.title"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 
@@ -26,34 +26,34 @@
                             </div>
                         </div>
                         <div class="pull-right">
-                            <h4><strong>订单编号：#{{.orderID}}</strong></h4>
-                            <strong>创建时间：{{.orderCreateTime}}</strong>
+                            <h4><strong>{{i18n .lang "order.id"}}：#{{.orderID}}</strong></h4>
+                            <strong>{{i18n .lang "order.time"}}：{{.orderCreateTime}}</strong>
                         </div>
                     </div>
                     <hr>
                     <div class="clearfix">
                         <div class="pull-left">
                             <h4>
-                                <strong>订单详情</strong>
+                                <strong>{{i18n .lang "order.title"}}</strong>
                                 {{if .paid}}
-                                    <span class="label label-success">已支付</span>
+                                    <span class="label label-success">{{i18n .lang "order.payed"}}</span>
                                 {{else}}
-                                    <span class="label label-danger">未支付</span>
+                                    <span class="label label-danger">{{i18n .lang "order.not_payed"}}</span>
                                 {{end}}
                             </h4>
                             <address>
-                                如有问题请联系：{{.adminAddress}}
+                                {{i18n .lang "order.admin_address"}}：{{.adminAddress}}
                             </address>
                         </div>
                     </div>
                     <table class="table table-striped m-top-md" id="dataTable">
                         <thead>
                         <tr class="bg-theme">
-                            <th>编号</th>
-                            <th>商品名称</th>
-                            <th>月付单价</th>
-                            <th>购买类型</th>
-                            <th>总价</th>
+                            <th>{{i18n .lang "order.id"}}</th>
+                            <th>{{i18n .lang "order.name"}}</th>
+                            <th>{{i18n .lang "order.monthly"}}</th>
+                            <th>{{i18n .lang "order.type"}}</th>
+                            <th>{{i18n .lang "order.total"}}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -68,16 +68,16 @@
                         </tbody>
                     </table>
                     <div class="padding-sm bg-grey">
-                        <p>提示：您可以选择多种方式支付订单，我们会在您付款后提供承诺的完整售后服务，也意味着您同意我们在您注册时提到的用户协议。</p>
+                        <p>{{i18n .lang "order.term"}}</p>
                     </div>
                     <hr>
                     {{if .hasError}}
                         <div class="alert alert-danger">
-                            <strong>激活失败！</strong> {{.hasErrorText}}
+                            <strong>{{i18n .lang "order.failed"}}</strong> {{.hasErrorText}}
                         </div>
                     {{else if .hasSuccess}}
                         <div class="alert alert-success">
-                            <strong>激活成功！</strong> 前往控制台管理服务器！
+                            <strong>{{i18n .lang "order.success"}}</strong> {{i18n .lang "order.success_tips"}}
                         </div>
                     {{end}}
                 </div>
@@ -89,7 +89,7 @@
                             <td class="no-border"></td>
                             <td class="no-border"></td>
                             <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
-                                                style="vertical-align: inherit;">小计</font></font></strong></td>
+                                                style="vertical-align: inherit;">{{i18n .lang "order.total"}}</font></font></strong></td>
                             <td><strong><font style="vertical-align: inherit;"><font
                                                 style="vertical-align: inherit;">￥ {{.originPrice}}</font></font></strong>
                             </td>
@@ -99,7 +99,7 @@
                             <td class="no-border"></td>
                             <td class="no-border"></td>
                             <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
-                                                style="vertical-align: inherit;">折扣</font></font></strong></td>
+                                                style="vertical-align: inherit;">{{i18n .lang "order.discount"}}</font></font></strong></td>
                             <td><strong><font style="vertical-align: inherit;"><font
                                                 style="vertical-align: inherit;">￥ {{.discountPrice}}</font></font></strong>
                             </td>
@@ -109,7 +109,7 @@
                             <td class="no-border"></td>
                             <td class="no-border"></td>
                             <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
-                                                style="vertical-align: inherit;">总</font></font></strong></td>
+                                                style="vertical-align: inherit;">{{i18n .lang "order.total"}}</font></font></strong></td>
                             <td><strong class="text-danger"><font style="vertical-align: inherit;"><font
                                                 style="vertical-align: inherit;">￥ {{.finalPrice}}</font></font></strong>
                             </td>
@@ -118,10 +118,10 @@
                     </table>
                     <a href="#formModal1" role="button" data-toggle="modal"
                        class="btn btn-info btn-small fadeInDown animation-delay2"
-                       {{if .paid}}disabled="disabled"{{end}}>使用余额支付</a>
+                       {{if .paid}}disabled="disabled"{{end}}>{{i18n .lang "order.pay_with_balance"}}</a>
                     <a href="#formModal2" role="button" data-toggle="modal"
                        class="btn btn-primary btn-small fadeInDown animation-delay2"
-                       {{if .paid}}disabled="disabled"{{end}}>使用Key激活</a>
+                       {{if .paid}}disabled="disabled"{{end}}>{{i18n .lang "order.pay_with_key"}}</a>
                 </div>
             </div>
         </div>
@@ -133,22 +133,21 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
                 </button>
-                <h4>使用预购买的KEY激活服务器</h4>
-                <small>您可以在淘宝店或发卡平台购买KEY，每个KEY只能使用一次。<br>如果KEY失效不能使用请联系网站管理员！</small>
+                <h4>{{i18n .lang "order.pay_with_balance"}}</h4>
             </div>
             <div class="modal-body">
                 <form id="payByBalance" class="form-horizontal no-margin form-border">
                     {{.xsrfData}}
                     <!-- choose -->
                     <div class="form-group">
-                        <label class="col-lg-2 control-label">服务器地址</label>
+                        <label class="col-lg-2 control-label">{{i18n .lang "order.server_address"}}</label>
                         <div class="col-lg-10">
                             <select class="form-control" name="selected_ip">
                                 {{range .ips}}
                                     <option value="{{.ID}} {{.IP}}">{{.IP}}</option>
                                 {{end}}
                             </select>
-                            <span class="help-block">选择的地址将作为玩家在连接MC服务器时的地址</span>
+                            <span class="help-block">{{i18n .lang "order.server_address_tips"}}</span>
                         </div><!-- /.col -->
                     </div>
                     <!-- /choose -->
@@ -165,7 +164,7 @@
                                 }
                                 parent.location.reload();
                                 })
-                                ">确认支付
+                                ">{{i18n .lang "order.confirm"}}
                 </button>
             </div>
         </div>
@@ -177,40 +176,40 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
                 </button>
-                <h4>使用预购买的KEY激活服务器</h4>
-                <small>您可以在淘宝店或发卡平台购买KEY，每个KEY只能使用一次。<br>如果KEY失效不能使用请联系网站管理员！</small>
+                <h4>{{i18n .lang "order.buy_key_tips1"}}</h4>
+                <small>{{i18n .lang "order.buy_key_tips2"}}</small>
             </div>
             <div class="modal-body">
                 <form method="post" id="pay" class="form-horizontal no-margin form-border">
                     {{.xsrfData}}
                     <div class="form-group">
                         <div class="col-lg-2 control-label">
-                            <label>激活码</label>
+                            <label>{{i18n .lang "order.cdkey"}}</label>
                         </div>
                         <div class="col-lg-10">
 
                             <input type="text" class="form-control input-sm" name="key"
-                                   placeholder="输入您购买到的激活码">
+                                   placeholder='{{i18n .lang "order.input_cdkey"}}'>
                         </div>
                         <div class="col-lg-2"></div>
                     </div>
                     <!-- choose -->
                     <div class="form-group">
-                        <label class="col-lg-2 control-label">服务器地址</label>
+                        <label class="col-lg-2 control-label">{{i18n .lang "order.server_address"}}</label>
                         <div class="col-lg-10">
                             <select class="form-control" name="selected_ip">
                                 {{range .ips}}
                                     <option value="{{.ID}} {{.IP}}">{{.IP}}</option>
                                 {{end}}
                             </select>
-                            <span class="help-block">选择的地址将作为玩家在连接MC服务器时的地址</span>
+                            <span class="help-block">{{i18n .lang "order.server_address_tips"}}</span>
                         </div><!-- /.col -->
                     </div>
                     <!-- /choose -->
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="submit" form="pay" class="btn btn-info btn-sm">确认激活</button>
+                <button type="submit" form="pay" class="btn btn-info btn-sm">{{i18n .lang "order.confirm"}}</button>
             </div>
         </div>
     </div><!-- /.modal-content -->

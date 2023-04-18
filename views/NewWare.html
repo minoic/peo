@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{.webApplicationName}} 添加商品</title>
+    <title>{{.webApplicationName}} {{i18n .lang "new_ware.title"}}</title>
     {{template "tpls/perfectCSS.html" .}}
 </head>
 <body>
@@ -17,7 +17,7 @@
                 <div class="col-md-1"></div>
                 <div class="col-md-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><h4><strong>添加新商品</strong></h4></div>
+                        <div class="panel-heading"><h4><strong>{{i18n .lang "new_ware.title"}}</strong></h4></div>
                         <div class="panel-body">
                             <form role="form" method="post" id="new-ware">
                                 {{.xsrfData}}
@@ -28,10 +28,10 @@
                             <hr/>
                             {{if .hasError}}
                                 <div class="alert alert-danger">
-                                    <strong>添加失败！</strong> {{.hasErrorText}}
+                                    <strong>{{i18n .lang "new_ware.failed"}}</strong> {{.hasErrorText}}
                                 </div>
                             {{end}}
-                            <button type="submit" form="new-ware" class="btn btn-success btn-sm">确认添加</button>
+                            <button type="submit" form="new-ware" class="btn btn-success btn-sm">{{i18n .lang "new_ware.confirm"}}</button>
                         </div>
                     </div>
                 </div>
@@ -42,13 +42,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion"
                                        href="#collapseOne">
-                                        怎么填比较合适？
+                                        {{i18n .lang "new_ware.tips1"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseOne" class="panel-collapse collapse in" style="height: auto;">
                                 <div class="panel-body">
-                                    在不甚了解的选项中尽量填入我们建议的值，可选选项尽量不填，我们会根据默认值自动处理。
+                                    {{i18n .lang "new_ware.tips2"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -57,13 +57,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle collapsed" data-toggle="collapse"
                                        data-parent="#accordion" href="#collapseTwo">
-                                        Nest 和 Egg ？
+                                        {{i18n .lang "new_ware.tips3"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseTwo" class="panel-collapse collapse" style="height: 0px;">
                                 <div class="panel-body">
-                                    在新建商品前一定要确认服务器所用的 Nest 和 Egg 的编号，如果填入错误将无法创建服务器，当然，我们会提示您填错了。
+                                    {{i18n .lang "new_ware.tips4"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -72,13 +72,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle collapsed" data-toggle="collapse"
                                        data-parent="#accordion" href="#collapseThree">
-                                        及时更新节点
+                                        {{i18n .lang "new_ware.tips5"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseThree" class="panel-collapse collapse" style="height: 0px;">
                                 <div class="panel-body">
-                                    如果生意比较火爆，要记得及时更新 Node ID ，因为售出的服务器会一直在给定的 Node 上创建，若长时间不更新 Node ID ，您的服务器可能会超售严重。
+                                    {{i18n .lang "new_ware.tips6"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->

@@ -92,7 +92,7 @@
                                                 fill="#FFDD40" p-id="22490"></path></svg>
 								</span>
                         <span class="text">
-									服务器信息
+									{{i18n .lang "components.info"}}
 								</span>
                         <span class="menu-hover"></span>
                     </a>
@@ -103,7 +103,7 @@
 									<img src="../static/img/favicon-32x32.png" alt="">
 								</span>
                         <span class="text">
-									翼龙控制台
+									{{i18n .lang "components.pterodactyl"}}
 								</span>
                         <span class="menu-hover"></span>
                     </a>
@@ -145,7 +145,7 @@
                                                 fill="#193651" p-id="22937"></path></svg>
 								</span>
                         <span class="text">
-									账户设置
+									{{i18n .lang "components.account"}}
 								</span>
                         <span class="menu-hover"></span>
                     </a>
@@ -175,7 +175,7 @@
                                                 fill="#34303D" p-id="23119"></path></svg>
 								</span>
                         <span class="text">
-									余额充值
+									{{i18n .lang "components.recharge"}}
 								</span>
                         <span class="menu-hover"></span>
                     </a>
@@ -229,7 +229,7 @@
                                                 fill="#F16051" p-id="9195"></path></svg>
 								</span>
                         <span class="text">
-									工单系统
+									{{i18n .lang "components.order"}}
 								</span>
                         <span class="menu-hover"></span>
                     </a>
@@ -243,16 +243,16 @@
                                                 fill="" p-id="28058"></path></svg>
 								</span>
                         <span class="text">
-									登出
+									{{i18n .lang "components.logout"}}
 								</span>
                         <span class="menu-hover"></span>
                     </a>
                     <div class="custom-popup width-100" id="logoutConfirm" style="display: none">
                         <div class="padding-md">
-                            <h4 class="m-top-none"> 确定要登出吗？您将需要重新登录才能访问部分内容。</h4>
+                            <h4 class="m-top-none"> {{i18n .lang "components.logout_confirm"}} </h4>
                         </div>
                         <div class="text-center">
-                            <a class="btn btn-danger m-right-sm" onclick="logout()" href="/">登出</a>
+                            <a class="btn btn-danger m-right-sm" onclick="logout()" href="/">{{i18n .lang "components.logout"}}</a>
                             <script type="text/javascript">
                                 function logout() {
                                     $.removeCookie('tOZENDENoNOS');

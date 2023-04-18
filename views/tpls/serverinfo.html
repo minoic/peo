@@ -5,20 +5,20 @@
                 <img src="{{if .ServerIsOnline}}{{if .ServerIconData}}{{.ServerIconData}}
                     {{else}}../static/img/Minecraft_256px.png{{end}}{{else}}../static/img/plug_128px_1074019_easyicon.net.png{{end}}"
                      class="img-circle" style="width:52px;" data-toggle="tooltip" data-placement="top" title=""
-                     data-original-title="点击打开控制台">
+                     data-original-title='{{i18n .lang "components.tap_to_console"}}'>
             </a>
             {{if .ServerIsOnline}}
-                <span class="label label-success pull-right">在线 {{.ServerPlayerOnline}}/{{.ServerPlayerMax}}</span>
+                <span class="label label-success pull-right">{{i18n .lang "components.online"}} {{.ServerPlayerOnline}}/{{.ServerPlayerMax}}</span>
             {{else}}
-                <span class="label label-danger pull-right">离线</span>
+                <span class="label label-danger pull-right">{{i18n .lang "components.offline"}}</span>
             {{end}}
             <strong class="block">{{.ServerName}} <span
                         class="label label-default">{{.ServerIdentifier}}</span></strong>
-            <small class="text-muted">到期时间：{{.ServerEXP}}</small><br>
+            <small class="text-muted">{{i18n .lang "components.expire_time"}}：{{.ServerEXP}}</small><br>
             {{if .ServerVersion}}
-                <small class="text-muted pull-right">版本：{{.ServerVersion}}</small>
+                <small class="text-muted pull-right">{{i18n .lang "components.version"}}：{{.ServerVersion}}</small>
             {{end}}
-            <small class="text-muted">服务器地址：{{.ServerHostName}}</small>
+            <small class="text-muted">{{i18n .lang "components.server_address"}}：{{.ServerHostName}}</small>
         </div>
         <div class="seperator"></div>
         <p>
@@ -26,11 +26,11 @@
         </p>
         {{if .ServerFMLType}}
             <a class="btn btn-default btn-xs pull-left" role="button" data-toggle="modal"
-               href="#{{.ServerIdentifier}}{{.ServerIndex}}MOD"> <i class="fa fa-info-circle fa-lg"></i> MOD列表 </a>
+               href="#{{.ServerIdentifier}}{{.ServerIndex}}MOD"> <i class="fa fa-info-circle fa-lg"></i> {{i18n .lang "components.mod_list"}} </a>
         {{end}}
         <a class="btn btn-default btn-xs pull-right" role="button" data-toggle="modal"
-           href="#{{.ServerIdentifier}}{{.ServerIndex}}RENEW"> <i class="fa fa-check fa-lg"></i> 续费</a>
+           href="#{{.ServerIdentifier}}{{.ServerIndex}}RENEW"> <i class="fa fa-check fa-lg"></i> {{i18n .lang "components.renew"}}</a>
         <a class="btn btn-default btn-xs pull-right" role="button" data-toggle="modal"
-           href="#{{.ServerIdentifier}}{{.ServerIndex}}CP"><i class="fa fa-wrench fa-lg"></i> 重装服务端</a>
+           href="#{{.ServerIdentifier}}{{.ServerIndex}}CP"><i class="fa fa-wrench fa-lg"></i> {{i18n .lang "components.reinstall"}}</a>
     </div>
 </div>
