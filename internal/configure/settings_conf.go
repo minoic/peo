@@ -2,6 +2,7 @@ package configure
 
 import (
 	"errors"
+	"github.com/beego/i18n"
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/conf"
 	"github.com/smartwalle/alipay/v3"
@@ -17,7 +18,6 @@ var (
 )
 
 func init() {
-	var err error
 	if _, err := os.Stat("/conf/app.conf"); errors.Is(err, os.ErrNotExist) {
 		file, _ := os.Create("/conf/app.conf")
 		file.Write(conf.AppConf)
@@ -52,13 +52,25 @@ func init() {
 	}
 	ReloadConfig()
 	if Viper().GetBool("AliPayEnabled") {
-		AliClient, err = alipay.New(Viper().GetString("AliPayAppID"), Viper().GetString("AliPayPrivateKey"), true)
-		if err != nil {
-			panic(err)
+		AliClient, _ = alipay.New(Viper().GetString("AliPayAppID"), Viper().GetString("AliPayPrivateKey"), true)
+		AliClient.LoadAliPayPublicKey(Viper().GetString("AliPayPublicKey"))
+	}
+	entries, _ := conf.Locale.ReadDir("locale")
+	for i := range entries {
+		if strings.HasSuffix(entries[i].Name(), ".ini") {
+			glgf.Debug(entries[i].Name())
+			if _, err := os.Stat("/conf/locale/" + entries[i].Name()); errors.Is(err, os.ErrNotExist) {
+				glgf.Debug("writing")
+				file, _ := os.Create("/conf/locale/" + entries[i].Name())
+				readFile, _ := conf.Locale.ReadFile("locale/" + entries[i].Name())
+				file.Write(readFile)
+			}
 		}
-		err = AliClient.LoadAliPayPublicKey(Viper().GetString("AliPayPublicKey"))
-		if err != nil {
-			panic(err)
+	}
+	locales, _ := os.ReadDir("/conf/locale")
+	for i := range locales {
+		if strings.HasSuffix(locales[i].Name(), ".ini") {
+			i18n.SetMessage(strings.TrimSuffix(locales[i].Name(), ".ini"), "/conf/locale/"+locales[i].Name())
 		}
 	}
 }
