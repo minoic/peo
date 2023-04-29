@@ -16,15 +16,15 @@ type LoginController struct {
 	i18n.Locale
 }
 
-func (this *LoginController) Get() {
+func (this *LoginController) Prepare() {
 	this.TplName = "Login.html"
 	handleNavbar(&this.Controller)
+	this.Data["lang"] = configure.Viper().GetString("Language")
 }
 
-func (this *LoginController) Post() {
-	this.TplName = "Login.html"
-	handleNavbar(&this.Controller)
+func (this *LoginController) Get() {}
 
+func (this *LoginController) Post() {
 	DB := database.Mysql()
 	loginEOU := this.GetString("loginEOU")
 	loginPass := this.GetString("loginPass")
@@ -41,15 +41,15 @@ func (this *LoginController) Post() {
 			this.SetSession("UN", user.Name)
 			DelayRedirect(DelayInfo{
 				URL:    "/",
-				Detail: "正在跳转到主页",
-				Title:  "您已成功登录！",
+				Detail: tr("auth.login_success_title"),
+				Title:  tr("auth.login_success_detail"),
 			}, &this.Controller)
 		} else {
 			this.Data["hasError"] = true
-			this.Data["hasErrorText"] = "密码错误！"
+			this.Data["hasErrorText"] = tr("auth.wrong_password")
 		}
 	} else {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "用户不存在！"
+		this.Data["hasErrorText"] = tr("auth.user_invalid")
 	}
 }

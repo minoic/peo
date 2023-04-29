@@ -29,6 +29,7 @@ func (this *UserRechargeController) Prepare() {
 	}
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.TplName = "UserRecharge.html"
 	this.Data["i"] = 3
 	this.Data["u"] = 3

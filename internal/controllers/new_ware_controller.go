@@ -5,6 +5,7 @@ import (
 	"github.com/beego/i18n"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/pterodactyl"
 	"github.com/minoic/peo/internal/session"
@@ -181,6 +182,7 @@ type InputField struct {
 
 func (this *NewWareController) Prepare() {
 	this.TplName = "NewWare.html"
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	sess := this.StartSession()
 	if !session.Logged(sess) {
 		this.Abort("401")

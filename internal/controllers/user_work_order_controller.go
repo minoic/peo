@@ -6,6 +6,7 @@ import (
 	"github.com/beego/i18n"
 	"github.com/jinzhu/gorm"
 	"github.com/minoic/glgf"
+	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/email"
 	"github.com/minoic/peo/internal/message"
@@ -24,6 +25,7 @@ func (this *UserWorkOrderController) Prepare() {
 	}
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.TplName = "UserWorkOrder.html"
 	this.Data["i"] = 4
 	this.Data["u"] = 3

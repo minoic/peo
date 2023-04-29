@@ -47,7 +47,7 @@ func RefreshWareInfo() {
 	)
 	DB := database.Mysql()
 	if configure.Viper().GetBool("SMTPEnabled") {
-		emailText = i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.email_text")
+		emailText = tr("ware.intro.email_text")
 	}
 	if err := DB.Find(&waresInDB).Error; err == nil {
 		for _, w := range waresInDB {
@@ -62,30 +62,30 @@ func RefreshWareInfo() {
 				Intros: []intro{
 					{
 						First:  strconv.Itoa(w.Cpu / 100),
-						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.cpu"),
+						Second: tr("ware.intro.cpu"),
 					},
 					{
 						First:  strconv.Itoa(w.Memory),
-						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.memory"),
+						Second: tr("ware.intro.memory"),
 					},
 					{
 						First:  strconv.Itoa(w.Disk),
-						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.disk"),
+						Second: tr("ware.intro.disk"),
 					},
 					{
 						First:  cast.ToString(w.Backups),
-						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.backups"),
+						Second: tr("ware.intro.backups"),
 					},
 					{
 						First:  "Docker",
-						Second: i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.virtual_env"),
+						Second: tr("ware.intro.virtual_env"),
 					},
 					{
 						First:  nest.Description,
 						Second: "",
 					},
 					{
-						First:  i18n.Tr(configure.Viper().GetString("Language"), "ware.intro.save") + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + i18n.Tr(configure.Viper().GetString("Language"), "days"),
+						First:  tr("ware.intro.save") + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + tr("days"),
 						Second: emailText,
 					},
 				},

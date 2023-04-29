@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>Registration</title>
+    <title>{{.webApplicationName}} {{i18n .lang "auth.register"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 
@@ -21,7 +21,7 @@
     <div class="login-widget animation-delay1">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="fa fa-plus-circle fa-lg"></i> '{{i18n .lang "auth.register"}}'
+                <i class="fa fa-plus-circle fa-lg"></i> {{i18n .lang "auth.register"}}
             </div>
             <div class="panel-body">
                 <form class="form-login" method="post">
@@ -84,7 +84,7 @@
                             <div class="form-group">
                                 <div class="controls text-right">
                                     <button class="btn btn-success btn-sm bounceIn animation-delay7" type="submit"><i
-                                                class="fa fa-plus-circle"></i> {{i18n .lang "register_confirm"}}
+                                                class="fa fa-plus-circle"></i> {{i18n .lang "auth.register_confirm"}}
                                     </button>
                                 </div>
                             </div><!-- /form-group -->

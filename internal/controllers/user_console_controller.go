@@ -63,8 +63,8 @@ var (
 	waiting   = serverInfo{
 		ServerIsOnline:    false,
 		ServerIconData:    "",
-		ServerName:        i18n.Tr(configure.Viper().GetString("Language"), "loading"),
-		ServerDescription: i18n.Tr(configure.Viper().GetString("Language"), "backend_waiting"),
+		ServerName:        tr("loading"),
+		ServerDescription: tr("backend_waiting"),
 	}
 )
 
@@ -117,7 +117,7 @@ func RefreshServerInfo() {
 				ServerIsOnline:     false,
 				ServerName:         pteServer.Name,
 				ServerEXP:          entities[i].ValidDate.Format("2006-01-02 15:04:05"),
-				ServerDescription:  i18n.Tr(configure.Viper().GetString("Language"), "offline"),
+				ServerDescription:  tr("offline"),
 				ServerHostName:     entities[i].HostName,
 				ServerIdentifier:   pteServer.Identifier,
 				ServerIndex:        strconv.Itoa(i),
@@ -162,7 +162,7 @@ func RefreshServerInfo() {
 			info.ServerEggs = append(info.ServerEggs, pterodactyl.Egg{
 				Id:   -1,
 				Nest: pteServer.NestId,
-				Name: i18n.Tr(configure.Viper().GetString("Language"), "no_packs"),
+				Name: tr("no_packs"),
 			})
 		}
 		entityMap.Store(entities[i].ID, info)
@@ -210,11 +210,11 @@ func (this *UserConsoleController) Renew() {
 	entityIDString := this.Ctx.Input.Param(":entityID")
 	entityID, err := strconv.Atoi(entityIDString)
 	if database.Redis().Get(context.Background(), "RENEW"+entityIDString).Err() == nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "renew_limit")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("renew_limit")))
 		return
 	}
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server_id")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_server_id")))
 		return
 	}
 	DB := database.Mysql()
@@ -224,19 +224,19 @@ func (this *UserConsoleController) Renew() {
 		spec   database.WareSpec
 	)
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_server")))
 		return
 	}
 	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "invalid_key")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("invalid_key")))
 		return
 	}
 	if DB.Where("id = ?", key.SpecID).First(&spec).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_ware_spec")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_ware_spec")))
 		return
 	}
 	if key.SpecID != entity.SpecID {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "wrong_key_type")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("wrong_key_type")))
 		return
 	}
 	/* correct renew post */
@@ -256,28 +256,28 @@ func (this *UserConsoleController) Renew() {
 	}
 	if DB.Model(&entity).Update("valid_date", startDate.Add(spec.ValidDuration)).Update("delete_status", 0).Error != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_edit_server")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("cant_edit_server")))
 		DB.Create(&key)
 		return
 	}
 	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID, true)
 	if err != nil {
-		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
+		message.Send("ADMIN", entity.UserID, tr("edit_without_description"))
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 		return
 	}
 	if err := pterodactyl.ClientFromConf().UpdateServerDetail(entity.ServerExternalID, pterodactyl.PostUpdateDetails{
 		UserID:      pteServer.UserId,
 		ServerName:  pteServer.Name,
-		Description: "到期时间：" + entity.ValidDate.Format("2006-01-02"),
+		Description: tr("user_console.expire_time") + entity.ValidDate.Format("2006-01-02"),
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
 		glgf.Error(err)
-		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
+		message.Send("ADMIN", entity.UserID, tr("edit_without_description"))
 	}
 	if err = pterodactyl.ClientFromConf().UnsuspendServer(entity.ServerExternalID); err != nil {
 		glgf.Error(err)
-		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_unsuspend"))
+		message.Send("ADMIN", entity.UserID, tr("edit_without_unsuspend"))
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
@@ -286,29 +286,29 @@ func (this *UserConsoleController) Renew2() {
 	entityID := this.Ctx.Input.Param(":entity")
 	eid, err := strconv.Atoi(entityID)
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server_id")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_server_id")))
 		return
 	}
 	DB := database.Mysql()
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		glgf.Warn(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_user")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_user")))
 		return
 	}
 	var entity database.WareEntity
 	if DB.Where("id = ?", eid).First(&entity).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_server")))
 		return
 	}
 	var spec database.WareSpec
 	if DB.Where("id = ?", entity.SpecID).First(&spec).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_ware_spec")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_ware_spec")))
 		return
 	}
 	cost := spec.PricePerMonth * uint(100-spec.Discount) / 100
 	if cost > user.Balance {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "not_enough_balance")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("not_enough_balance")))
 		return
 	}
 	if err := DB.Model(&user).Update("balance", user.Balance-cost).Error; err != nil {
@@ -317,12 +317,12 @@ func (this *UserConsoleController) Renew2() {
 	}
 	if DB.Model(&entity).Update("valid_date", entity.ValidDate.AddDate(0, 1, 0)).Update("delete_status", 0).Error != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_edit_server")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("cant_edit_server")))
 		return
 	}
 	pteServer, err := pterodactyl.ClientFromConf().GetServer(entity.ServerExternalID, true)
 	if err != nil {
-		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
+		message.Send("ADMIN", entity.UserID, tr("edit_without_description"))
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 		return
 	}
@@ -333,7 +333,7 @@ func (this *UserConsoleController) Renew2() {
 		ExternalID:  pteServer.ExternalId,
 	}); err != nil {
 		glgf.Error(err)
-		message.Send("ADMIN", entity.UserID, i18n.Tr(configure.Viper().GetString("Language"), "edit_without_description"))
+		message.Send("ADMIN", entity.UserID, tr("edit_without_description"))
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }
@@ -342,11 +342,11 @@ func (this *UserConsoleController) Reinstall() {
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		// glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "login")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("login")))
 		return
 	}
 	if database.Redis().Get(context.Background(), "REINSTALL"+user.Name).Err() == nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "reinstall_limit")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("reinstall_limit")))
 		return
 	}
 	entityID := this.Ctx.Input.Param(":entityID")
@@ -360,21 +360,21 @@ func (this *UserConsoleController) Reinstall() {
 	DB := database.Mysql()
 	var entity database.WareEntity
 	if DB.Where("id = ?", entityID).First(&entity).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_server")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_server")))
 		return
 	}
 	if entity.UserID != user.ID && !user.IsAdmin {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "no_permission")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("no_permission")))
 		return
 	}
 	if err = pterodactyl.ClientFromConf().UpdateServerStartup(entity.ServerExternalID, eggID); err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_update_server")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("cant_update_server")))
 		return
 	}
 	if err = pterodactyl.ClientFromConf().ReinstallServer(entity.ServerExternalID); err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte(i18n.Tr(configure.Viper().GetString("Language"), "cant_reinstall_server")))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(tr("cant_reinstall_server")))
 		return
 	}
 	_ = database.Redis().Set(context.Background(), "REINSTALL"+user.Name, "", 10*time.Second)

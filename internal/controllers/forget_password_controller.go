@@ -27,7 +27,7 @@ func (this *ForgetPasswordController) Get() {
 	handleNavbar(&this.Controller)
 	if !configure.Viper().GetBool("SMTPEnabled") {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "服务器没有开启SMTP服务，无法使用找回密码功能，请联系网站管理员找回密码！"
+		this.Data["hasErrorText"] = tr("auth.no_smtp")
 	}
 }
 
@@ -48,20 +48,20 @@ func (this *ForgetPasswordController) Post() {
 				DB.Model(&user).Update("Password", hex.EncodeToString(b[:]))
 				DelayRedirect(DelayInfo{
 					URL:    "/login",
-					Detail: "正在跳转到登录页面",
-					Title:  "修改成功 😀",
+					Detail: tr("auth.jump_to_login"),
+					Title:  tr("auth.change_success"),
 				}, &this.Controller)
 			} else {
 				this.Data["hasError"] = true
-				this.Data["hasErrorText"] = "两次输入的密码不一致"
+				this.Data["hasErrorText"] = tr("auth.register_confirm_error")
 			}
 		} else {
 			this.Data["hasError"] = true
-			this.Data["hasErrorText"] = "邮件验证码输入错误"
+			this.Data["hasErrorText"] = tr("auth.register_captcha_error")
 		}
 	} else {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "该邮箱未被注册，无法找回密码！"
+		this.Data["hasErrorText"] = tr("auth.verify_email_error")
 	}
 }
 

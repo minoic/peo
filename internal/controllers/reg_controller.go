@@ -33,15 +33,15 @@ type RegController struct {
 	i18n.Locale
 }
 
-func (this *RegController) Get() {
+func (this *RegController) Prepare() {
 	this.TplName = "Register.html"
 	handleNavbar(&this.Controller)
+	this.Data["lang"] = configure.Viper().GetString("Language")
 }
 
+func (this *RegController) Get() {}
+
 func (this *RegController) Post() {
-	this.TplName = "Register.html"
-	handleNavbar(&this.Controller)
-	// glgf.Info("user posted!")
 	registerEmail := this.GetString("registerEmail")
 	registerPassword := this.GetString("registerPassword")
 	registerPasswordConfirm := this.GetString("registerPasswordConfirm")
@@ -56,27 +56,27 @@ func (this *RegController) Post() {
 	DB.Model(&database.User{}).Count(&userCount)
 	if !cptSuccess {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "验证码输入错误，请重试！"
+		this.Data["hasErrorText"] = tr("auth.register_captcha_error")
 		return
 	} else if !agreement {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "您必须同意我们的用户协议才能注册！"
+		this.Data["hasErrorText"] = tr("auth.register_terms_error")
 		return
 	} else if registerPassword != registerPasswordConfirm {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "两次密码输入不一致，请检查！"
+		this.Data["hasErrorText"] = tr("auth.register_confirm_error")
 		return
 	} else if !checkUserName(registerName) {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "用户名只能包含字母、数字、下划线！"
+		this.Data["hasErrorText"] = tr("auth.register_username_error")
 		return
 	} else if !DB.Where("name = ?", registerName).First(&database.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "您输入的用户名已被占用！"
+		this.Data["hasErrorText"] = tr("auth.register_username_used")
 		return
 	} else if !DB.Where("email = ?", registerEmail).First(&database.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "您输入的邮箱已被占用！"
+		this.Data["hasErrorText"] = tr("auth.register_email_used")
 		return
 	} else {
 		newUuid, _ := uuid.NewV4()
@@ -94,24 +94,24 @@ func (this *RegController) Post() {
 		}
 		glgf.Info(newUser)
 		DB.Create(&newUser)
-		message.Send("ADMIN", newUser.ID, "这是您的第一条消息")
+		message.Send("ADMIN", newUser.ID, tr("auth.first_message"))
 		if newUser.IsAdmin {
-			message.Send("ADMIN", newUser.ID, "您是第一个注册的账号，已被设置为管理员")
+			message.Send("ADMIN", newUser.ID, tr("auth.admin_tips"))
 		}
 		if configure.Viper().GetBool("SMTPEnabled") {
-			message.Send("Admin", newUser.ID, "您已成功注册账号，请前往邮箱确认注册，确认时会自动帮您创建翼龙面板用户，或请您在用户设置页面手动创建")
+			message.Send("Admin", newUser.ID, tr("auth.pterodactyl_account_tips"))
 			if err := email.ConfirmRegister(newUser); err != nil {
 				glgf.Error(err)
 				DelayRedirect(DelayInfo{
 					URL:    "/reg",
-					Detail: "即将跳转到注册页面",
-					Title:  "邮件发送失败，请联系网站管理员！",
+					Detail: tr("auth.jump_to_reg"),
+					Title:  tr("auth.email_failed"),
 				}, &this.Controller)
 			} else {
 				DelayRedirect(DelayInfo{
 					URL:    "/login",
-					Detail: "即将跳转到登陆页面",
-					Title:  "请前往您的邮箱进行验证！",
+					Detail: tr("auth.jump_to_login"),
+					Title:  tr("auth.email_verify"),
 				}, &this.Controller)
 			}
 		} else {
@@ -127,21 +127,20 @@ func (this *RegController) Post() {
 			})
 			if err != nil {
 				glgf.Error("cant create pterodactyl user for "+newUser.Name, err)
-				message.Send("ADMIN", newUser.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
+				message.Send("ADMIN", newUser.ID, tr("auth.pterodactyl_account_failed"))
 				DelayRedirect(DelayInfo{
 					URL:    "/login",
-					Detail: "即将跳转到登陆页面",
-					Title:  "注册成功，但开户失败，请手动开通！",
+					Detail: tr("auth.jump_to_login"),
+					Title:  tr("auth.register_success2"),
 				}, &this.Controller)
 			} else {
 				DB.Model(&newUser).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
 					URL:    "/login",
-					Detail: "即将跳转到登陆页面",
-					Title:  "注册成功！",
+					Detail: tr("auth.jump_to_login"),
+					Title:  tr("auth.register_success"),
 				}, &this.Controller)
-				message.Send("ADMIN", newUser.ID, "已为您开通翼龙面板账户，您可以购买服务器了！翼"+
-					"龙面板的账户名为您的邮箱，密码为您的用户名，登录后请及时修改密码！")
+				message.Send("ADMIN", newUser.ID, tr("auth.pterodactyl_account_success_tips"))
 			}
 		}
 	}
@@ -165,35 +164,34 @@ func (this *RegController) MailConfirm() {
 			})
 			if err != nil {
 				glgf.Error("cant create pterodactyl user for " + user.Name)
-				message.Send("ADMIN", user.ID, "开通翼龙面板账户失败，请在用户设置界面开通后购买服务器！")
+				message.Send("ADMIN", user.ID, tr("auth.pterodactyl_account_failed"))
 				DelayRedirect(DelayInfo{
 					URL:    "/login",
-					Detail: "即将跳转到登陆页面",
-					Title:  "注册验证成功，但开户失败，请联系网站管理员！",
+					Detail: tr("auth.jump_to_login"),
+					Title:  tr("auth.register_success2"),
 				}, &this.Controller)
 
 			} else {
-				message.Send("ADMIN", user.ID, "已为您开通翼龙面板账户，您可以购买服务器了！翼"+
-					"龙面板的账户名为您的邮箱，密码为您的用户名，登录后请及时修改密码！")
+				message.Send("ADMIN", user.ID, tr("auth.pterodactyl_account_success_tips"))
 				DB.Model(&user).Update("pte_user_created", true)
 				DelayRedirect(DelayInfo{
 					URL:    "/login",
-					Detail: "即将跳转到登陆页面",
-					Title:  "注册验证成功！",
+					Detail: tr("auth.jump_to_login"),
+					Title:  tr("auth.register_success"),
 				}, &this.Controller)
 			}
 		} else {
 			DelayRedirect(DelayInfo{
 				URL:    "/login",
-				Detail: "即将跳转到登陆页面",
-				Title:  "注册验证成功！",
+				Detail: tr("auth.jump_to_login"),
+				Title:  tr("auth.verify_success"),
 			}, &this.Controller)
 		}
 	} else {
 		DelayRedirect(DelayInfo{
 			URL:    "/login",
-			Detail: "即将跳转到登陆页面",
-			Title:  "注册验证失败！请重新验证！",
+			Detail: tr("auth.jump_to_login"),
+			Title:  tr("auth.verify_failed"),
 		}, &this.Controller)
 	}
 	this.TplName = "Delay.html"

@@ -27,6 +27,7 @@ func (this *UserSettingsController) Prepare() {
 	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
+	this.Data["lang"] = configure.Viper().GetString("Language")
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)
 	this.TplName = "UserSettings.html"
