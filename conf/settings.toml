@@ -4,9 +4,9 @@
 # hostname to visit your web site
 WebHostName = "http://example.com"
 # website name to show
-WebApplicationName = "MinoIC - PE"
+WebApplicationName = "PEO"
  # website description to show
-WebDescription = "Pterodactyl 服务器出售系统"
+WebDescription = "Pterodactyl Account Menager"
 # website Admin address
 WebAdminAddress = "ADMIN <admin@example.com>"
 
@@ -59,5 +59,5 @@ AliPayAppID = ""
 # toggle album
 AlbumEnabled = false
 SocialLink = "https://github.com/minoic/peo"
-SocialLinkTitle = "社区"
-Language = "zh-CN"
+SocialLinkTitle = "GitHub"
+Language = "en-US"

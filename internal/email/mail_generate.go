@@ -12,7 +12,7 @@ func getProd() hermes.Hermes {
 		Product: hermes.Product{
 			Name:        configure.Viper().GetString("WebApplicationName") + " Mail",
 			Link:        configure.Viper().GetString("WebHostName"),
-			Copyright:   "Copyright 2021 MinoIC. All rights reserved.",
+			Copyright:   "Copyright 2021 minoic. All rights reserved.",
 			TroubleText: "如果点击链接无效，请复制下列链接并在浏览器中打开：",
 		},
 	}

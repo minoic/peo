@@ -39,18 +39,18 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 	user, err := session.GetUser(this.StartSession())
 	if err != nil || user == (database.User{}) {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("please login"))
 		return
 	}
 	if database.Redis().Get(context.Background(), "WORKORDER"+user.Name).Err() == nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 10 秒钟只能发送一条工单"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("10 seconds cool down"))
 		return
 	}
 	database.Redis().Set(context.Background(), "WORKORDER"+user.Name, 0, 10*time.Second)
 	title := this.GetString("title")
 	text := this.GetString("text")
 	if title == "" || text == "" {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("不能输入空值"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("title/text cant be empty"))
 		return
 	}
 	/* valid post */
@@ -65,7 +65,7 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 	}
 	if err = DB.Create(&wo).Error; err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("发送工单时数据库出现问题"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	/* send messages to admin */
@@ -73,8 +73,8 @@ func (this *UserWorkOrderController) NewWorkOrder() {
 		var users []database.User
 		DB.Where("is_admin = ?", true).Find(&users)
 		for _, u := range users {
-			message.Send("UserWorkOrderSystem", u.ID, "您有一个新的工单："+title)
-			err = email.SendAnyEmail(user.Email, "您有一个新的工单："+title+" "+text)
+			message.Send("ADMIN", u.ID, "New work order："+title)
+			err = email.SendAnyEmail(user.Email, "New work order："+title+" "+text)
 			if err != nil {
 				glgf.Error(err)
 			}

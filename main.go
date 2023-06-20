@@ -19,5 +19,3 @@ func main() {
 	go cron.LoopTasksManager()
 	web.Run()
 }
-
-// todo: add code comments

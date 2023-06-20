@@ -37,12 +37,12 @@ func connect() {
 
 func Mysql() *gorm.DB {
 	for db == nil {
-		glgf.Warn("trying to connect to database!")
+		glgf.Warn("Trying to connect to database!")
 		time.Sleep(3 * time.Second)
 		connect()
 	}
 	for err := db.DB().Ping(); err != nil; err = db.DB().Ping() {
-		glgf.Warn("trying to connect to database!")
+		glgf.Warn("Trying to connect to database!")
 		time.Sleep(3 * time.Second)
 		connect()
 	}

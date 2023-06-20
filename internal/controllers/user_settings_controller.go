@@ -182,11 +182,11 @@ func (this *UserSettingsController) GalleryPost() {
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("please login"))
 		return
 	}
 	if itemName == "" || imgSource == "" {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("图片名称或地址不能为空"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("picture name or url cant be empty"))
 		return
 	}
 	DB := database.Mysql()
@@ -200,7 +200,7 @@ func (this *UserSettingsController) GalleryPost() {
 		ImgSource:       template.URL(imgSource),
 	}).Error; err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库错误"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))

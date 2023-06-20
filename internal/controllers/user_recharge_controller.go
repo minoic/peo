@@ -57,12 +57,12 @@ func (this *UserRechargeController) Get() {
 func (this *UserRechargeController) RechargeByKey() {
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("please login"))
 		return
 	}
 	// glgf.Debug(bm.Get("RECHARGE_DELAY"+user.Name))
 	if database.Redis().Get(context.Background(), "RECHARGE_DELAY"+user.Name).Err() == nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("您 3 秒钟内只能充值一次"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("3 seconds cool down"))
 		return
 	}
 	err = database.Redis().Set(context.Background(), "RECHARGE_DELAY"+user.Name, 1, 3*time.Second).Err()
@@ -73,15 +73,15 @@ func (this *UserRechargeController) RechargeByKey() {
 	DB := database.Mysql()
 	var key database.RechargeKey
 	if DB.Where("key_string = ?", keyString).First(&key).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无效的 KEY"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("invalid KEY"))
 		DB.Create(&database.RechargeLog{
 			Model:   gorm.Model{},
 			UserID:  user.ID,
 			Code:    "FAILED_ByKEY_" + keyString + "_" + strconv.Itoa(int(user.Balance)),
-			Method:  "激活码",
+			Method:  "cdkey",
 			Balance: 0,
 			Time:    time.Now().Format("2006-01-02 15:04:05"),
-			Status:  `<span class="label label-danger">无效的激活码</span>`,
+			Status:  `<span class="label label-danger">invalid</span>`,
 		})
 		return
 	}
@@ -91,10 +91,10 @@ func (this *UserRechargeController) RechargeByKey() {
 			Model:   gorm.Model{},
 			UserID:  user.ID,
 			Code:    "FAILED_ByKEY_" + keyString + "_" + strconv.Itoa(int(user.Balance)),
-			Method:  "激活码",
+			Method:  "cdkey",
 			Balance: 0,
 			Time:    time.Now().Format("2006-01-02_15:04:05"),
-			Status:  `<span class="label label-warning">请重试</span>`,
+			Status:  `<span class="label label-warning">failed</span>`,
 		})
 		DB.Create(&database.RechargeKey{
 			Model:     gorm.Model{},
@@ -102,7 +102,7 @@ func (this *UserRechargeController) RechargeByKey() {
 			Balance:   key.Balance,
 			Exp:       key.Exp,
 		})
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("增加余额失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	if err = DB.Delete(&key).Error; err != nil {
@@ -110,23 +110,23 @@ func (this *UserRechargeController) RechargeByKey() {
 			Model:   gorm.Model{},
 			UserID:  user.ID,
 			Code:    "FAILED_ByKEY_" + keyString + "_" + strconv.Itoa(int(user.Balance)),
-			Method:  "激活码",
+			Method:  "cdkey",
 			Balance: 0,
 			Time:    time.Now().Format("2006-01-02_15:04:05"),
 			Status:  `<span class="label label-warning">请重试</span>`,
 		})
 		DB.Model(&user).Update("balance", user.Balance-key.Balance)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("销毁激活码失败！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	DB.Create(&database.RechargeLog{
 		Model:   gorm.Model{},
 		UserID:  user.ID,
 		Code:    "ByKEY_" + key.KeyString + "_" + strconv.Itoa(int(user.Balance-key.Balance)) + "_" + strconv.Itoa(int(user.Balance)),
-		Method:  "激活码",
+		Method:  "cdkey",
 		Balance: key.Balance,
 		Time:    time.Now().Format("2006-01-02_15:04:05"),
-		Status:  `<span class="label label-success">已到账</span>`,
+		Status:  `<span class="label label-success">success</span>`,
 	})
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 }

@@ -164,7 +164,7 @@ func (this *AdminConsoleController) DeleteConfirm() {
 	DB.Delete(&database.DeleteConfirm{}, "ware_id = ?", entityIDint)
 	DB.Delete(&database.WareEntity{}, "id = ?", entityIDint)
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法在面板中删除该服务器，请手动删除！"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("delete failed, please retry manually"))
 	} else {
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
 	}
@@ -173,12 +173,12 @@ func (this *AdminConsoleController) DeleteConfirm() {
 func (this *AdminConsoleController) NewKey() {
 	keyAmount, err := this.GetInt("key_amount", 1)
 	if err != nil || keyAmount <= 0 || keyAmount >= 100 {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入不合理的 KEY 数量"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("invalid KEY amount"))
 		return
 	}
 	validDuration, err := this.GetInt("valid_duration", 60)
 	if err != nil || validDuration <= 0 {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("输入不合理的有效期"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("invalid duration"))
 		return
 	}
 	DB := database.Mysql()
@@ -191,7 +191,7 @@ func (this *AdminConsoleController) NewKey() {
 		for _, s := range specs {
 			err = cryptoo.GeneKeys(keyAmount, s.ID, validDuration, 20)
 			if err != nil {
-				_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+				_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 				return
 			}
 		}
@@ -201,7 +201,7 @@ func (this *AdminConsoleController) NewKey() {
 	if uint(specID) == ^uint(0)-30 {
 		err = cryptoo.GeneRechargeKeys(keyAmount, 30, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -209,7 +209,7 @@ func (this *AdminConsoleController) NewKey() {
 	} else if uint(specID) == ^uint(0)-50 {
 		err = cryptoo.GeneRechargeKeys(keyAmount, 50, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -217,7 +217,7 @@ func (this *AdminConsoleController) NewKey() {
 	} else if uint(specID) == ^uint(0)-100 {
 		err = cryptoo.GeneRechargeKeys(keyAmount, 100, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -225,17 +225,17 @@ func (this *AdminConsoleController) NewKey() {
 	} else if uint(specID) == ^uint(0)-1 {
 		err = cryptoo.GeneRechargeKeys(keyAmount, 30, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 			return
 		}
 		err = cryptoo.GeneRechargeKeys(keyAmount, 50, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 			return
 		}
 		err = cryptoo.GeneRechargeKeys(keyAmount, 100, validDuration, 20)
 		if err != nil {
-			_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+			_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 			return
 		}
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -243,12 +243,12 @@ func (this *AdminConsoleController) NewKey() {
 	}
 	/* end special method */
 	if err != nil || DB.Where("id = ?", specID).First(&database.WareSpec{}).RecordNotFound() {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("选择了无效的商品"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("invalid product"))
 		return
 	}
 	err = cryptoo.GeneKeys(keyAmount, uint(specID), validDuration, 20)
 	if err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("在数据库中创建 KeyString 失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -340,7 +340,7 @@ func (this *AdminConsoleController) GetKeys() {
 func (this *AdminConsoleController) CloseWorkOrder() {
 	orderID, err := this.GetInt("workOrderID")
 	if err != nil || orderID < 0 {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取工单 ID 失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("invalid work order id"))
 		return
 	}
 	closeInfo := this.GetString("closeInfo")
@@ -348,20 +348,20 @@ func (this *AdminConsoleController) CloseWorkOrder() {
 	var order database.WorkOrder
 	if err := DB.Where("id = ?", orderID).First(&order).Error; err != nil || order.Closed {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取工单失败或工单已经被解决"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte(err.Error()))
 		return
 	}
 	/* valid post */
 	if err := DB.Model(&order).Update("closed", true).Error; err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("更新工单状态失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	go func() {
-		message.Send("WorkOrderSystem", order.UserID, "您的工单 #"+strconv.Itoa(int(orderID))+" 已被解决")
+		message.Send("ADMIN", order.UserID, "Your order #"+strconv.Itoa(int(orderID))+" has been solved.")
 		var user database.User
 		if !DB.Where("id = ?", order.UserID).First(&user).RecordNotFound() {
-			_ = email.SendAnyEmail(user.Email, "您的工单 #"+strconv.Itoa(orderID)+" 已被解决："+closeInfo)
+			_ = email.SendAnyEmail(user.Email, "Your order #"+strconv.Itoa(orderID)+" has been solved："+closeInfo)
 		}
 	}()
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -371,20 +371,20 @@ func (this *AdminConsoleController) GalleryPass() {
 	itemID, err := this.GetInt("itemID")
 	if err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取图片 ID 失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("picture id invalid"))
 		return
 	}
 	var item database.GalleryItem
 	DB := database.Mysql()
 	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	/* item found correctly*/
 	if err = DB.Model(&item).Update("review_passed", true).Error; err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库更新图片状态失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))
@@ -394,20 +394,20 @@ func (this *AdminConsoleController) GalleryDelete() {
 	itemID, err := this.GetInt("itemID")
 	if err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("获取图片 ID 失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("picture id invalid"))
 		return
 	}
 	var item database.GalleryItem
 	DB := database.Mysql()
 	if err = DB.Where("id = ?", itemID).First(&item).Error; err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库查找图片失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	/* item found correctly*/
 	if err = DB.Delete(&item).Error; err != nil {
 		glgf.Error(err)
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("数据库更新图片状态失败"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("database error"))
 		return
 	}
 	_, _ = this.Ctx.ResponseWriter.Write([]byte("SUCCESS"))

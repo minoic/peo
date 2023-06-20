@@ -57,13 +57,13 @@ func (this *OrderInfoController) Prepare() {
 	this.Data["adminAddress"] = configure.Viper().GetString("WebAdminAddress")
 	switch spec.ValidDuration {
 	case 3 * 24 * time.Hour:
-		this.Data["typeText"] = "试用"
+		this.Data["typeText"] = "try"
 	case 30 * 24 * time.Hour:
-		this.Data["typeText"] = "月付"
+		this.Data["typeText"] = "monthly"
 	case 90 * 24 * time.Hour:
-		this.Data["typeText"] = "季付"
+		this.Data["typeText"] = "quarterly"
 	case 365 * 24 * time.Hour:
-		this.Data["typeText"] = "年付"
+		this.Data["typeText"] = "annual"
 	}
 	this.Data["originPrice"] = order.OriginPrice
 	this.Data["discountPrice"] = order.OriginPrice - order.FinalPrice
@@ -104,11 +104,11 @@ func (this *OrderInfoController) Post() {
 	// glgf.Info(id, arr[1])
 	if err != nil {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "选取服务器地址失败！"
+		this.Data["hasErrorText"] = "invalid server address selected"
 	}
 	if err := orderform.SellPaymentCheck(orderID, key, id, arr[1]); err != nil {
 		this.Data["hasError"] = true
-		this.Data["hasErrorText"] = "<< " + err.Error() + " >> 请联系网站管理员！"
+		this.Data["hasErrorText"] = "<< " + err.Error() + " >> please contact website manager！"
 	} else {
 		this.Data["hasSuccess"] = true
 		this.Redirect(this.Ctx.Request.URL.String(), 302)
@@ -118,29 +118,29 @@ func (this *OrderInfoController) Post() {
 func (this *OrderInfoController) PayByBalance() {
 	user, err := session.GetUser(this.StartSession())
 	if err != nil || user == (database.User{}) {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新登录"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("please login"))
 		return
 	}
 	orderID, err := strconv.Atoi(this.Ctx.Input.Param(":orderID"))
 	if err != nil || orderID <= 0 {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取表单"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("cant find order"))
 		return
 	}
 	var order database.Order
 	DB := database.Mysql()
 	if err = DB.Where("id = ?", orderID).First(&order).Error; err != nil {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("无法获取订单"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("cant find order"))
 		return
 	}
 	selectedIP := this.GetString("selected_ip")
 	arr := strings.Fields(selectedIP)
 	id, err := strconv.Atoi(arr[0])
 	if err != nil || id < 0 {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("请重新选择 IP"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("invalid server address selected"))
 		return
 	}
 	if order.Paid || order.Confirmed {
-		_, _ = this.Ctx.ResponseWriter.Write([]byte("订单已付款"))
+		_, _ = this.Ctx.ResponseWriter.Write([]byte("already payed"))
 		return
 	}
 	/* valid post */
