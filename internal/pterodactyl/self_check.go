@@ -72,26 +72,6 @@ func CheckServers() {
 	}
 }
 
-func CacheNeededEggs() {
-	var wareSpecs []database.WareSpec
-	DB := database.Mysql()
-	if !DB.Find(&wareSpecs).RecordNotFound() {
-		for _, spec := range wareSpecs {
-			ClientFromConf().GetEgg(spec.Nest, spec.Egg)
-		}
-	}
-}
-
-func CacheNeededServers() {
-	var entities []database.WareEntity
-	DB := database.Mysql()
-	if !DB.Find(&entities).RecordNotFound() {
-		for _, entity := range entities {
-			ClientFromConf().GetServer(entity.ServerExternalID, true)
-		}
-	}
-}
-
 func ConfirmDelete(entityID uint) error {
 	var entity database.WareEntity
 	DB := database.Mysql()

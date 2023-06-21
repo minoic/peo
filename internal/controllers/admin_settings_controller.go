@@ -25,9 +25,9 @@ var (
 
 func (this *AdminSettingsController) Prepare() {
 	this.TplName = "AdminSettings.html"
-	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.Data["u"] = 4
 	handleNavbar(&this.Controller)
+
 	sess := this.StartSession()
 	if !session.Logged(sess) {
 		this.Abort("401")
@@ -37,21 +37,22 @@ func (this *AdminSettingsController) Prepare() {
 	this.Data["BuildTime"] = BuildTime
 	this.Data["GoVersion"] = GoVersion
 	if err := database.Mysql().DB().Ping(); err == nil {
-		this.Data["MysqlStats"] = "连接成功"
+		this.Data["MysqlStats"] = "success"
 	} else {
-		this.Data["MysqlStats"] = "连接失败：" + err.Error()
+		this.Data["MysqlStats"] = "failed：" + err.Error()
 	}
 	if err := database.Redis().Ping(context.Background()).Err(); err == nil {
-		this.Data["RedisStats"] = "连接成功"
+		this.Data["RedisStats"] = "success"
 	} else {
-		this.Data["RedisStats"] = "连接失败：" + err.Error()
+		this.Data["RedisStats"] = "failed：" + err.Error()
 	}
 	if err := pterodactyl.ClientFromConf().TestConnection(); err == nil {
-		this.Data["PterodactylStats"] = "连接成功"
+		this.Data["PterodactylStats"] = "success"
 	} else {
-		this.Data["PterodactylStats"] = "连接失败：" + err.Error()
+		this.Data["PterodactylStats"] = "failed：" + err.Error()
 	}
 	this.Data["options"] = this.getSettings()
+
 }
 
 func (this *AdminSettingsController) Get() {}
@@ -240,6 +241,15 @@ func (this *AdminSettingsController) getSettings() []InputField {
 			Default:        configure.Viper().GetString("SMTPSendFrom"),
 		},
 		{
+			Name:           "SMTPUsername",
+			FriendlyName:   "SMTPUsername",
+			Description:    "",
+			Type:           "text",
+			AdditionalTags: "",
+			Required:       false,
+			Default:        configure.Viper().GetString("SMTPUsername"),
+		},
+		{
 			Name:           "SMTPUserPassword",
 			FriendlyName:   "SMTPUserPassword",
 			Description:    "",
@@ -350,7 +360,7 @@ func (this *AdminSettingsController) getSettings() []InputField {
 		{
 			Name:           "Language",
 			FriendlyName:   "语言",
-			Description:    "目前支持：zh-CN,en-US",
+			Description:    "目前支持：zh-CN, en-US, de-DE, 也可以自行更改或添加，文件夹位于 conf/locale",
 			Type:           "text",
 			AdditionalTags: "",
 			Required:       false,

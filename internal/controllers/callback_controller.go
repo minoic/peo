@@ -17,8 +17,7 @@ type CallbackController struct {
 }
 
 func (this *CallbackController) Prepare() {
-	this.EnableRender = false
-	this.Data["lang"] = configure.Viper().GetString("Language")
+
 }
 
 func (this *CallbackController) Post() {

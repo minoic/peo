@@ -20,6 +20,7 @@ func (this *OrderCreateController) Prepare() {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
+
 }
 
 func (this *OrderCreateController) Get() {

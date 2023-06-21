@@ -20,20 +20,29 @@ var (
 func init() {
 	if _, err := os.Stat("conf/app.conf"); errors.Is(err, os.ErrNotExist) {
 		file, _ := os.Create("conf/app.conf")
-		file.Write(conf.AppConf)
+		_, err := file.Write(conf.AppConf)
+		if err != nil {
+			panic(err)
+		}
 		file.Close()
-		glgf.Error("未检测到配置文件，已生成默认，请重启应用程序")
+		glgf.Error("No configuration file detected, default generated, please restart the application")
 		os.Exit(1)
 	}
 	if _, err := os.Stat("conf/settings.toml"); errors.Is(err, os.ErrNotExist) {
 		if _, err := os.Stat("conf/settings.conf"); errors.Is(err, os.ErrNotExist) {
-			glgf.Warn("找不到配置文件，正在生成 settings.toml")
+			glgf.Warn("Config file not found, generating settings.toml")
 			file, _ := os.Create("conf/settings.toml")
-			file.Write(conf.SettingsToml)
+			_, err := file.Write(conf.SettingsToml)
+			if err != nil {
+				panic(err)
+			}
 			file.Close()
 		} else {
-			glgf.Warn("找到旧版配置文件，正在转换 settings.conf->settings.toml")
-			os.Rename("conf/settings.conf", "conf/settings.toml")
+			glgf.Warn("Legacy config file found, converting settings.conf -> settings.toml")
+			err := os.Rename("conf/settings.conf", "conf/settings.toml")
+			if err != nil {
+				panic(err)
+			}
 			ReloadConfig()
 			Viper().Set("RedisHost", Viper().GetString("CacheRedisCONN"))
 			if Viper().GetBool("WebSecure") {
@@ -47,36 +56,50 @@ func init() {
 				Viper().Set("PterodactylHostname", path.Join("https://", Viper().GetString("Serverhostname")))
 			}
 			Viper().Set("PterodactylToken", Viper().GetString("Serverpassword"))
-			Viper().WriteConfig()
-		}
-	}
-	ReloadConfig()
-	if Viper().GetBool("AliPayEnabled") {
-		AliClient, _ = alipay.New(Viper().GetString("AliPayAppID"), Viper().GetString("AliPayPrivateKey"), true)
-		AliClient.LoadAliPayPublicKey(Viper().GetString("AliPayPublicKey"))
-	}
-	entries, _ := conf.Locale.ReadDir("locale")
-	os.Mkdir("conf/locale", os.ModePerm)
-	for i := range entries {
-		if strings.HasSuffix(entries[i].Name(), ".ini") {
-			if _, err := os.Stat("conf/locale/" + entries[i].Name()); errors.Is(err, os.ErrNotExist) {
-				glgf.Debugf("Writing locale file %s to folder", entries[i].Name())
-				file, err := os.Create("conf/locale/" + entries[i].Name())
-				if err != nil {
-					panic(err)
-				}
-				readFile, err := conf.Locale.ReadFile("locale/" + entries[i].Name())
-				if err != nil {
-					panic(err)
-				}
-				_, err = file.Write(readFile)
-				if err != nil {
-					panic(err)
-				}
+			err = Viper().WriteConfig()
+			if err != nil {
+				panic(err)
 			}
 		}
 	}
-	locales, _ := os.ReadDir("conf/locale")
+	initLocalefile()
+	ReloadConfig()
+	if Viper().GetBool("AliPayEnabled") {
+		AliClient, _ = alipay.New(Viper().GetString("AliPayAppID"), Viper().GetString("AliPayPrivateKey"), true)
+		err := AliClient.LoadAliPayPublicKey(Viper().GetString("AliPayPublicKey"))
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func initLocalefile() {
+	entries, err := conf.Locale.ReadDir("locale")
+	if err != nil {
+		panic(err)
+	}
+	os.Mkdir("conf/locale", os.ModePerm)
+	for i := range entries {
+		if _, err := os.Stat("conf/locale/" + entries[i].Name()); errors.Is(err, os.ErrNotExist) {
+			glgf.Debugf("Writing locale file %s to folder", entries[i].Name())
+			file, err := os.Create("conf/locale/" + entries[i].Name())
+			if err != nil {
+				panic(err)
+			}
+			readFile, err := conf.Locale.ReadFile("locale/" + entries[i].Name())
+			if err != nil {
+				panic(err)
+			}
+			_, err = file.Write(readFile)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+	locales, err := os.ReadDir("conf/locale")
+	if err != nil {
+		panic(err)
+	}
 	for i := range locales {
 		if strings.HasSuffix(locales[i].Name(), ".ini") {
 			err := i18n.SetMessage(strings.TrimSuffix(locales[i].Name(), ".ini"), "conf/locale/"+locales[i].Name())
@@ -86,6 +109,7 @@ func init() {
 			glgf.Debugf("Added locale file %s to system", locales[i].Name())
 		}
 	}
+
 }
 
 func ReloadConfig() {
@@ -98,6 +122,7 @@ func ReloadConfig() {
 	}
 	v.Set("WebHostName", strings.TrimRight(v.GetString("WebHostName"), "/"))
 	v.Set("PterodactylHostname", strings.TrimRight(v.GetString("PterodactylHostname"), "/"))
+
 }
 
 func Viper() *viper.Viper {

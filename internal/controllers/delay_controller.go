@@ -25,12 +25,12 @@ type DelayInfo struct {
 }
 
 func (this *DelayController) Get() {
-	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.TplName = "Delay.html"
 	this.Data["detail"] = this.GetString("detail")
 	this.Data["URL"] = this.GetString("URL")
 	this.Data["title"] = this.GetString("title")
 	// code,_:=this.GetInt("code",200)
+
 }
 
 func DelayRedirect(info DelayInfo, c *web.Controller, code ...int) {

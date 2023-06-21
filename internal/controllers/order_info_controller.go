@@ -89,6 +89,7 @@ func (this *OrderInfoController) Prepare() {
 		})
 	}
 	this.Data["ips"] = IPInfos
+
 }
 
 func (this *OrderInfoController) Get() {}

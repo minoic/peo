@@ -7,7 +7,6 @@ import (
 	"github.com/hako/durafmt"
 	"github.com/mholt/archiver"
 	"github.com/minoic/glgf"
-	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/cryptoo"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/email"
@@ -28,7 +27,6 @@ type AdminConsoleController struct {
 
 func (this *AdminConsoleController) Prepare() {
 	this.TplName = "AdminConsole.html"
-	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.Data["u"] = 4
 	handleNavbar(&this.Controller)
 	sess := this.StartSession()
@@ -37,6 +35,7 @@ func (this *AdminConsoleController) Prepare() {
 	} else if !session.IsAdmin(sess) {
 		this.Abort("401")
 	}
+
 }
 
 type dServer struct {

@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} {{i18n .lang "auth.register"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "auth.register"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 
@@ -11,52 +11,52 @@
 <body>
 
 <div class="login-wrapper">
-    <div class="text-center" title='{{i18n .lang "auth.return"}}'>
+    <div class="text-center" title='{{i18n Lang "auth.return"}}'>
         <h2 class="fadeInUp animation-delay8" style="font-weight:bold">
-            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title='{{i18n .lang "auth.return"}}'><i
+            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title='{{i18n Lang "auth.return"}}'><i
                         class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span
-                        style="color:#ccc; text-shadow:0 1px #fff"> {{i18n .lang "auth.account"}}</span></a>
+                        style="color:#ccc; text-shadow:0 1px #fff"> {{i18n Lang "auth.account"}}</span></a>
         </h2>
     </div>
     <div class="login-widget animation-delay1">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="fa fa-plus-circle fa-lg"></i> {{i18n .lang "auth.register"}}
+                <i class="fa fa-plus-circle fa-lg"></i> {{i18n Lang "auth.register"}}
             </div>
             <div class="panel-body">
                 <form class="form-login" method="post">
                     {{.xsrfData}}
                     <div class="form-group">
-                        <label>{{i18n .lang "auth.username"}}</label>
-                        <input type="text" placeholder='{{i18n .lang "auth.input_username"}}'
+                        <label>{{i18n Lang "auth.username"}}</label>
+                        <input type="text" placeholder='{{i18n Lang "auth.input_username"}}'
                                class="form-control input-sm fadeInDown animation-delay2" name="registerName">
                     </div><!-- /form-group -->
                     <div class="form-group">
-                        <label>{{i18n .lang "auth.password"}}</label>
-                        <input type="password" placeholder='{{i18n .lang "auth.input_password"}}'
+                        <label>{{i18n Lang "auth.password"}}</label>
+                        <input type="password" placeholder='{{i18n Lang "auth.input_password"}}'
                                class="form-control input-sm fadeInDown animation-delay3" name="registerPasswordConfirm">
                     </div><!-- /form-group -->
                     <div class="form-group">
-                        <label>{{i18n .lang "auth.password_confirm"}}</label>
-                        <input type="password" placeholder='{{i18n .lang "auth.input_password_confirm"}}'
+                        <label>{{i18n Lang "auth.password_confirm"}}</label>
+                        <input type="password" placeholder='{{i18n Lang "auth.input_password_confirm"}}'
                                class="form-control input-sm fadeInDown animation-delay4" name="registerPassword">
                     </div><!-- /form-group -->
                     <div class="form-group">
-                        <label>{{i18n .lang "auth.email"}}</label>
-                        <input type="email" placeholder='{{i18n .lang "auth.input_email"}}'
+                        <label>{{i18n Lang "auth.email"}}</label>
+                        <input type="email" placeholder='{{i18n Lang "auth.input_email"}}'
                                class="form-control input-sm fadeInDown animation-delay5" name="registerEmail">
                     </div><!-- /form-group -->
                     <div class="row">
                         <div class="col-md-8">
                             <div class="form-group">
-                                <label>{{i18n .lang "auth.captcha"}}</label>
-                                <input type="text" autocomplete="off" placeholder='{{i18n .lang "auth.captcha_tips"}}'
+                                <label>{{i18n Lang "auth.captcha"}}</label>
+                                <input type="text" autocomplete="off" placeholder='{{i18n Lang "auth.captcha_tips"}}'
                                        class="form-control input-sm fadeInDown animation-delay6" name="captcha">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="img fadeInDown animation-delay6 tooltip-test" data-toggle="tooltip"
-                                 data-placement="top" data-original-title='{{i18n .lang "auth.captcha_refresh"}}'>
+                                 data-placement="top" data-original-title='{{i18n Lang "auth.captcha_refresh"}}'>
                                 {{create_captcha}}
                             </div>
                         </div>
@@ -65,26 +65,26 @@
                         <label class="label-checkbox">
                             <input type="checkbox" name="agreement" value="1"/>
                             <span class="custom-checkbox info fadeInDown animation-delay7"></span>
-                            {{i18n .lang "auth.agree"}} <a href="/user-terms" target="_blank">{{i18n .lang "auth.user_term"}}</a>
+                            {{i18n Lang "auth.agree"}} <a href="/user-terms" target="_blank">{{i18n Lang "auth.user_term"}}</a>
                         </label>
                     </div><!-- /form-group -->
                     <hr/>
                     {{if .hasError}}
                         <div class="alert alert-danger">
-                            <strong>{{i18n .lang "auth.register_failed"}}</strong> {{.hasErrorText}}
+                            <strong>{{i18n Lang "auth.register_failed"}}</strong> {{.hasErrorText}}
                         </div>
                     {{end}}
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="controls fadeInDown animation-delay7">
-                                 {{i18n .lang "auth.have_account"}}<a href="/login" class="primary-font login-link">{{i18n .lang "auth.login"}}</a>
+                                 {{i18n Lang "auth.have_account"}}<a href="/login" class="primary-font login-link">{{i18n Lang "auth.login"}}</a>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="form-group">
                                 <div class="controls text-right">
                                     <button class="btn btn-success btn-sm bounceIn animation-delay7" type="submit"><i
-                                                class="fa fa-plus-circle"></i> {{i18n .lang "auth.register_confirm"}}
+                                                class="fa fa-plus-circle"></i> {{i18n Lang "auth.register_confirm"}}
                                     </button>
                                 </div>
                             </div><!-- /form-group -->

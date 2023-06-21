@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} {{i18n .lang "user_settings.title"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "user_settings.title"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -22,45 +22,45 @@
                               data-validate="parsley" novalidate="" method="post"
                               action="/user-settings/change-password">
                             <div class="panel-heading">
-                                <h5><strong>{{i18n .lang "user_settings.change_password"}}</strong></h5>
-                                <span>{{i18n .lang "user_settings.change_password_tips"}}</span>
+                                <h5><strong>{{i18n Lang "user_settings.change_password"}}</strong></h5>
+                                <span>{{i18n Lang "user_settings.change_password_tips"}}</span>
                             </div>
                             <div class="panel-body">
                                 {{.xsrfData}}
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.old_password"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.old_password"}}</label>
                                     <div class="col-lg-8">
                                         <input type="password" class="form-control input-sm parsley-validated"
-                                               placeholder='{{i18n .lang "user_settings.input_old_password"}}' name="oldPassword">
+                                               placeholder='{{i18n Lang "user_settings.input_old_password"}}' name="oldPassword">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.new_password"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.new_password"}}</label>
                                     <div class="col-lg-8">
-                                        <input type="password" placeholder='{{i18n .lang "user_settings.input_new_password"}}' class="form-control input-sm"
+                                        <input type="password" placeholder='{{i18n Lang "user_settings.input_new_password"}}' class="form-control input-sm"
                                                name="newPassword">
                                         <div class="seperator"></div>
-                                        <input type="password" placeholder='{{i18n .lang "user_settings.input_confirm_new_password"}}' class="form-control input-sm"
+                                        <input type="password" placeholder='{{i18n Lang "user_settings.input_confirm_new_password"}}' class="form-control input-sm"
                                                name="confirmPassword">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>
                             {{if .hasError}}
                             <div class="alert alert-danger">
-                                <strong>{{i18n .lang "user_settings.change_failed"}}</strong> {{.hasErrorText}}
+                                <strong>{{i18n Lang "user_settings.change_failed"}}</strong> {{.hasErrorText}}
                             </div>
                             {{end}}
                             <div class="panel-footer">
-                                <button type="submit" class="btn btn-info">{{i18n .lang "user_settings.confirm_change"}}</button>
+                                <button type="submit" class="btn btn-info">{{i18n Lang "user_settings.confirm_change"}}</button>
                             </div>
                         </form>
                     </div><!-- /panel -->
                     <div class="panel panel-default fadeInDown animation-delay2">
                         <form class="form-horizontal no-margin" data-validate="parsley" novalidate="">
                             <div class="panel-heading">
-                                <h5><strong>{{i18n .lang "user_settings.pterodactyl_user"}}</strong></h5>
+                                <h5><strong>{{i18n Lang "user_settings.pterodactyl_user"}}</strong></h5>
                                 <p class="text-muted">
-                                    {{i18n .lang "user_settings.pterodactyl_user_tips"}}
+                                    {{i18n Lang "user_settings.pterodactyl_user_tips"}}
                                 </p>
                             </div>
                             <div class="panel-body">
@@ -71,31 +71,31 @@
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.user_name"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.user_name"}}</label>
                                     <div class="col-lg-8">
                                         <input type="text" placeholder="{{.pteUserName}}" class="form-control input-sm" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.password"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.password"}}</label>
                                     <div class="col-lg-8">
-                                        <input type="text" placeholder='{{i18n .lang "user_settings.password_tips"}}' class="form-control input-sm" disabled>
+                                        <input type="text" placeholder='{{i18n Lang "user_settings.password_tips"}}' class="form-control input-sm" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.email"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.email"}}</label>
                                     <div class="col-lg-8">
                                         <input type="password" placeholder="{{.pteUserEmail}}" class="form-control input-sm"  disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.2fa"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.2fa"}}</label>
                                     <div class="col-lg-8">
                                         <input type="text" placeholder="{{if .pteUser2FA}}已开启{{else}}未开启{{end}}" class="form-control input-sm" disabled>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.create_time"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.create_time"}}</label>
                                     <div class="col-lg-8">
                                         <input type="text" placeholder="{{.pteUserCreatedAt}}" class="form-control input-sm"  disabled>
                                     </div><!-- /.col -->
@@ -110,7 +110,7 @@
                                         parent.location.reload();
                                         })
                                         "
-                                        {{if .userCreated}}disabled{{end}}>{{if .userCreated}}{{i18n .lang "user_settings.created"}}{{else}}{{i18n .lang "user_settings.create"}}{{end}}</button>
+                                        {{if .userCreated}}disabled{{end}}>{{if .userCreated}}{{i18n Lang "user_settings.created"}}{{else}}{{i18n Lang "user_settings.create"}}{{end}}</button>
                             </div>
                         </form>
                     </div><!-- /panel -->
@@ -120,20 +120,20 @@
                         <form class="form-horizontal form-border no-margin" id="type-constraint" data-validate="parsley"
                               novalidate="" method="post" action="/user-settings/change-email">
                             <div class="panel-heading">
-                                <h5><strong>{{i18n .lang "user_settings.change_email"}}</strong></h5>
+                                <h5><strong>{{i18n Lang "user_settings.change_email"}}</strong></h5>
                             </div>
                             <div class="panel-body">
                                 {{.xsrfData}}
                                 <div>
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.new_email"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.new_email"}}</label>
                                     <div class="col-lg-8 input-group">
                                         <input id="email" name="email" type="text" class="form-control"
-                                               placeholder='{{i18n .lang "user_settings.input_new_email"}}'>
+                                               placeholder='{{i18n Lang "user_settings.input_new_email"}}'>
                                         <span class="input-group-btn">
                                             <button id="send_email" class="btn btn-default tooltip-test"
                                                     data-toggle="tooltip" data-placement="top"
-                                                    data-original-title='{{i18n .lang "user_settings.send_limit"}}' type="button"
-                                                    onclick="send()"><small id="cooldown">{{i18n .lang "user_settings.send"}}👍</small></button>
+                                                    data-original-title='{{i18n Lang "user_settings.send_limit"}}' type="button"
+                                                    onclick="send()"><small id="cooldown">{{i18n Lang "user_settings.send"}}👍</small></button>
                                             </span>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
@@ -157,20 +157,20 @@
                                     }
                                 </script>
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.captcha"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.captcha"}}</label>
                                     <div class="col-lg-7">
                                         <input type="text" class="form-control input-sm parsley-validated"
-                                               placeholder='{{i18n .lang "user_settings.input_captcha"}}' name="captcha">
+                                               placeholder='{{i18n Lang "user_settings.input_captcha"}}' name="captcha">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                             </div>
                             {{if .hasError2}}
                                 <div class="alert alert-danger">
-                                    <strong>{{i18n .lang "user_settings.change_failed"}}</strong> {{.hasErrorText2}}
+                                    <strong>{{i18n Lang "user_settings.change_failed"}}</strong> {{.hasErrorText2}}
                                 </div>
                             {{end}}
                             <div class="panel-footer">
-                                <button type="submit" class="btn btn-info">{{i18n .lang "user_settings.confirm_change"}}</button>
+                                <button type="submit" class="btn btn-info">{{i18n Lang "user_settings.confirm_change"}}</button>
                             </div>
                         </form>
                     </div><!-- /panel -->
@@ -181,31 +181,31 @@
                     <div class="panel panel-default fadeInDown animation-delay3">
                         <form class="form-horizontal form-border no-margin" id="gallery-post">
                             <div class="panel-heading">
-                                <h5><strong>{{i18n .lang "user_settings.upload_photo"}}</strong></h5>
-                                {{i18n .lang "user_settings.upload_photo_tips"}}
+                                <h5><strong>{{i18n Lang "user_settings.upload_photo"}}</strong></h5>
+                                {{i18n Lang "user_settings.upload_photo_tips"}}
                             </div>
                             <div class="panel-body">
                                 {{.xsrfData}}
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.name"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.name"}}</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control input-sm" name="itemName" required>
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.description"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.description"}}</label>
                                     <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm" placeholder='{{i18n .lang "user_settings.input_description"}}'
+                                        <input type="text" class="form-control input-sm" placeholder='{{i18n Lang "user_settings.input_description"}}'
                                                name="itemDescription">
                                     </div><!-- /.col -->
                                 </div><!-- /form-group -->
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3">{{i18n .lang "user_settings.url"}}</label>
+                                    <label class="control-label col-lg-3">{{i18n Lang "user_settings.url"}}</label>
                                     <div class="col-lg-9">
-                                        <input type="text" class="form-control input-sm" placeholder='{{i18n .lang "user_settings.input_url"}}'
+                                        <input type="text" class="form-control input-sm" placeholder='{{i18n Lang "user_settings.input_url"}}'
                                                name="imgSource" required>
                                         <div class="help-block">
-                                            {{i18n .lang "user_settings.input_url_tips"}}
+                                            {{i18n Lang "user_settings.input_url_tips"}}
                                         </div>
                                     </div><!-- /.col -->
 
@@ -221,7 +221,7 @@
                                             }
                                             parent.location.reload();
                                           })
-                                        ">{{i18n .lang "user_settings.confirm_upload"}}
+                                        ">{{i18n Lang "user_settings.confirm_upload"}}
                                 </button>
                             </div>
                         </form>

@@ -15,6 +15,7 @@ func InitRouter() {
 	web.BConfig.WebConfig.Session.SessionProvider = "redis"
 	web.BConfig.WebConfig.Session.SessionProviderConfig = configure.Viper().GetString("RedisHost")
 	web.AddFuncMap("i18n", i18n.Tr)
+	web.AddFuncMap("Lang", func() string { return configure.Viper().GetString("Language") })
 	web.Router("/", &controllers.WareSellerController{})
 	web.Router("/gallery-show", &controllers.GalleryShowController{})
 	web.Router("/alipay", &controllers.CallbackController{})

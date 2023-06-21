@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} {{i18n .lang "order.title"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "order.title"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 
@@ -26,34 +26,34 @@
                             </div>
                         </div>
                         <div class="pull-right">
-                            <h4><strong>{{i18n .lang "order.id"}}：#{{.orderID}}</strong></h4>
-                            <strong>{{i18n .lang "order.time"}}：{{.orderCreateTime}}</strong>
+                            <h4><strong>{{i18n Lang "order.id"}}：#{{.orderID}}</strong></h4>
+                            <strong>{{i18n Lang "order.time"}}：{{.orderCreateTime}}</strong>
                         </div>
                     </div>
                     <hr>
                     <div class="clearfix">
                         <div class="pull-left">
                             <h4>
-                                <strong>{{i18n .lang "order.title"}}</strong>
+                                <strong>{{i18n Lang "order.title"}}</strong>
                                 {{if .paid}}
-                                    <span class="label label-success">{{i18n .lang "order.payed"}}</span>
+                                    <span class="label label-success">{{i18n Lang "order.payed"}}</span>
                                 {{else}}
-                                    <span class="label label-danger">{{i18n .lang "order.not_payed"}}</span>
+                                    <span class="label label-danger">{{i18n Lang "order.not_payed"}}</span>
                                 {{end}}
                             </h4>
                             <address>
-                                {{i18n .lang "order.admin_address"}}：{{.adminAddress}}
+                                {{i18n Lang "order.admin_address"}}：{{.adminAddress}}
                             </address>
                         </div>
                     </div>
                     <table class="table table-striped m-top-md" id="dataTable">
                         <thead>
                         <tr class="bg-theme">
-                            <th>{{i18n .lang "order.id"}}</th>
-                            <th>{{i18n .lang "order.name"}}</th>
-                            <th>{{i18n .lang "order.monthly"}}</th>
-                            <th>{{i18n .lang "order.type"}}</th>
-                            <th>{{i18n .lang "order.total"}}</th>
+                            <th>{{i18n Lang "order.id"}}</th>
+                            <th>{{i18n Lang "order.name"}}</th>
+                            <th>{{i18n Lang "order.monthly"}}</th>
+                            <th>{{i18n Lang "order.type"}}</th>
+                            <th>{{i18n Lang "order.total"}}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -68,16 +68,16 @@
                         </tbody>
                     </table>
                     <div class="padding-sm bg-grey">
-                        <p>{{i18n .lang "order.term"}}</p>
+                        <p>{{i18n Lang "order.term"}}</p>
                     </div>
                     <hr>
                     {{if .hasError}}
                         <div class="alert alert-danger">
-                            <strong>{{i18n .lang "order.failed"}}</strong> {{.hasErrorText}}
+                            <strong>{{i18n Lang "order.failed"}}</strong> {{.hasErrorText}}
                         </div>
                     {{else if .hasSuccess}}
                         <div class="alert alert-success">
-                            <strong>{{i18n .lang "order.success"}}</strong> {{i18n .lang "order.success_tips"}}
+                            <strong>{{i18n Lang "order.success"}}</strong> {{i18n Lang "order.success_tips"}}
                         </div>
                     {{end}}
                 </div>
@@ -89,7 +89,7 @@
                             <td class="no-border"></td>
                             <td class="no-border"></td>
                             <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
-                                                style="vertical-align: inherit;">{{i18n .lang "order.total"}}</font></font></strong></td>
+                                                style="vertical-align: inherit;">{{i18n Lang "order.total"}}</font></font></strong></td>
                             <td><strong><font style="vertical-align: inherit;"><font
                                                 style="vertical-align: inherit;">￥ {{.originPrice}}</font></font></strong>
                             </td>
@@ -99,7 +99,7 @@
                             <td class="no-border"></td>
                             <td class="no-border"></td>
                             <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
-                                                style="vertical-align: inherit;">{{i18n .lang "order.discount"}}</font></font></strong></td>
+                                                style="vertical-align: inherit;">{{i18n Lang "order.discount"}}</font></font></strong></td>
                             <td><strong><font style="vertical-align: inherit;"><font
                                                 style="vertical-align: inherit;">￥ {{.discountPrice}}</font></font></strong>
                             </td>
@@ -109,7 +109,7 @@
                             <td class="no-border"></td>
                             <td class="no-border"></td>
                             <td class="text-right no-border"><strong><font style="vertical-align: inherit;"><font
-                                                style="vertical-align: inherit;">{{i18n .lang "order.total"}}</font></font></strong></td>
+                                                style="vertical-align: inherit;">{{i18n Lang "order.total"}}</font></font></strong></td>
                             <td><strong class="text-danger"><font style="vertical-align: inherit;"><font
                                                 style="vertical-align: inherit;">￥ {{.finalPrice}}</font></font></strong>
                             </td>
@@ -118,10 +118,10 @@
                     </table>
                     <a href="#formModal1" role="button" data-toggle="modal"
                        class="btn btn-info btn-small fadeInDown animation-delay2"
-                       {{if .paid}}disabled="disabled"{{end}}>{{i18n .lang "order.pay_with_balance"}}</a>
+                       {{if .paid}}disabled="disabled"{{end}}>{{i18n Lang "order.pay_with_balance"}}</a>
                     <a href="#formModal2" role="button" data-toggle="modal"
                        class="btn btn-primary btn-small fadeInDown animation-delay2"
-                       {{if .paid}}disabled="disabled"{{end}}>{{i18n .lang "order.pay_with_key"}}</a>
+                       {{if .paid}}disabled="disabled"{{end}}>{{i18n Lang "order.pay_with_key"}}</a>
                 </div>
             </div>
         </div>
@@ -133,21 +133,21 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
                 </button>
-                <h4>{{i18n .lang "order.pay_with_balance"}}</h4>
+                <h4>{{i18n Lang "order.pay_with_balance"}}</h4>
             </div>
             <div class="modal-body">
                 <form id="payByBalance" class="form-horizontal no-margin form-border">
                     {{.xsrfData}}
                     <!-- choose -->
                     <div class="form-group">
-                        <label class="col-lg-2 control-label">{{i18n .lang "order.server_address"}}</label>
+                        <label class="col-lg-2 control-label">{{i18n Lang "order.server_address"}}</label>
                         <div class="col-lg-10">
                             <select class="form-control" name="selected_ip">
                                 {{range .ips}}
                                     <option value="{{.ID}} {{.IP}}">{{.IP}}</option>
                                 {{end}}
                             </select>
-                            <span class="help-block">{{i18n .lang "order.server_address_tips"}}</span>
+                            <span class="help-block">{{i18n Lang "order.server_address_tips"}}</span>
                         </div><!-- /.col -->
                     </div>
                     <!-- /choose -->
@@ -164,7 +164,7 @@
                                 }
                                 parent.location.reload();
                                 })
-                                ">{{i18n .lang "order.confirm"}}
+                                ">{{i18n Lang "order.confirm"}}
                 </button>
             </div>
         </div>
@@ -176,40 +176,40 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
                 </button>
-                <h4>{{i18n .lang "order.buy_key_tips1"}}</h4>
-                <small>{{i18n .lang "order.buy_key_tips2"}}</small>
+                <h4>{{i18n Lang "order.buy_key_tips1"}}</h4>
+                <small>{{i18n Lang "order.buy_key_tips2"}}</small>
             </div>
             <div class="modal-body">
                 <form method="post" id="pay" class="form-horizontal no-margin form-border">
                     {{.xsrfData}}
                     <div class="form-group">
                         <div class="col-lg-2 control-label">
-                            <label>{{i18n .lang "order.cdkey"}}</label>
+                            <label>{{i18n Lang "order.cdkey"}}</label>
                         </div>
                         <div class="col-lg-10">
 
                             <input type="text" class="form-control input-sm" name="key"
-                                   placeholder='{{i18n .lang "order.input_cdkey"}}'>
+                                   placeholder='{{i18n Lang "order.input_cdkey"}}'>
                         </div>
                         <div class="col-lg-2"></div>
                     </div>
                     <!-- choose -->
                     <div class="form-group">
-                        <label class="col-lg-2 control-label">{{i18n .lang "order.server_address"}}</label>
+                        <label class="col-lg-2 control-label">{{i18n Lang "order.server_address"}}</label>
                         <div class="col-lg-10">
                             <select class="form-control" name="selected_ip">
                                 {{range .ips}}
                                     <option value="{{.ID}} {{.IP}}">{{.IP}}</option>
                                 {{end}}
                             </select>
-                            <span class="help-block">{{i18n .lang "order.server_address_tips"}}</span>
+                            <span class="help-block">{{i18n Lang "order.server_address_tips"}}</span>
                         </div><!-- /.col -->
                     </div>
                     <!-- /choose -->
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="submit" form="pay" class="btn btn-info btn-sm">{{i18n .lang "order.confirm"}}</button>
+                <button type="submit" form="pay" class="btn btn-info btn-sm">{{i18n Lang "order.confirm"}}</button>
             </div>
         </div>
     </div><!-- /.modal-content -->

@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="utf-8">
-  <title>{{.webApplicationName}} {{i18n .lang "admin_settings.title"}}</title>
+  <title>{{.webApplicationName}} {{i18n Lang "admin_settings.title"}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -13,13 +13,13 @@
     <div class="row">
       <div class="col-lg-8">
         <div class="panel panel-default">
-          <div class="panel-heading"><h4><strong>{{i18n .lang "admin_settings.edit_settings"}}</strong></h4>
+          <div class="panel-heading"><h4><strong>{{i18n Lang "admin_settings.edit_settings"}}</strong></h4>
             <span>
-              {{i18n .lang "admin_settings.build_time"}}：{{.BuildTime}}<br>
-              {{i18n .lang "admin_settings.go_version"}}：{{.GoVersion}}<br>
-              {{i18n .lang "admin_settings.mysql_stats"}}：{{.MysqlStats}}<br>
-              {{i18n .lang "admin_settings.redis_stats"}}：{{.RedisStats}}<br>
-              {{i18n .lang "admin_settings.pterodactyl_stats"}}：{{.PterodactylStats}}
+              {{i18n Lang "admin_settings.build_time"}}：{{.BuildTime}}<br>
+              {{i18n Lang "admin_settings.go_version"}}：{{.GoVersion}}<br>
+              {{i18n Lang "admin_settings.mysql_stats"}}：{{.MysqlStats}}<br>
+              {{i18n Lang "admin_settings.redis_stats"}}：{{.RedisStats}}<br>
+              {{i18n Lang "admin_settings.pterodactyl_stats"}}：{{.PterodactylStats}}
             </span>
           </div>
           <div class="panel-body">
@@ -32,10 +32,10 @@
             <hr/>
             {{if .hasError}}
             <div class="alert alert-danger">
-              <strong>{{i18n .lang "admin_settings.edit_failed"}}</strong> {{.hasErrorText}}
+              <strong>{{i18n Lang "admin_settings.edit_failed"}}</strong> {{.hasErrorText}}
             </div>
             {{end}}
-            <button type="submit" form="new-ware" class="btn btn-success btn-sm">{{i18n .lang "admin_settings.submit"}}</button>
+            <button type="submit" form="new-ware" class="btn btn-success btn-sm">{{i18n Lang "admin_settings.submit"}}</button>
           </div>
         </div>
       </div>

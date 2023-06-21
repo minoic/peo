@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{.webApplicationName}} {{i18n .lang "new_ware.title"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "new_ware.title"}}</title>
     {{template "tpls/perfectCSS.html" .}}
 </head>
 <body>
@@ -17,7 +17,7 @@
                 <div class="col-md-1"></div>
                 <div class="col-md-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><h4><strong>{{i18n .lang "new_ware.title"}}</strong></h4></div>
+                        <div class="panel-heading"><h4><strong>{{i18n Lang "new_ware.title"}}</strong></h4></div>
                         <div class="panel-body">
                             <form role="form" method="post" id="new-ware">
                                 {{.xsrfData}}
@@ -28,10 +28,10 @@
                             <hr/>
                             {{if .hasError}}
                                 <div class="alert alert-danger">
-                                    <strong>{{i18n .lang "new_ware.failed"}}</strong> {{.hasErrorText}}
+                                    <strong>{{i18n Lang "new_ware.failed"}}</strong> {{.hasErrorText}}
                                 </div>
                             {{end}}
-                            <button type="submit" form="new-ware" class="btn btn-success btn-sm">{{i18n .lang "new_ware.confirm"}}</button>
+                            <button type="submit" form="new-ware" class="btn btn-success btn-sm">{{i18n Lang "new_ware.confirm"}}</button>
                         </div>
                     </div>
                 </div>
@@ -42,13 +42,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion"
                                        href="#collapseOne">
-                                        {{i18n .lang "new_ware.tips1"}}
+                                        {{i18n Lang "new_ware.tips1"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseOne" class="panel-collapse collapse in" style="height: auto;">
                                 <div class="panel-body">
-                                    {{i18n .lang "new_ware.tips2"}}
+                                    {{i18n Lang "new_ware.tips2"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -57,13 +57,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle collapsed" data-toggle="collapse"
                                        data-parent="#accordion" href="#collapseTwo">
-                                        {{i18n .lang "new_ware.tips3"}}
+                                        {{i18n Lang "new_ware.tips3"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseTwo" class="panel-collapse collapse" style="height: 0px;">
                                 <div class="panel-body">
-                                    {{i18n .lang "new_ware.tips4"}}
+                                    {{i18n Lang "new_ware.tips4"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->
@@ -72,13 +72,13 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle collapsed" data-toggle="collapse"
                                        data-parent="#accordion" href="#collapseThree">
-                                        {{i18n .lang "new_ware.tips5"}}
+                                        {{i18n Lang "new_ware.tips5"}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapseThree" class="panel-collapse collapse" style="height: 0px;">
                                 <div class="panel-body">
-                                    {{i18n .lang "new_ware.tips6"}}
+                                    {{i18n Lang "new_ware.tips6"}}
                                 </div>
                             </div>
                         </div><!-- /panel -->

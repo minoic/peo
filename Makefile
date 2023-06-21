@@ -1,6 +1,6 @@
 NAME=peo
 BINDIR=build
-VERSION=v0.2.3
+VERSION=v0.2.4
 GOBUILD=GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build --ldflags="-s -w -X 'main.GO_VERSION=$(go version)' -X 'main.BUILD_TIME=`TZ=Asia/Shanghai date "+%F %T"`'" -v -a
 GOFILES=main.go
 PACKFILE=views static conf README.md

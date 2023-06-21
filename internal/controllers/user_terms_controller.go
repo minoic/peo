@@ -11,6 +11,10 @@ type UserTermsController struct {
 	i18n.Locale
 }
 
+func (this *UserTermsController) Prepare() {
+
+}
+
 func (this *UserTermsController) Get() {
 	this.TplName = "UserTerms.html"
 	handleNavbar(&this.Controller)

@@ -2,44 +2,44 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} {{i18n .lang "auth.login"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "auth.login"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
 
 <body>
 <div class="login-wrapper">
-    <div class="text-center" title='{{i18n .lang "auth.return"}}'>
+    <div class="text-center" title='{{i18n Lang "auth.return"}}'>
         <h2 class="fadeInUp animation-delay6" style="font-weight:bold">
-            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title='{{i18n .lang "auth.return"}}'><i
+            <a href="/" class="tooltip-test" data-toggle="tooltip" data-placement="top" data-original-title='{{i18n Lang "auth.return"}}'><i
                         class="fa fa-home fa-lg"></i> <span class="text-success">{{.webApplicationName}}</span> <span
-                        style="color:#ccc; text-shadow:0 1px #fff"> {{i18n .lang "auth.account"}}</span></a>
+                        style="color:#ccc; text-shadow:0 1px #fff"> {{i18n Lang "auth.account"}}</span></a>
         </h2>
     </div>
     <div class="login-widget animation-delay1">
         <div class="panel panel-default">
             <div class="panel-heading clearfix">
                 <div class="pull-left">
-                    <i class="fa fa-lock fa-lg"></i> {{i18n .lang "auth.login"}}
+                    <i class="fa fa-lock fa-lg"></i> {{i18n Lang "auth.login"}}
                 </div>
 
                 <div class="pull-right">
-                    <span style="font-size:11px;">{{i18n .lang "auth.no_account"}}</span>
+                    <span style="font-size:11px;">{{i18n Lang "auth.no_account"}}</span>
                     <a class="btn btn-default btn-xs login-link" href="/reg" style="margin-top:-2px;"><i
-                                class="fa fa-plus-circle"></i> {{i18n .lang "auth.register"}}</a>
+                                class="fa fa-plus-circle"></i> {{i18n Lang "auth.register"}}</a>
                 </div>
             </div>
             <div class="panel-body">
                 <form class="form-login" method="post">
                     {{.xsrfData}}
                     <div class="form-group">
-                        <label>{{i18n .lang "auth.username_or_email"}}</label>
-                        <input type="text" placeholder='{{i18n .lang "auth.input_username_or_email"}}'
+                        <label>{{i18n Lang "auth.username_or_email"}}</label>
+                        <input type="text" placeholder='{{i18n Lang "auth.input_username_or_email"}}'
                                class="form-control input-sm bounceIn animation-delay2" name="loginEOU">
                     </div>
                     <div class="form-group">
-                        <label>{{i18n .lang "auth.password"}}</label>
-                        <input type="password" placeholder='{{i18n .lang "auth.input_password"}}'
+                        <label>{{i18n Lang "auth.password"}}</label>
+                        <input type="password" placeholder='{{i18n Lang "auth.input_password"}}'
                                class="form-control input-sm bounceIn animation-delay4" name="loginPass">
                     </div>
                     <div class="form-group">
@@ -49,22 +49,22 @@
                             <span class="custom-checkbox info bounceIn animation-delay4"></span>
                         </label>
                         <label class="tooltip-test" data-toggle="tooltip" data-placement="bottom"
-                               data-original-title='{{i18n .lang "auth.remember_tips"}}'>{{i18n .lang "auth.remember"}}</label>
+                               data-original-title='{{i18n Lang "auth.remember_tips"}}'>{{i18n Lang "auth.remember"}}</label>
                     </div>
                     <hr/>
                     {{if .hasError}}
                         <div class="alert alert-danger">
-                            <strong>{{i18n .lang "auth.login_failed"}}</strong> {{.hasErrorText}}
+                            <strong>{{i18n Lang "auth.login_failed"}}</strong> {{.hasErrorText}}
                         </div>
                     {{end}}
                     <div class="row">
                         <div class="col-lg-8">
                             <a href="/forget-password" class="tooltip-test" data-toggle="tooltip"
-                               data-placement="bottom" data-original-title='{{i18n .lang "auth.tap_forget"}}'>{{i18n .lang "auth.forget"}}</a>
+                               data-placement="bottom" data-original-title='{{i18n Lang "auth.tap_forget"}}'>{{i18n Lang "auth.forget"}}</a>
                         </div>
                         <div class="col-lg-4">
                             <button class="btn btn-success btn-sm bounceIn animation-delay5 pull-right" type="submit"><i
-                                        class="fa fa-sign-in"></i> {{i18n .lang "auth.login"}}
+                                        class="fa fa-sign-in"></i> {{i18n Lang "auth.login"}}
                             </button>
                         </div>
                     </div>

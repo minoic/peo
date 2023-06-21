@@ -19,7 +19,7 @@ type ForgetPasswordController struct {
 }
 
 func (this *ForgetPasswordController) Prepare() {
-	this.Data["lang"] = configure.Viper().GetString("Language")
+
 }
 
 func (this *ForgetPasswordController) Get() {
@@ -41,9 +41,8 @@ func (this *ForgetPasswordController) Post() {
 	DB := database.Mysql()
 	var user database.User
 	if !DB.Where("email = ?", userEmail).First(&user).RecordNotFound() {
-		if cpt == database.Redis().Get(context.Background(), "FORGET"+userEmail).String() {
+		if cpt == database.Redis().Get(context.Background(), "FORGET"+userEmail).Val() {
 			if password == passwordConfirm {
-
 				b := md5.Sum([]byte(password + configure.Viper().GetString("DatabaseSalt")))
 				DB.Model(&user).Update("Password", hex.EncodeToString(b[:]))
 				DelayRedirect(DelayInfo{
@@ -56,6 +55,7 @@ func (this *ForgetPasswordController) Post() {
 				this.Data["hasErrorText"] = tr("auth.register_confirm_error")
 			}
 		} else {
+			glgf.Debug(cpt, database.Redis().Get(context.Background(), "FORGET"+userEmail).String(), database.Redis().Get(context.Background(), "FORGET"+userEmail).Val())
 			this.Data["hasError"] = true
 			this.Data["hasErrorText"] = tr("auth.register_captcha_error")
 		}

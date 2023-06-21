@@ -5,20 +5,20 @@
                 <img src="{{if .ServerIsOnline}}{{if .ServerIconData}}{{.ServerIconData}}
                     {{else}}../static/img/Minecraft_256px.png{{end}}{{else}}../static/img/plug_128px_1074019_easyicon.net.png{{end}}"
                      class="img-circle" style="width:52px;" data-toggle="tooltip" data-placement="top" title=""
-                     data-original-title='{{i18n .lang "components.tap_to_console"}}'>
+                     data-original-title='{{i18n Lang "components.tap_to_console"}}'>
             </a>
             {{if .ServerIsOnline}}
-                <span class="label label-success pull-right">{{i18n .lang "components.online"}} {{.ServerPlayerOnline}}/{{.ServerPlayerMax}}</span>
+                <span class="label label-success pull-right">{{i18n Lang "components.online"}} {{.ServerPlayerOnline}}/{{.ServerPlayerMax}}</span>
             {{else}}
-                <span class="label label-danger pull-right">{{i18n .lang "components.offline"}}</span>
+                <span class="label label-danger pull-right">{{i18n Lang "components.offline"}}</span>
             {{end}}
             <strong class="block">{{.ServerName}} <span
                         class="label label-default">{{.ServerIdentifier}}</span></strong>
-            <small class="text-muted">{{i18n .lang "components.expire_time"}}：{{.ServerEXP}}</small><br>
+            <small class="text-muted">{{i18n Lang "components.expire_time"}}：{{.ServerEXP}}</small><br>
             {{if .ServerVersion}}
-                <small class="text-muted pull-right">{{i18n .lang "components.version"}}：{{.ServerVersion}}</small>
+                <small class="text-muted pull-right">{{i18n Lang "components.version"}}：{{.ServerVersion}}</small>
             {{end}}
-            <small class="text-muted">{{i18n .lang "components.server_address"}}：{{.ServerHostName}}</small>
+            <small class="text-muted">{{i18n Lang "components.server_address"}}：{{.ServerHostName}}</small>
         </div>
         <div class="seperator"></div>
         <p>
@@ -26,11 +26,11 @@
         </p>
         {{if .ServerFMLType}}
             <a class="btn btn-default btn-xs pull-left" role="button" data-toggle="modal"
-               href="#{{.ServerIdentifier}}{{.ServerIndex}}MOD"> <i class="fa fa-info-circle fa-lg"></i> {{i18n .lang "components.mod_list"}} </a>
+               href="#{{.ServerIdentifier}}{{.ServerIndex}}MOD"> <i class="fa fa-info-circle fa-lg"></i> {{i18n Lang "components.mod_list"}} </a>
         {{end}}
         <a class="btn btn-default btn-xs pull-right" role="button" data-toggle="modal"
-           href="#{{.ServerIdentifier}}{{.ServerIndex}}RENEW"> <i class="fa fa-check fa-lg"></i> {{i18n .lang "components.renew"}}</a>
+           href="#{{.ServerIdentifier}}{{.ServerIndex}}RENEW"> <i class="fa fa-check fa-lg"></i> {{i18n Lang "components.renew"}}</a>
         <a class="btn btn-default btn-xs pull-right" role="button" data-toggle="modal"
-           href="#{{.ServerIdentifier}}{{.ServerIndex}}CP"><i class="fa fa-wrench fa-lg"></i> {{i18n .lang "components.reinstall"}}</a>
+           href="#{{.ServerIdentifier}}{{.ServerIndex}}CP"><i class="fa fa-wrench fa-lg"></i> {{i18n Lang "components.reinstall"}}</a>
     </div>
 </div>

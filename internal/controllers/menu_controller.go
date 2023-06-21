@@ -7,14 +7,11 @@ import (
 	"github.com/minoic/peo/internal/message"
 	"github.com/minoic/peo/internal/session"
 	"github.com/spf13/cast"
-	"html/template"
 )
 
 func handleNavbar(controller *web.Controller) {
-	controller.Data["xsrfData"] = template.HTML(controller.XSRFFormHTML())
 	controller.Data["webHostName"] = configure.Viper().GetString("WebHostName")
 	controller.Data["webApplicationName"] = configure.Viper().GetString("WebApplicationName")
-	controller.Data["lang"] = configure.Viper().GetString("Language")
 	controller.Data["webApplicationAuthor"] = "minoic <minoic2020@gmail.com>"
 	controller.Data["webDescription"] = configure.Viper().GetString("webDescription")
 	controller.Data["AlbumEnabled"] = cast.ToBool(configure.Viper().GetString("AlbumEnabled"))

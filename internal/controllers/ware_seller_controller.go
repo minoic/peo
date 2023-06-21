@@ -38,16 +38,16 @@ var (
 )
 
 func RefreshWareInfo() {
-	wares1 = []ware{}
-	wares2 = []ware{}
-	wares3 = []ware{}
+	var wares1n []ware
+	var wares2n []ware
+	var wares3n []ware
 	var (
 		waresInDB []database.WareSpec
 		emailText string
 	)
 	DB := database.Mysql()
 	if configure.Viper().GetBool("SMTPEnabled") {
-		emailText = tr("ware.intro.email_text")
+		emailText = tr("intro.email_text")
 	}
 	if err := DB.Find(&waresInDB).Error; err == nil {
 		for _, w := range waresInDB {
@@ -62,30 +62,30 @@ func RefreshWareInfo() {
 				Intros: []intro{
 					{
 						First:  strconv.Itoa(w.Cpu / 100),
-						Second: tr("ware.intro.cpu"),
+						Second: tr("intro.cpu"),
 					},
 					{
 						First:  strconv.Itoa(w.Memory),
-						Second: tr("ware.intro.memory"),
+						Second: tr("intro.memory"),
 					},
 					{
 						First:  strconv.Itoa(w.Disk),
-						Second: tr("ware.intro.disk"),
+						Second: tr("intro.disk"),
 					},
 					{
 						First:  cast.ToString(w.Backups),
-						Second: tr("ware.intro.backups"),
+						Second: tr("intro.backups"),
 					},
 					{
 						First:  "Docker",
-						Second: tr("ware.intro.virtual_env"),
+						Second: tr("intro.virtual_env"),
 					},
 					{
 						First:  nest.Description,
 						Second: "",
 					},
 					{
-						First:  tr("ware.intro.save") + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + tr("days"),
+						First:  tr("intro.save") + strconv.Itoa(int(w.DeleteDuration.Hours()/24)) + tr("days"),
 						Second: emailText,
 					},
 				},
@@ -104,17 +104,17 @@ func RefreshWareInfo() {
 			switch w.ValidDuration {
 			case 30 * 24 * time.Hour:
 				nw.WarePricePerMonth = strconv.Itoa(int(w.PricePerMonth))
-				wares1 = append(wares1, nw)
+				wares1n = append(wares1n, nw)
 			case 90 * 24 * time.Hour:
 				nw.WarePricePerMonth = strconv.Itoa(int(w.PricePerMonth) * 3)
-				wares2 = append(wares2, nw)
+				wares2n = append(wares2n, nw)
 			case 365 * 24 * time.Hour:
 				nw.WarePricePerMonth = strconv.Itoa(int(w.PricePerMonth) * 12)
-				wares3 = append(wares3, nw)
+				wares3n = append(wares3n, nw)
 			}
 		}
 	} else if err == gorm.ErrRecordNotFound {
-		wares1 = append(wares1, ware{
+		wares1n = append(wares1n, ware{
 			WareName:          "empty",
 			WarePricePerMonth: "9999",
 			Intros: []intro{{
@@ -124,7 +124,7 @@ func RefreshWareInfo() {
 			},
 		})
 	} else {
-		wares1 = append(wares1, ware{
+		wares1n = append(wares1n, ware{
 			WareName:          "database error",
 			WarePricePerMonth: "9999",
 			Intros: []intro{{
@@ -134,12 +134,17 @@ func RefreshWareInfo() {
 			},
 		})
 	}
+	wares1 = wares1n
+	wares2 = wares2n
+	wares3 = wares3n
+}
+
+func (this *WareSellerController) Prepare() {
 }
 
 func (this *WareSellerController) Get() {
 	// this.Data["langTemplateKey"] = this.Ctx.Request.Header.Get("Accept-Language")
 	this.TplName = "WareSeller.html"
-	this.Data["lang"] = configure.Viper().GetString("Language")
 	this.Data["u"] = 1
 	handleNavbar(&this.Controller)
 	// glgf.Debug(wares)

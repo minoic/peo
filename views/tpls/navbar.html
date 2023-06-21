@@ -6,28 +6,28 @@
                 <i class="fa fa-list fa-2x"></i>
             </button>
             <a href="/" class="navbar-brand"><span class="text-danger">{{.webApplicationName}}</span>
-                {{i18n .lang "navbar.title"}} 🚀</a>
+                {{i18n Lang "navbar.title"}} 🚀</a>
         </div>
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav navbar-right">
                 <li class="{{if eq .u 1}}active{{end}}">
-                    <a href="/"><i class="fa fa-shopping-cart fa-lg"></i> {{i18n .lang "navbar.ware_list"}}</a>
+                    <a href="/"><i class="fa fa-shopping-cart fa-lg"></i> {{i18n Lang "navbar.ware_list"}}</a>
                 </li>
                 {{if .AlbumEnabled}}
                 <li class="{{if eq .u 5}}active{{end}}">
-                    <a href="/gallery-show"><i class="fa fa-picture-o fa-lg"></i> {{i18n .lang "navbar.album"}}</a>
+                    <a href="/gallery-show"><i class="fa fa-picture-o fa-lg"></i> {{i18n Lang "navbar.album"}}</a>
                 </li>
                 {{end}}
                 {{if not .notLoggedIn}}
                     <li class="{{if eq .u 2}}active{{end}}">
-                        <a href="/user-messages"><i class="fa fa-envelope fa-lg"></i> {{i18n .lang "navbar.message"}}
+                        <a href="/user-messages"><i class="fa fa-envelope fa-lg"></i> {{i18n Lang "navbar.message"}}
                             {{if .unReadNum}}
                                 <span class="badge badge-danger">{{.unReadNum}}</span>
                             {{end}}
                         </a>
                     </li>
                     <li class="{{if eq .u 3}}active{{end}}">
-                        <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> {{i18n .lang "navbar.console"}}</a>
+                        <a href="/user-console"><i class="fa fa-dashboard fa-lg"></i> {{i18n Lang "navbar.console"}}</a>
                     </li>
                 {{end}}
                 {{if .linkEnabled}}
@@ -37,12 +37,12 @@
                 {{end}}
                 {{if .notLoggedIn}}
                     <li>
-                        <a href="/login"><i class="fa fa-check fa-lg"></i> <strong>{{i18n .lang "navbar.auth"}}</strong></a>
+                        <a href="/login"><i class="fa fa-check fa-lg"></i> <strong>{{i18n Lang "navbar.auth"}}</strong></a>
                     </li>
                 {{end}}
                 {{if .isAdmin}}
                     <li class="{{if eq .u 4}}active{{end}}">
-                        <a href="/admin-console"><i class="fa fa-cogs fa-lg"></i> {{i18n .lang "navbar.admin_console"}}</a>
+                        <a href="/admin-console"><i class="fa fa-cogs fa-lg"></i> {{i18n Lang "navbar.admin_console"}}</a>
                     </li>
                 {{end}}
             </ul>

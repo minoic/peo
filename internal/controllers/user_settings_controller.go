@@ -27,7 +27,6 @@ func (this *UserSettingsController) Prepare() {
 	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
-	this.Data["lang"] = configure.Viper().GetString("Language")
 	handleNavbar(&this.Controller)
 	handleSidebar(&this.Controller)
 	this.TplName = "UserSettings.html"
@@ -59,6 +58,7 @@ func (this *UserSettingsController) Prepare() {
 		this.Data["pteUserCreateURL"] = "/user-settings/create-pterodactyl-user"
 	}
 	this.Data["pteUserPassword"] = "默认密码为注册时输入的用户名"
+
 }
 
 func (this *UserSettingsController) Get() {}
@@ -105,13 +105,13 @@ func (this *UserSettingsController) UpdateUserPassword() {
 		this.Data["hasErrorText"] = "旧密码输入错误"
 		// this.Redirect("/user-settings",302)
 	}
-
 }
 
 func (this *UserSettingsController) UpdateUserEmail() {
 	newEmail := this.GetString("email")
-	cpt := database.Redis().Get(context.Background(), "CHANGE_EMAIL"+newEmail).String()
+	cpt := database.Redis().Get(context.Background(), "CHANGE_EMAIL"+newEmail).Val()
 	cptInput := this.GetString("captcha")
+	glgf.Debug("cpt:", cpt, "cptinput:", cptInput)
 	DB := database.Mysql()
 	user, err := session.GetUser(this.StartSession())
 	if err != nil {
@@ -141,7 +141,7 @@ func (this *UserSettingsController) SendCaptcha() {
 	if err != nil {
 		glgf.Error(err)
 	} else {
-		err := database.Redis().Set(context.Background(), "CHANGE_EMAIL"+userEmail, key, 1*time.Minute)
+		err := database.Redis().Set(context.Background(), "CHANGE_EMAIL"+userEmail, key, 1*time.Minute).Err()
 		if err != nil {
 			glgf.Error(err)
 		}

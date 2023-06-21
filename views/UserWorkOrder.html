@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} {{i18n .lang "work_order.title"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "work_order.title"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -20,19 +20,19 @@
                     {{.xsrfData}}
                     <div class="panel-heading">
                         <h4>
-                            <strong>{{i18n .lang "work_order.title"}}</strong>
+                            <strong>{{i18n Lang "work_order.title"}}</strong>
                         </h4>
                     </div>
                     <div class="panel-body">
                         <div class="form-group">
-                            <label class="control-label">{{i18n .lang "work_order.name"}}</label>
-                            <input type="text" placeholder='{{i18n .lang "work_order.input_name"}}'
+                            <label class="control-label">{{i18n Lang "work_order.name"}}</label>
+                            <input type="text" placeholder='{{i18n Lang "work_order.input_name"}}'
                                    class="form-control input parsley-validated" data-required="true" name="title">
                         </div>
                         <div class="form-group">
-                            <label class="control-label">{{i18n .lang "work_order.description"}}</label>
+                            <label class="control-label">{{i18n Lang "work_order.description"}}</label>
                             <textarea class="form-control input-lg parsley-validated"
-                                      placeholder='{{i18n .lang "work_order.input_description"}}' rows="7" data-required="true"
+                                      placeholder='{{i18n Lang "work_order.input_description"}}' rows="7" data-required="true"
                                       name="text"></textarea>
                         </div>
                     </div>
@@ -40,34 +40,34 @@
                         <div class="margin-md">
                             <div class="col-md-12">
                                 <h6>
-                                    {{i18n .lang "work_order.tips1"}}
+                                    {{i18n Lang "work_order.tips1"}}
                                 </h6>
                                 <p class="text-muted">
-                                    {{i18n .lang "work_order.tips2"}}
+                                    {{i18n Lang "work_order.tips2"}}
                                 </p>
                             </div>
                             <div class="col-md-12">
                                 <h6>
-                                    {{i18n .lang "work_order.tips3"}}
+                                    {{i18n Lang "work_order.tips3"}}
                                 </h6>
                                 <p class="text-muted">
-                                    {{i18n .lang "work_order.tips4"}}
+                                    {{i18n Lang "work_order.tips4"}}
                                 </p>
                             </div>
                             <div class="col-md-12">
                                 <h6>
-                                    {{i18n .lang "work_order.tips5"}}
+                                    {{i18n Lang "work_order.tips5"}}
                                 </h6>
                                 <p class="text-muted">
-                                    {{i18n .lang "work_order.tips6"}}
+                                    {{i18n Lang "work_order.tips6"}}
                                 </p>
                             </div>
                             <div class="col-md-12">
                                 <h6>
-                                    {{i18n .lang "work_order.tips7"}}
+                                    {{i18n Lang "work_order.tips7"}}
                                 </h6>
                                 <p class="text-muted">
-                                    {{i18n .lang "work_order.tips8"}}
+                                    {{i18n Lang "work_order.tips8"}}
                                 </p>
                             </div>
                         </div>
@@ -81,9 +81,9 @@
                             }else{
                                 alert('failed: '+data);
                             }
-                        })">{{i18n .lang "work_order.submit"}}
+                        })">{{i18n Lang "work_order.submit"}}
                         </button>
-                        <button class="btn btn-danger" type="reset">{{i18n .lang "work_order.reset"}}</button>
+                        <button class="btn btn-danger" type="reset">{{i18n Lang "work_order.reset"}}</button>
                     </div>
                 </form>
             </div>

@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} {{i18n .lang "user_recharge.title"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "user_recharge.title"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -18,15 +18,15 @@
             <div class="row">
                 <div class="panel panel-default fadeInDown animation-delay1">
                     <div class="panel-heading">
-                        <h4><strong>{{i18n .lang "user_recharge.title"}}</strong></h4>
+                        <h4><strong>{{i18n Lang "user_recharge.title"}}</strong></h4>
                     </div>
                     <div class="panel-body">
                         <div class="col-md-3">
                             <div class="section-header">
-                                <h4>{{i18n .lang "user_recharge.balance"}}</h4>
+                                <h4>{{i18n Lang "user_recharge.balance"}}</h4>
                                 <img src="../static/img/wallet1.png" style="width: auto;height: 120px" alt="">
                                 <h2>{{.balance}} <small>CNY</small></h2>
-                                <a class="btn-success btn btn-sm" href="/">{{i18n .lang "user_recharge.buy"}}</a>
+                                <a class="btn-success btn btn-sm" href="/">{{i18n Lang "user_recharge.buy"}}</a>
                             </div>
                         </div>
                         <div class="col-md-2 col-md-offset-1">
@@ -41,7 +41,7 @@
                                             </svg>
                                         </div>
                                         <div class="title">
-                                            <span class="m-left-xs"><strong>{{i18n .lang "user_recharge.cdkey"}}</strong></span>
+                                            <span class="m-left-xs"><strong>{{i18n Lang "user_recharge.cdkey"}}</strong></span>
                                         </div>
                                     </div>
                                 </a>
@@ -54,7 +54,7 @@
                                             <svg t="1598279702458" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1518" width="64" height="64"><path d="M873.6 713.6c-1.4-0.6-93.4-53.6-262.1-121.7 46.7-69.3 78.7-138.6 80.4-142.4 1.8-4 1.7-8.4 0.1-12.1-0.2-0.4-0.4-0.9-0.6-1.3-0.2-0.4-0.5-0.8-0.7-1.2-0.3-0.4-0.5-0.7-0.8-1.1l-0.1-0.1c-0.3-0.3-0.6-0.7-0.9-1 0-0.1-0.1-0.1-0.2-0.1l-0.8-0.8c-0.1-0.1-0.2-0.2-0.4-0.3-0.2-0.2-0.4-0.3-0.7-0.5-0.3-0.2-0.5-0.3-0.8-0.5-0.1-0.1-0.2-0.1-0.3-0.2-2.2-1.3-4.8-2-7.5-2h-152v-46h179c8.2 0 15-6.7 15-15s-6.7-15-15-15h-179v-68c0-8.3-6.7-15-15-15s-15 6.7-15 15v68h-181c-8.3 0-15 6.7-15 15s6.7 15 15 15h181v46h-152c-8.3 0-15 6.7-15 15s6.7 15 15 15h310.1c-13.5 26.8-39.2 75.2-71.4 122.2-36.6-14.6-75.6-29.8-116.4-45.2l-0.8-0.3c-91.4-29-159.4-25.8-202.2 9.6-39.6 32.8-43.2 82.2-41.2 98.5 6.3 52.9 36.3 90.2 84.4 104.9 15.1 4.6 31.7 6.9 49.2 6.9 26.5 0 55.1-5.3 83.9-15.7 47.7-17.2 91.6-47.1 123.7-84.1 10.5-12.1 20.6-24.9 30.2-38 171.4 69 265.6 123 267 123.7 7.5 3.6 16.4 0.4 20-7.1 3.6-7.6 0.4-16.5-7.1-20.1z m-332.9-78.2c-28.8 33.1-68.3 60-111.2 75.5-41.7 15.1-82.3 18.1-114.1 8.3-36.5-11.2-58.5-38.8-63.4-79.8-1-8.9 1-47.3 30.6-71.7 17.9-14.8 43-22.2 74.4-22.2 28.2 0 61.5 5.9 99.1 17.9 38 14.3 74.3 28.5 108.6 42.1-7.7 10.3-15.8 20.4-24 29.9z" fill="#ffffff" p-id="1519"></path></svg>
                                         </div>
                                         <div class="title">
-                                            <span class="m-left-xs"><strong>{{i18n .lang "user_recharge.alipay"}}</strong></span>
+                                            <span class="m-left-xs"><strong>{{i18n Lang "user_recharge.alipay"}}</strong></span>
                                         </div>
                                     </div>
                                 </a>
@@ -67,13 +67,13 @@
                                     <form class="no-margin" data-validate="parsley" novalidate="" id="FormByKey" >
                                         {{.xsrfData}}
                                         <div class="panel-heading">
-                                            <h4>{{i18n .lang "user_recharge.recharge_with_cdkey"}}</h4>
-                                            <p>{{i18n .lang "user_recharge.recharge_with_cdkey_tips"}}</p>
+                                            <h4>{{i18n Lang "user_recharge.recharge_with_cdkey"}}</h4>
+                                            <p>{{i18n Lang "user_recharge.recharge_with_cdkey_tips"}}</p>
                                         </div>
                                         <div class="panel-body">
                                             <div class="form-group">
                                                 <input id="keyString" name="keyString" type="text"
-                                                       placeholder='{{i18n .lang "user_recharge.input_key"}}'
+                                                       placeholder='{{i18n Lang "user_recharge.input_key"}}'
                                                        class="form-control input-lg parsley-validated"
                                                        data-required="true" autocomplete="off">
                                             </div><!-- /form-group -->
@@ -88,7 +88,7 @@
                                             }
                                             parent.location.reload();
                                           })
-                                        "><i class="fa fa-heart"></i> {{i18n .lang "user_recharge.recharge"}}
+                                        "><i class="fa fa-heart"></i> {{i18n Lang "user_recharge.recharge"}}
                                             </button>
                                         </div>
                                     </form>
@@ -97,13 +97,13 @@
                                         <form class="no-margin" data-validate="parsley" novalidate="" id="FormByZFB">
                                             {{.xsrfData}}
                                             <div class="panel-heading">
-                                                <h4>{{i18n .lang "user_recharge.recharge_with_alipay"}}</h4>
-                                                <p>{{i18n .lang "user_recharge.recharge_with_alipay_tips"}}</p>
+                                                <h4>{{i18n Lang "user_recharge.recharge_with_alipay"}}</h4>
+                                                <p>{{i18n Lang "user_recharge.recharge_with_alipay_tips"}}</p>
                                             </div>
                                             <div class="panel-body">
                                                 <div class="form-group">
                                                     <input name="amount" type="number"
-                                                           placeholder='{{i18n .lang "user_recharge.input_recharge_count"}}'
+                                                           placeholder='{{i18n Lang "user_recharge.input_recharge_count"}}'
                                                            class="form-control input-lg parsley-validated"
                                                            data-required="true" autocomplete="off">
                                                 </div><!-- /form-group -->
@@ -120,7 +120,7 @@
                                                 $('#qrimg').attr('src','data:image/png;base64,'+data)
                                             }
                                           })
-                                        "><i class="fa fa-heart"></i> {{i18n .lang "user_recharge.recharge"}}
+                                        "><i class="fa fa-heart"></i> {{i18n Lang "user_recharge.recharge"}}
                                                 </button>
                                             </div>
                                         </form>
@@ -134,8 +134,8 @@
             <div class="row fadeInUp animation-delay1">
                 <div class="panel panel-default table-responsive">
                     <div class="panel-heading">
-                        {{i18n .lang "user_recharge.recharge_log"}}
-                        <span class="label label-info pull-right">{{.rechargeTimes}} {{i18n .lang "user_recharge.recharge_times"}}</span>
+                        {{i18n Lang "user_recharge.recharge_log"}}
+                        <span class="label label-info pull-right">{{.rechargeTimes}} {{i18n Lang "user_recharge.recharge_times"}}</span>
                     </div>
                     <div class="padding-md clearfix">
                         <div id="dataTable_wrapper" class="dataTables_wrapper" role="grid">
@@ -155,7 +155,7 @@
                                         aria-controls="dataTable"
                                         rowspan="1" colspan="1" aria-label="Price: activate to sort column ascending"
                                         style="width: 114px;">
-                                        <div class="DataTables_sort_wrapper">{{i18n .lang "user_recharge.recharge_mode"}}<span
+                                        <div class="DataTables_sort_wrapper">{{i18n Lang "user_recharge.recharge_mode"}}<span
                                                     class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
                                         </div>
                                     </th>
@@ -163,7 +163,7 @@
                                         aria-controls="dataTable"
                                         rowspan="1" colspan="1" aria-label="Product: activate to sort column ascending"
                                         style="width: 380px;">
-                                        <div class="DataTables_sort_wrapper">{{i18n .lang "user_recharge.code"}}<span
+                                        <div class="DataTables_sort_wrapper">{{i18n Lang "user_recharge.code"}}<span
                                                     class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
                                         </div>
                                     </th>
@@ -171,7 +171,7 @@
                                         aria-controls="dataTable"
                                         rowspan="1" colspan="1" aria-label="Quantity: activate to sort column ascending"
                                         style="width: 157px;">
-                                        <div class="DataTables_sort_wrapper">{{i18n .lang "user_recharge.balance"}}<span
+                                        <div class="DataTables_sort_wrapper">{{i18n Lang "user_recharge.balance"}}<span
                                                     class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
                                         </div>
                                     </th>
@@ -179,7 +179,7 @@
                                         aria-controls="dataTable"
                                         rowspan="1" colspan="1" aria-label="Sales: activate to sort column ascending"
                                         style="width: 116px;">
-                                        <div class="DataTables_sort_wrapper">{{i18n .lang "user_recharge.recharge_time"}}<span
+                                        <div class="DataTables_sort_wrapper">{{i18n Lang "user_recharge.recharge_time"}}<span
                                                     class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
                                         </div>
                                     </th>
@@ -187,7 +187,7 @@
                                         aria-controls="dataTable"
                                         rowspan="1" colspan="1" aria-label="Status: activate to sort column ascending"
                                         style="width: 152px;">
-                                        <div class="DataTables_sort_wrapper">{{i18n .lang "user_recharge.recharge_status"}}<span
+                                        <div class="DataTables_sort_wrapper">{{i18n Lang "user_recharge.recharge_status"}}<span
                                                     class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
                                         </div>
                                     </th>
@@ -216,11 +216,11 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="$('#qrtext').text('正在加载二维码...')">×</button>
-                        <h4>{{i18n .lang "user_recharge.alipay"}}</h4>
+                        <h4>{{i18n Lang "user_recharge.alipay"}}</h4>
                     </div>
                     <div class="modal-body">
                         <h3 id="qrtext">
-                            {{i18n .lang "user_recharge.alipay_loading"}}
+                            {{i18n Lang "user_recharge.alipay_loading"}}
                         </h3>
                         <img src="" alt="" id="qrimg">
                     </div>

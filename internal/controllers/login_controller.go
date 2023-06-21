@@ -19,7 +19,7 @@ type LoginController struct {
 func (this *LoginController) Prepare() {
 	this.TplName = "Login.html"
 	handleNavbar(&this.Controller)
-	this.Data["lang"] = configure.Viper().GetString("Language")
+
 }
 
 func (this *LoginController) Get() {}

@@ -4,7 +4,6 @@ import (
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
 	"github.com/minoic/glgf"
-	"github.com/minoic/peo/internal/configure"
 	"github.com/minoic/peo/internal/message"
 	"github.com/minoic/peo/internal/session"
 )
@@ -16,12 +15,13 @@ type UserMessagesController struct {
 
 func (this *UserMessagesController) Prepare() {
 	this.TplName = "UserMessages.html"
-	this.Data["lang"] = configure.Viper().GetString("Language")
+
 	if !session.Logged(this.StartSession()) {
 		this.Abort("401")
 	}
 	handleNavbar(&this.Controller)
 	this.Data["u"] = 2
+
 }
 
 func (this *UserMessagesController) Get() {

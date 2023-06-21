@@ -11,7 +11,7 @@ import (
 func ConfirmKey(key string) (database.User, bool) {
 	DB := database.Mysql()
 	var keyInfo database.RegConfirmKey
-	if !DB.Where("KeyString = ?", key).First(&keyInfo).RecordNotFound() {
+	if !DB.Where("key_string = ?", key).First(&keyInfo).RecordNotFound() {
 		if keyInfo.ValidTime.After(time.Now()) {
 			var user database.User
 			if !DB.Where("ID = ?", keyInfo.ID).First(&user).RecordNotFound() {

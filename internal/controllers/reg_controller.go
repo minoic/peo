@@ -36,7 +36,6 @@ type RegController struct {
 func (this *RegController) Prepare() {
 	this.TplName = "Register.html"
 	handleNavbar(&this.Controller)
-	this.Data["lang"] = configure.Viper().GetString("Language")
 }
 
 func (this *RegController) Get() {}

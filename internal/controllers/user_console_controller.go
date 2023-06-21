@@ -55,11 +55,12 @@ func (this *UserConsoleController) Prepare() {
 	handleSidebar(&this.Controller)
 	this.Data["i"] = 1
 	this.Data["u"] = 3
-	this.Data["lang"] = configure.Viper().GetString("Language")
+
 }
 
 var (
 	entityMap sync.Map
+	EggsMap   sync.Map
 	waiting   = serverInfo{
 		ServerIsOnline:    false,
 		ServerIconData:    "",
@@ -153,17 +154,18 @@ func RefreshServerInfo() {
 			}
 		}
 		/* no matter server is online or offline*/
-		eggs, err := pterodactyl.ClientFromConf().GetAllEggs(pteServer.NestId)
-		if err != nil {
-			glgf.Error(err)
-		}
-		info.ServerEggs = append(info.ServerEggs, eggs...)
-		if len(info.ServerEggs) == 0 {
-			info.ServerEggs = append(info.ServerEggs, pterodactyl.Egg{
-				Id:   -1,
-				Nest: pteServer.NestId,
-				Name: tr("no_packs"),
-			})
+
+		eggsv, ok := EggsMap.Load(pteServer.NestId)
+		eggs := eggsv.([]pterodactyl.Egg)
+		if ok {
+			info.ServerEggs = append(info.ServerEggs, eggs...)
+			if len(info.ServerEggs) == 0 {
+				info.ServerEggs = append(info.ServerEggs, pterodactyl.Egg{
+					Id:   -1,
+					Nest: pteServer.NestId,
+					Name: tr("no_packs"),
+				})
+			}
 		}
 		entityMap.Store(entities[i].ID, info)
 	}

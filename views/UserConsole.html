@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8">
-    <title>{{.webApplicationName}} {{i18n .lang "user_console.user_console"}}</title>
+    <title>{{.webApplicationName}} {{i18n Lang "user_console.user_console"}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{template "tpls/perfectCSS.html" .}}
 </head>
@@ -16,8 +16,8 @@
         <!-- main-container -->
         <div class="main-header clearfix fadeInDown animation-delay1">
             <div class="page-title">
-                <h3 class="no-margin">{{i18n .lang "user_console.server_info"}}</h3>
-                <span>{{i18n .lang "user_console.welcome"}} {{.userName}}</span>
+                <h3 class="no-margin">{{i18n Lang "user_console.server_info"}}</h3>
+                <span>{{i18n Lang "user_console.welcome"}} {{.userName}}</span>
             </div><!-- /page-title -->
         </div>
         <div class="padding-md ">
@@ -25,7 +25,7 @@
                 <div class="col-sm-6 col-md-3">
                     <div class="panel-stat3 bg-danger">
                         <h2 class="m-top-none" id="userCount">{{.infoTotalOnline}}</h2>
-                        <h5>{{i18n .lang "user_console.total_players"}}</h5>
+                        <h5>{{i18n Lang "user_console.total_players"}}</h5>
                         <div class="stat-icon">
                             <i class="fa fa-user fa-3x"></i>
                         </div>
@@ -37,7 +37,7 @@
                 <div class="col-sm-6 col-md-3">
                     <div class="panel-stat3 bg-info">
                         <h2 class="m-top-none"><span id="serverloadCount">{{.infoServerCount}}</span></h2>
-                        <h5>{{i18n .lang "user_console.total_servers"}}</h5>
+                        <h5>{{i18n Lang "user_console.total_servers"}}</h5>
                         <div class="stat-icon">
                             <i class="fa fa-hdd-o fa-3x"></i>
                         </div>
@@ -49,7 +49,7 @@
                 <div class="col-sm-6 col-md-3">
                     <div class="panel-stat3 bg-warning">
                         <h2 class="m-top-none" id="orderCount">{{.infoOrderCount}}</h2>
-                        <h5>{{i18n .lang "user_console.total_orders"}}</h5>
+                        <h5>{{i18n Lang "user_console.total_orders"}}</h5>
                         <div class="stat-icon">
                             <i class="fa fa-shopping-cart fa-3x"></i>
                         </div>
@@ -61,7 +61,7 @@
                 <div class="col-sm-6 col-md-3">
                     <div class="panel-stat3 bg-success">
                         <h2 class="m-top-none" id="visitorCount">{{.infoTotalUpTime}}</h2>
-                        <h5>{{i18n .lang "user_console.total_uptime"}}</h5>
+                        <h5>{{i18n Lang "user_console.total_uptime"}}</h5>
                         <div class="stat-icon">
                             <i class="fa fa-bar-chart-o fa-3x"></i>
                         </div>
@@ -86,18 +86,18 @@
                             <div class="padding-md">
                                 <div class="col-md-12">
                                     <h5>
-                                        {{i18n .lang "user_console.console_account"}}
+                                        {{i18n Lang "user_console.console_account"}}
                                     </h5>
                                     <p class="text-muted">
-                                        {{i18n .lang "user_console.console_account_tips"}}
+                                        {{i18n Lang "user_console.console_account_tips"}}
                                     </p>
                                 </div>
                                 <div class="col-md-12">
                                     <h5>
-                                        {{i18n .lang "user_console.account_safety"}}
+                                        {{i18n Lang "user_console.account_safety"}}
                                     </h5>
                                     <p class="text-muted">
-                                        {{i18n .lang "user_console.account_safety_tips"}}
+                                        {{i18n Lang "user_console.account_safety_tips"}}
                                     </p>
                                 </div>
                                 <div class="col-md-12">

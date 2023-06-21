@@ -1640,7 +1640,7 @@ var IN_GLOBAL_SCOPE = false;
                 createSimpleLexer([], [[PR_STRING, /^[\s\S]+/]]), ['regex']);
 
             function applyDecorator(job) {
-                var opt_langExtension = job.langExtension;
+                var opt_langExtension = job$.LangExtension;
 
                 try {
                     // Extract tags, and convert the source code to plain text.
