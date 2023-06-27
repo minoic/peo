@@ -151,4 +151,6 @@ func (this *WareSellerController) Get() {
 	this.Data["wares1"] = wares1
 	this.Data["wares2"] = wares2
 	this.Data["wares3"] = wares3
+	this.Data["title"] = configure.Viper().GetString("WebApplicationName")
+	this.Data["description"] = configure.Viper().GetString("WebDescription")
 }

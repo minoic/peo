@@ -225,7 +225,7 @@ func (this *NewWareController) Post() {
 		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 disk " + err.Error()
-	} else if ware.Disk <= 0 {
+	} else if ware.Disk < 0 {
 		hasError = true
 		hasErrorText = "DISK 输入值不合法"
 	}
@@ -234,7 +234,7 @@ func (this *NewWareController) Post() {
 		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 memory " + err.Error()
-	} else if ware.Memory <= 0 {
+	} else if ware.Memory < 0 {
 		hasError = true
 		hasErrorText = "Memory 输入值不合法"
 	}
@@ -292,7 +292,7 @@ func (this *NewWareController) Post() {
 	}
 	ware.Node, err = this.GetInt("node_id")
 	_, nerr := cli.GetNode(ware.Node)
-	if err != nil {
+	if err != nil && ware.Node != 0 {
 		glgf.Error(err)
 		hasError = true
 		hasErrorText = "POST 表单获取错误 discount " + err.Error()
@@ -363,4 +363,5 @@ func (this *NewWareController) Post() {
 			Title:  "添加商品成功！",
 		}, &this.Controller)
 	}
+	go RefreshWareInfo()
 }

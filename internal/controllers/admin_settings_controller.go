@@ -83,6 +83,7 @@ func (this *AdminSettingsController) Post() {
 	configure.Viper().Set("AliPayPublicKey", this.GetString("AliPayPublicKey"))
 	configure.Viper().Set("AliPayPrivateKey", this.GetString("AliPayPrivateKey"))
 	configure.Viper().Set("AliPayAppID", this.GetString("AliPayAppID"))
+	configure.Viper().Set("AliPayEnabled", this.GetString("AliPayEnabled"))
 	configure.Viper().Set("AlbumEnabled", cast.ToBool(this.GetString("AlbumEnabled")))
 	configure.Viper().Set("SocialLink", this.GetString("SocialLink"))
 	configure.Viper().Set("SocialLinkTitle", this.GetString("SocialLinkTitle"))
