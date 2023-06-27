@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/docker/v/minoic/peo?label=Docker%20Image)](https://hub.docker.com/r/minoic/peo) [![](https://img.shields.io/github/stars/minoic/peo?style=social)](https://github.com/minoic/peo) [![](https://img.shields.io/github/release-date/minoic/peo)](https://github.com/minoic/peo/releases)
 
-🎮用于建立翼龙面板的自动售卖系统和附加控制系统，自动化你的翼龙面板出售。
+🎮用于建立 [翼龙面板](https://github.com/pterodactyl/panel) 的自动售卖系统和附加控制系统，自动化你的翼龙面板出售。
 
 目前已在 [demo](https://order.minoic.top) 稳定运行并跟进开发版本的部署
 
