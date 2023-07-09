@@ -156,8 +156,8 @@ func RefreshServerInfo() {
 		/* no matter server is online or offline*/
 
 		eggsv, ok := EggsMap.Load(pteServer.NestId)
-		eggs := eggsv.([]pterodactyl.Egg)
 		if ok {
+			eggs := eggsv.([]pterodactyl.Egg)
 			info.ServerEggs = append(info.ServerEggs, eggs...)
 			if len(info.ServerEggs) == 0 {
 				info.ServerEggs = append(info.ServerEggs, pterodactyl.Egg{

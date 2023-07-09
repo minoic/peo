@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/beego/beego/v2 v2.1.0
 	github.com/beego/i18n v0.0.0-20161101132742-e9308947f407
+	github.com/bluele/gcache v0.0.2
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/hako/durafmt v0.0.0-20191009132224-3f39dc1ed9f4
 	github.com/jinzhu/gorm v1.9.16

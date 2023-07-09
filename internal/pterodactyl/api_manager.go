@@ -5,12 +5,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/bluele/gcache"
 	"github.com/minoic/glgf"
+	"github.com/spf13/cast"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"strconv"
 	"strings"
+	"time"
+)
+
+var (
+	gc   = gcache.New(128).ARC().Build()
+	pool = make(chan struct{}, 4)
 )
 
 // Client Pterodactyl API client
@@ -164,7 +172,7 @@ func (this *Client) GetAllUsers() ([]User, error) {
 	return users, nil
 }
 
-func (this *Client) GetNest(nestID int) (*Nest, error) {
+func (this *Client) getNest(nestID int) (*Nest, error) {
 	body, err := this.api("", "nests/"+strconv.Itoa(nestID), "GET")
 	if err != nil {
 		return nil, err
@@ -176,6 +184,28 @@ func (this *Client) GetNest(nestID int) (*Nest, error) {
 		return &dec.Attributes, nil
 	}
 	return nil, err
+}
+
+func (this *Client) GetNest(nestID int) (*Nest, error) {
+	key := "NEST" + cast.ToString(nestID)
+	if !gc.Has(key) {
+		pool <- struct{}{}
+		defer func() {
+			<-pool
+		}()
+	}
+	if get, err := gc.Get(key); err == nil {
+		return get.(*Nest), nil
+	}
+	ret, err := this.getNest(nestID)
+	if err != nil {
+		return nil, err
+	}
+	err = gc.SetWithExpire(key, ret, 3*time.Minute)
+	if err != nil {
+		glgf.Error(err)
+	}
+	return ret, err
 }
 
 func (this *Client) GetAllNests() ([]Nest, error) {
@@ -198,7 +228,7 @@ func (this *Client) GetAllNests() ([]Nest, error) {
 	return nil, err
 }
 
-func (this *Client) GetEgg(nestID int, eggID int) (*Egg, error) {
+func (this *Client) getEgg(nestID int, eggID int) (*Egg, error) {
 	body, err := this.api("", "nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID), "GET")
 	if err != nil {
 		return nil, err
@@ -212,7 +242,29 @@ func (this *Client) GetEgg(nestID int, eggID int) (*Egg, error) {
 	return nil, err
 }
 
-func (this *Client) GetAllEggs(nestID int) ([]Egg, error) {
+func (this *Client) GetEgg(nestID int, eggID int) (*Egg, error) {
+	key := "NEST" + cast.ToString(nestID) + "EGG" + cast.ToString(eggID)
+	if !gc.Has(key) {
+		pool <- struct{}{}
+		defer func() {
+			<-pool
+		}()
+	}
+	if get, err := gc.Get(key); err == nil {
+		return get.(*Egg), nil
+	}
+	ret, err := this.getEgg(nestID, eggID)
+	if err != nil {
+		return nil, err
+	}
+	err = gc.SetWithExpire(key, ret, time.Minute)
+	if err != nil {
+		glgf.Error(err)
+	}
+	return ret, err
+}
+
+func (this *Client) getAllEggs(nestID int) ([]Egg, error) {
 	body, err := this.api("", "nests/"+strconv.Itoa(nestID)+"/eggs/", "GET")
 	if err != nil {
 		return nil, err
@@ -230,6 +282,28 @@ func (this *Client) GetAllEggs(nestID int) ([]Egg, error) {
 		return ret, err
 	}
 	return nil, err
+}
+
+func (this *Client) GetAllEggs(nestID int) ([]Egg, error) {
+	key := "ALLEGGS" + cast.ToString(nestID)
+	if !gc.Has(key) {
+		pool <- struct{}{}
+		defer func() {
+			<-pool
+		}()
+	}
+	if get, err := gc.Get(key); err == nil {
+		return get.([]Egg), nil
+	}
+	ret, err := this.getAllEggs(nestID)
+	if err != nil {
+		return nil, err
+	}
+	err = gc.SetWithExpire(key, ret, 3*time.Minute)
+	if err != nil {
+		glgf.Error(err)
+	}
+	return ret, err
 }
 
 func (this *Client) GetAllNodes() ([]Node, error) {
@@ -287,7 +361,7 @@ func (this *Client) GetAllocations(nodeID int) ([]Allocation, error) {
 	return ret, nil
 }
 
-func (this *Client) GetServer(ID interface{}, isExternal bool) (*Server, error) {
+func (this *Client) getServer(ID interface{}, isExternal bool) (*Server, error) {
 	var endPoint string
 	if isExternal {
 		endPoint = "servers/external/" + ID.(string)
@@ -307,6 +381,28 @@ func (this *Client) GetServer(ID interface{}, isExternal bool) (*Server, error) 
 		fmt.Print(err.Error())
 	}
 	return nil, err
+}
+
+func (this *Client) GetServer(ID interface{}, isExternal bool) (*Server, error) {
+	key := "SERVER" + cast.ToString(ID)
+	if !gc.Has(key) {
+		pool <- struct{}{}
+		defer func() {
+			<-pool
+		}()
+	}
+	if get, err := gc.Get(key); err == nil {
+		return get.(*Server), nil
+	}
+	ret, err := this.getServer(ID, isExternal)
+	if err != nil {
+		return nil, err
+	}
+	err = gc.SetWithExpire(key, ret, time.Minute)
+	if err != nil {
+		glgf.Error(err)
+	}
+	return ret, err
 }
 
 func (this *Client) GetAllServers() ([]Server, error) {
@@ -427,29 +523,6 @@ func (this *Client) GetEnv(nestID int, eggID int) (map[string]string, error) {
 	}
 	return ret, nil
 }
-
-/*_ = PterodactylCreateServer(params, PterodactylServer{
-Id:          111,
-ExternalId:  "12121",
-Uuid:        "",
-Identifier:  "",
-Name:        "12121",
-Description: "12121",
-Suspended:   false,
-Limits: PterodactylServerLimit{
-Memory: 1024,
-Swap:   -1,
-Disk:   2048,
-IO:     500,
-CPU:    100,
-},
-UserId:     1,
-NodeId:     5,
-Allocation: 517,
-NestId:     1,
-EggId:      17,
-PackId:     0,
-})*/
 
 func (this *Client) ChangePassword(externalID string, pwd string) error {
 	user, err := this.GetUser(externalID, true)
