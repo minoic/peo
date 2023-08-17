@@ -4,7 +4,7 @@
 
 🎮用于建立 [翼龙面板](https://github.com/pterodactyl/panel) 的自动售卖系统和附加控制系统，自动化你的翼龙面板出售。
 
-目前已在 [demo](https://order.minoic.top) 稳定运行并跟进开发版本的部署
+目前已在 [demo](https://order.minoic.top) 稳定运行并跟进开发版本的部署（目前因网站备案原因暂停）。
 
 主要用于 **Minecraft** 服务器的出售管理，暂不支持其它种类服务器的状态的信息获取
 
