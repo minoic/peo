@@ -26,6 +26,7 @@ services:
   peo:
     image: minoic/peo
     restart: always
+    build: .
     depends_on:
       - redis
       - mysql
