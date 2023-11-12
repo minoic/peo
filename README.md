@@ -12,13 +12,13 @@
 
 [minoic/peo - Docker Image | Docker Hub](https://hub.docker.com/r/minoic/peo)
 
+[更新日志](CHANGELOG.md)
+
 ## 截图
 
 ![index.png](doc/index.png)
 
 ![recharge.png](doc/recharge.png)
-
-[更新日志](CHANGELOG.md)
 
 ## 特性
 
