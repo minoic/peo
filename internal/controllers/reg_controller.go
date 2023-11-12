@@ -57,92 +57,89 @@ func (this *RegController) Post() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = tr("auth.register_captcha_error")
 		return
-	} else if !agreement {
+	}
+	if !agreement {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = tr("auth.register_terms_error")
 		return
-	} else if registerPassword != registerPasswordConfirm {
+	}
+	if registerPassword != registerPasswordConfirm {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = tr("auth.register_confirm_error")
 		return
-	} else if !checkUserName(registerName) {
+	}
+	if !checkUserName(registerName) {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = tr("auth.register_username_error")
 		return
-	} else if !DB.Where("name = ?", registerName).First(&database.User{}).RecordNotFound() {
+	}
+	if !DB.Where("name = ?", registerName).First(&database.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = tr("auth.register_username_used")
 		return
-	} else if !DB.Where("email = ?", registerEmail).First(&database.User{}).RecordNotFound() {
+	}
+	if !DB.Where("email = ?", registerEmail).First(&database.User{}).RecordNotFound() {
 		this.Data["hasError"] = true
 		this.Data["hasErrorText"] = tr("auth.register_email_used")
 		return
+	}
+	newUuid, _ := uuid.NewV4()
+	b := md5.Sum([]byte(registerPassword + configure.Viper().GetString("DatabaseSalt")))
+	newUser := database.User{
+		Name:           registerName,
+		Email:          registerEmail,
+		Password:       hex.EncodeToString(b[:]),
+		UUID:           newUuid,
+		IsAdmin:        false,
+		EmailConfirmed: false,
+	}
+	if userCount == 0 {
+		newUser.IsAdmin = true
+	}
+	glgf.Info(newUser)
+	DB.Create(&newUser)
+	message.Send("ADMIN", newUser.ID, tr("auth.first_message"))
+	if newUser.IsAdmin {
+		message.Send("ADMIN", newUser.ID, tr("auth.admin_tips"))
+	}
+	err = pterodactyl.ClientFromConf().CreateUser(pterodactyl.PostPteUser{
+		ExternalId: newUser.Name,
+		Username:   newUser.Name,
+		Email:      newUser.Email,
+		Language:   "zh",
+		RootAdmin:  newUser.IsAdmin,
+		Password:   newUser.Name,
+		FirstName:  newUser.Name,
+		LastName:   "_",
+	})
+	if err != nil {
+		glgf.Error("cant create pterodactyl user for "+newUser.Name, err)
+		message.Send("ADMIN", newUser.ID, tr("auth.pterodactyl_account_failed"))
+		DelayRedirect(DelayInfo{
+			URL:    "/login",
+			Detail: tr("auth.jump_to_login"),
+			Title:  tr("auth.register_success2"),
+		}, &this.Controller)
 	} else {
-		newUuid, _ := uuid.NewV4()
-		b := md5.Sum([]byte(registerPassword + configure.Viper().GetString("DatabaseSalt")))
-		newUser := database.User{
-			Name:           registerName,
-			Email:          registerEmail,
-			Password:       hex.EncodeToString(b[:]),
-			UUID:           newUuid,
-			IsAdmin:        false,
-			EmailConfirmed: false,
-		}
-		if userCount == 0 {
-			newUser.IsAdmin = true
-		}
-		glgf.Info(newUser)
-		DB.Create(&newUser)
-		message.Send("ADMIN", newUser.ID, tr("auth.first_message"))
-		if newUser.IsAdmin {
-			message.Send("ADMIN", newUser.ID, tr("auth.admin_tips"))
-		}
-		if configure.Viper().GetBool("SMTPEnabled") {
-			message.Send("Admin", newUser.ID, tr("auth.pterodactyl_account_tips"))
-			if err := email.ConfirmRegister(newUser); err != nil {
-				glgf.Error(err)
-				DelayRedirect(DelayInfo{
-					URL:    "/reg",
-					Detail: tr("auth.jump_to_reg"),
-					Title:  tr("auth.email_failed"),
-				}, &this.Controller)
-			} else {
-				DelayRedirect(DelayInfo{
-					URL:    "/login",
-					Detail: tr("auth.jump_to_login"),
-					Title:  tr("auth.email_verify"),
-				}, &this.Controller)
-			}
-		} else {
-			err := pterodactyl.ClientFromConf().CreateUser(pterodactyl.PostPteUser{
-				ExternalId: newUser.Name,
-				Username:   newUser.Name,
-				Email:      newUser.Email,
-				Language:   "zh",
-				RootAdmin:  newUser.IsAdmin,
-				Password:   newUser.Name,
-				FirstName:  newUser.Name,
-				LastName:   "_",
-			})
-			if err != nil {
-				glgf.Error("cant create pterodactyl user for "+newUser.Name, err)
-				message.Send("ADMIN", newUser.ID, tr("auth.pterodactyl_account_failed"))
-				DelayRedirect(DelayInfo{
-					URL:    "/login",
-					Detail: tr("auth.jump_to_login"),
-					Title:  tr("auth.register_success2"),
-				}, &this.Controller)
-			} else {
-				DB.Model(&newUser).Update("pte_user_created", true)
-				DelayRedirect(DelayInfo{
-					URL:    "/login",
-					Detail: tr("auth.jump_to_login"),
-					Title:  tr("auth.register_success"),
-				}, &this.Controller)
-				message.Send("ADMIN", newUser.ID, tr("auth.pterodactyl_account_success_tips"))
-			}
+		DB.Model(&newUser).Update("pte_user_created", true)
+		DelayRedirect(DelayInfo{
+			URL:    "/login",
+			Detail: tr("auth.jump_to_login"),
+			Title:  tr("auth.register_success"),
+		}, &this.Controller)
+		message.Send("ADMIN", newUser.ID, tr("auth.pterodactyl_account_success_tips"))
+	}
+}
+
+func checkUserName(userName string) bool {
+	const validChar = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+	for i := 0; i < len(userName); i++ {
+		// glgf.Info(string(userName[i]))
+		if !strings.ContainsAny(validChar, string(userName[i])) {
+			return false
 		}
 	}
+	return true
 }
 
 func (this *RegController) MailConfirm() {
@@ -194,15 +191,4 @@ func (this *RegController) MailConfirm() {
 		}, &this.Controller)
 	}
 	this.TplName = "Delay.html"
-}
-
-func checkUserName(userName string) bool {
-	const validChar = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
-	for i := 0; i < len(userName); i++ {
-		// glgf.Info(string(userName[i]))
-		if !strings.ContainsAny(validChar, string(userName[i])) {
-			return false
-		}
-	}
-	return true
 }

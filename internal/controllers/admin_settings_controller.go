@@ -298,7 +298,7 @@ func (this *AdminSettingsController) getSettings() []InputField {
 		{
 			Name:           "AliPayEnabled",
 			FriendlyName:   "支付宝开关",
-			Description:    "是否开启支付宝支付，true/false",
+			Description:    "是否开启支付宝支付（基于支付宝当面付 API），WebHostName 填写正确切公网可访问，公开使用前请测试，true/false",
 			Type:           "text",
 			AdditionalTags: "",
 			Required:       false,

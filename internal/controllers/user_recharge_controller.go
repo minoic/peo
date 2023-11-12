@@ -32,7 +32,6 @@ func (this *UserRechargeController) Prepare() {
 	this.TplName = "UserRecharge.html"
 	this.Data["i"] = 3
 	this.Data["u"] = 3
-
 }
 
 func (this *UserRechargeController) Get() {
@@ -170,7 +169,7 @@ func (this *UserRechargeController) CreateZFB() {
 		Status:     `<span class="label label-warning">未支付</span>`,
 	}
 	database.Mysql().Create(&rlog)
-	img, err := qrcode.Encode(resp.Content.QRCode, qrcode.High, 256)
+	img, err := qrcode.Encode(resp.QRCode, qrcode.High, 256)
 	if err != nil {
 		glgf.Error(err)
 		_, _ = this.Ctx.ResponseWriter.Write([]byte("0"))

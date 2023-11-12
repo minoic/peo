@@ -20,7 +20,7 @@ func (this *CallbackController) Prepare() {
 
 }
 
-func (this *CallbackController) Post() {
+func (this *CallbackController) AlipayRecharge() {
 	if configure.AliClient == nil {
 		this.Abort("403")
 		return
@@ -63,4 +63,8 @@ func (this *CallbackController) Post() {
 	glgf.Info("user", user.Name, user.Email, "has recharged ", rlog.Balance)
 	message.SendAdmin("user", user.Name, user.Email, "has recharged ", rlog.Balance)
 	this.Ctx.WriteString("success")
+}
+
+func (this *CallbackController) AlipayOrder() {
+
 }
