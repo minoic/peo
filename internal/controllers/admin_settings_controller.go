@@ -70,6 +70,8 @@ func (this *AdminSettingsController) Post() {
 	configure.Viper().Set("MYSQLUserPassword", this.GetString("MYSQLUserPassword"))
 	configure.Viper().Set("MYSQLDatabaseName", this.GetString("MYSQLDatabaseName"))
 	configure.Viper().Set("RedisHost", this.GetString("RedisHost"))
+	configure.Viper().Set("RedisPassword", this.GetString("RedisPassword"))
+	configure.Viper().Set("RedisDB", this.GetString("RedisDB"))
 	configure.Viper().Set("SMTPEnabled", cast.ToBool(this.GetString("SMTPEnabled")))
 	configure.Viper().Set("SMTPHost", this.GetString("SMTPHost"))
 	configure.Viper().Set("SMTPPort", cast.ToInt(this.GetString("SMTPPort")))
@@ -92,6 +94,8 @@ func (this *AdminSettingsController) Post() {
 	if err != nil {
 		glgf.Error(err)
 	}
+	configure.ReloadConfig()
+	database.Reset()
 	this.Prepare()
 }
 
@@ -204,6 +208,24 @@ func (this *AdminSettingsController) getSettings() []InputField {
 			AdditionalTags: "",
 			Required:       false,
 			Default:        configure.Viper().GetString("RedisHost"),
+		},
+		{
+			Name:           "RedisPassword",
+			FriendlyName:   "Redis Password, 若无密码可留空",
+			Description:    "",
+			Type:           "text",
+			AdditionalTags: "",
+			Required:       false,
+			Default:        configure.Viper().GetString("RedisPassword"),
+		},
+		{
+			Name:           "RedisDB",
+			FriendlyName:   "Redis DB",
+			Description:    "Redis DB number, 默认设置为 0 即可",
+			Type:           "text",
+			AdditionalTags: "",
+			Required:       false,
+			Default:        configure.Viper().GetString("RedisDB"),
 		},
 		{
 			Name:           "SMTPEnabled",

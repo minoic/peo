@@ -122,7 +122,13 @@ func ReloadConfig() {
 	}
 	v.Set("WebHostName", strings.TrimRight(v.GetString("WebHostName"), "/"))
 	v.Set("PterodactylHostname", strings.TrimRight(v.GetString("PterodactylHostname"), "/"))
-
+	if v.GetInt("RedisDB") == 0 {
+		v.Set("RedisDB", 0)
+	}
+	err = v.WriteConfig()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func Viper() *viper.Viper {

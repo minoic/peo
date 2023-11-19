@@ -54,7 +54,14 @@ func Redis() *redis.Client {
 		rdb = redis.NewClient(&redis.Options{
 			Addr:        configure.Viper().GetString("RedisHost"),
 			DialTimeout: 3 * time.Second,
+			DB:          configure.Viper().GetInt("RedisDB"),
+			Password:    configure.Viper().GetString("RedisPassword"),
 		})
 	}
 	return rdb
+}
+
+func Reset() {
+	rdb = nil
+	db = nil
 }

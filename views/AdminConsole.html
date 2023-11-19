@@ -46,17 +46,18 @@
                     </div>
                     <div class="col-md-4 col-sm-6 col-xs-12">
                         <a href="/admin-console/user">
-                            <div class="panel panel-default panel-stat2 bg-dark">
+                            <div class="panel panel-default panel-stat2 bg-dark" data-toggle="tooltip"
+                                 data-placement="top" title="" data-original-title='User list'>
                                 <div class="panel-body">
-								<span class="stat-icon">
-									<i class="fa fa-user fa-lg"></i>
-								</span>
+                                <span class="stat-icon">
+                                    <i class="fa fa-user fa-lg"></i>
+                                </span>
                                     <div class="pull-right text-right">
                                         <div class="value">{{.userAmount}}</div>
                                         <div class="title">{{i18n Lang "admin_console.user"}}</div>
                                     </div>
                                 </div>
-                            </div><!-- /panel -->
+                            </div>
                         </a>
                     </div>
                     <div class="col-md-4 col-sm-6 col-xs-12">

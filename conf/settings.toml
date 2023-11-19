@@ -28,6 +28,8 @@ MYSQLUserPassword = "PEOMYSQLPASSWORD"
 MYSQLDatabaseName = "peo"
 SqlTablePrefix = "pe_"
 RedisHost = "redis:6379"
+RedisPassword = ""
+RedisDB = 0
 
 ############################
 #SMTP settings
