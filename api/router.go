@@ -30,6 +30,7 @@ func InitRouter() {
 	web.Router("/admin-console/gallery-items/pass", &controllers.AdminConsoleController{}, "post:GalleryPass")
 	web.Router("/admin-console/gallery-items/delete", &controllers.AdminConsoleController{}, "post:GalleryDelete")
 	web.Router("/admin-console/user", &controllers.AdminConsoleUserController{})
+	web.Router("/admin-console/order", &controllers.AdminConsoleOrderController{})
 	web.Router("/admin-settings", &controllers.AdminSettingsController{})
 	web.Router("/new-ware", &controllers.NewWareController{})
 	web.Router("/new-order", &controllers.OrderCreateController{})

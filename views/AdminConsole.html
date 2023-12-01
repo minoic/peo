@@ -92,17 +92,20 @@
                         </a>
                     </div>
                     <div class="col-md-4 col-sm-6 col-xs-12">
-                        <div class="panel panel-default panel-stat2 bg-info">
-                            <div class="panel-body">
+                        <a href="/admin-console/order">
+                            <div class="panel panel-default panel-stat2 bg-info" data-toggle="tooltip"
+                                 data-placement="top" title="" data-original-title='Order list'>
+                                <div class="panel-body">
 								<span class="stat-icon">
 									<i class="fa fa-edit fa-lg"></i>
 								</span>
-                                <div class="pull-right text-right">
-                                    <div class="value">{{.orderAmount}}</div>
-                                    <div class="title">{{i18n Lang "admin_console.complete_order"}}</div>
+                                    <div class="pull-right text-right">
+                                        <div class="value">{{.orderAmount}}</div>
+                                        <div class="title">{{i18n Lang "admin_console.complete_order"}}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div><!-- /panel -->
+                            </div><!-- /panel -->
+                        </a>
                     </div>
                 </div>
                 {{if .deleteServers}}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>{{.webApplicationName}} {{i18n Lang "admin_console.title"}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{template "tpls/perfectCSS.html" .}}
+</head>
+<body>
+{{template "tpls/navbar.html" .}}
+
+<div id="main-container" class="no-margin">
+    <div class="padding-lg">
+        <div class="row">
+            <div id="dataTable_wrapper" class="dataTables_wrapper" role="grid">
+                <table class="table table-striped dataTable" id="dataTable"
+                       aria-describedby="dataTable_info">
+                    <thead>
+                    <tr role="row">
+                        <th class="ui-state-default" role="columnheader" tabindex="0"
+                            aria-controls="dataTable"
+                            rowspan="1" colspan="1" aria-sort="ascending" style="width: 50px;">
+                            <div class="DataTables_sort_wrapper">ID
+                                <span class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+                            </div>
+                        </th>
+                        <th class="ui-state-default" role="columnheader" tabindex="0"
+                            aria-controls="dataTable"
+                            rowspan="1" colspan="1"
+                            style="width: 144px;">
+                            <div class="DataTables_sort_wrapper">CreatedAt</div>
+                        </th>
+                        <th class="ui-state-default" role="columnheader" tabindex="0"
+                            aria-controls="dataTable"
+                            rowspan="1" colspan="1"
+                            style="width: 180px;">
+                            <div class="DataTables_sort_wrapper">UserName</div>
+                        </th>
+                        <th class="ui-state-default" role="columnheader" tabindex="0"
+                            aria-controls="dataTable"
+                            rowspan="1" colspan="1"
+                            style="width: 70px;">
+                            <div class="DataTables_sort_wrapper">SpecName</div>
+                        </th>
+                        <th class="ui-state-default" role="columnheader" tabindex="0"
+                            aria-controls="dataTable"
+                            rowspan="1" colspan="1"
+                            style="width: 130px;">
+                            <div class="DataTables_sort_wrapper">SpecDuration</div>
+                        </th>
+                        <th class="ui-state-default" role="columnheader" tabindex="0"
+                            aria-controls="dataTable"
+                            rowspan="1" colspan="1"
+                            style="width: 152px;">
+                            <div class="DataTables_sort_wrapper">FinalPrice</div>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody role="alert" aria-live="polite" aria-relevant="all">
+                    {{range .orders}}
+                    <tr class="odd">
+                        <td class="sorting_2">#{{.ID}}</td>
+                        <td class=" ">{{.CreatedAt}}</td>
+                        <td class=" ">{{.UserName}}</td>
+                        <td class=" ">{{.SpecName}}</td>
+                        <td class=" ">{{.SpecDuration}}</td>
+                        <td class=" ">{{.FinalPrice}}</td>
+                    </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div><!-- /.padding-md -->
+        </div>
+    </div>
+</div>
+
+{{template "tpls/perfectJS.html" .}}
+</body>
+</html>

@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
-	"github.com/minoic/glgf"
 	"github.com/minoic/peo/internal/database"
 	"github.com/minoic/peo/internal/session"
 )
@@ -26,7 +25,6 @@ func (this *AdminConsoleUserController) Prepare() {
 	var users []database.User
 	database.Mysql().Find(&users)
 	this.Data["users"] = users
-	glgf.Debug(users)
 }
 
 func (this *AdminConsoleUserController) Get() {

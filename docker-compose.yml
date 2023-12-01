@@ -24,7 +24,7 @@ services:
       - ./dist/redis/data:/data
 
   peo:
-    image: minoic/peo
+    image: minoic/peo:dev
     restart: always
     build: .
     depends_on:
