@@ -22,7 +22,7 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD }}
         
     - name: Build the Docker image
-      run: DOCKER_BUILDKIT=1 docker-compose -f ./docker-compose.yml build peo --progress=plain
+      run: DOCKER_BUILDKIT=1 docker-compose -f ./docker-compose.yml build peo
 
     - name: Push the Docker image
       run: DOCKER_BUILDKIT=1 docker-compose -f ./docker-compose.yml push peo
