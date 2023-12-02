@@ -1,6 +1,8 @@
 # peo
 
-[![](https://img.shields.io/docker/v/minoic/peo?label=Docker%20Image)](https://hub.docker.com/r/minoic/peo) [![](https://img.shields.io/github/stars/minoic/peo?style=social)](https://github.com/minoic/peo) [![](https://img.shields.io/github/release-date/minoic/peo)](https://github.com/minoic/peo/releases)
+[![](https://img.shields.io/docker/v/minoic/peo?label=Docker%20Image)](https://hub.docker.com/r/minoic/peo) [![](https://img.shields.io/github/stars/minoic/peo?style=social)](https://github.com/minoic/peo) [![](https://img.shields.io/github/release-date/minoic/peo)](https://github.com/minoic/peo/releases) 
+
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/minoic/peo/docker-image.yml?style=for-the-badge&logo=docker&label=GitHub%20Actions%20Build)
 
 🎮用于建立 [翼龙面板](https://github.com/pterodactyl/panel) 的自动售卖系统和附加控制系统，自动化你的翼龙面板出售。
 
