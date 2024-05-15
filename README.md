@@ -5,6 +5,8 @@
  
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/minoic/peo/docker-image.yml?style=for-the-badge&logo=docker&label=GitHub%20Actions%20Build)
 
+> 更新计划：由于当前代码可维护性较差，后续更新会用 Gin + Vue/Flutter 重构，以 v1 版本发布，在此之前不会添加新的功能。
+
 🎮用于建立 [翼龙面板](https://github.com/pterodactyl/panel) 的自动售卖系统和附加控制系统，自动化你的翼龙面板出售。
 
 目前已在 [demo](https://order.minoic.top) 稳定运行并跟进开发版本的部署（目前因网站备案原因暂停）。
