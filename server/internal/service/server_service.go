@@ -401,11 +401,15 @@ func (ServerService) RequestDelete(ctx context.Context, entityID, userID bson.Ob
 // failure here is cosmetic and is reported to an administrator.
 func syncPanelExpiry(ctx context.Context, e *models.WareEntity, validDate time.Time) {
 	cli := pterodactyl.ClientFromConf()
+	// Legacy warned the customer on this branch too, before it even tried to
+	// rewrite the description (user_console_controller.go:267): if the panel
+	// cannot be read, the date shown in the console is stale either way.
+	withoutDescription := message.Compose(
+		"Your server <", e.ServerExternalID, "> was renewed, but its expiry date could not be updated in the Pterodactyl Panel")
 	server, err := cli.GetServer(ctx, e.ServerExternalID)
 	if err != nil {
 		glgf.Warn("server: cannot update panel description for " + e.ServerExternalID + ": " + err.Error())
-		message.SendAdmin(ctx, e.UserID, message.Compose(
-			"Your server <", e.ServerExternalID, "> was renewed but the expiry date could not be synced; please refresh shortly"))
+		message.SendAdmin(ctx, e.UserID, withoutDescription)
 		return
 	}
 	if err := cli.UpdateServerDetail(ctx, e.ServerExternalID, pterodactyl.PostUpdateDetails{
@@ -415,8 +419,7 @@ func syncPanelExpiry(ctx context.Context, e *models.WareEntity, validDate time.T
 		ExternalID:  server.ExternalId,
 	}); err != nil {
 		glgf.Warn("server: cannot sync expiry " + e.ServerExternalID + ": " + err.Error())
-		message.SendAdmin(ctx, e.UserID, message.Compose(
-			"Your server <", e.ServerExternalID, "> was renewed but the expiry date could not be synced; please refresh shortly"))
+		message.SendAdmin(ctx, e.UserID, withoutDescription)
 		return
 	}
 	// A renewed server must start working again even if it was suspended.

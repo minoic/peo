@@ -19,6 +19,7 @@ import (
 	"github.com/minoic/peo/server/internal/models"
 	"github.com/minoic/peo/server/internal/redis"
 	"github.com/minoic/peo/server/internal/service/email"
+	"github.com/minoic/peo/server/internal/service/message"
 	"github.com/minoic/peo/server/internal/service/pterodactyl"
 	"github.com/minoic/peo/server/internal/service/random"
 	"github.com/minoic/peo/server/internal/store"
@@ -57,6 +58,23 @@ func mailPendingKey(mail string) string { return "CHANGE_EMAIL_PENDING:" + mail 
 // and its resend throttle, so a resend could not happen inside the code's life;
 // the port keeps that behaviour with one key holding the code.
 func resetCodeKey(mail string) string { return "FORGET:" + mail }
+
+// The texts of the automated site mail. Legacy rendered these through
+// beego/i18n; the spec removed i18n, so the English strings from
+// legacy/conf/locale/en-US.ini are now the only ones. They are kept verbatim -
+// including the line about the panel account name being the e-mail address,
+// which is what the registration form told the user even though the panel is
+// actually seeded with the user name (see the panel identity notes in
+// CONTRACT-DATA.md).
+const (
+	textFirstMessage = "This is your first message"
+	textAdminTips    = "You are the first registered account and have been set as an administrator."
+	textPanelFailed  = "Failed to create Pterodactyl Panel account. Please create one in User Settings before purchasing servers!"
+	textPanelOK      = "Your Pterodactyl Panel account has been created! You can now purchase servers. Your account name is your email, and your password is your username. Please remember to change your password upon logging in."
+	textPasswordSet  = "You have just changed your password!"
+	textPanelPassSet = "You have just changed your Pterodactyl Panel password!"
+	textEmailSet     = "You have just changed your bound e-mail address to "
+)
 
 // AuthService covers registration, login and credential changes.
 type AuthService struct{}
@@ -127,6 +145,13 @@ func (AuthService) Register(ctx context.Context, name, mail, password, clientKey
 	if err := store.User.Create(ctx, u); err != nil {
 		return nil, apierr.Wrap(apierr.CodeInternal, "cannot create user", err)
 	}
+	// The welcome mail is sent before the panel is called, exactly where legacy
+	// sent it (reg_controller.go:101), so a user whose registration succeeds
+	// always has something in their inbox even if the panel is unreachable.
+	message.SendAdmin(ctx, u.ID, textFirstMessage)
+	if u.IsAdmin {
+		message.SendAdmin(ctx, u.ID, textAdminTips)
+	}
 
 	// The panel mirror is best effort: an unreachable panel must not stop a
 	// user from signing up, they can retry from the settings page.
@@ -147,6 +172,7 @@ func (AuthService) Register(ctx context.Context, name, mail, password, clientKey
 		LastName:   "_",
 	}); err != nil {
 		glgf.Error("cannot create pterodactyl user for " + u.Name + ": " + err.Error())
+		message.SendAdmin(ctx, u.ID, textPanelFailed)
 	} else {
 		created = true
 	}
@@ -157,6 +183,7 @@ func (AuthService) Register(ctx context.Context, name, mail, password, clientKey
 		if err := store.PtePassword.Upsert(ctx, u.ID, u.Name); err != nil {
 			glgf.Error("cannot cache panel password for " + u.Name + ": " + err.Error())
 		}
+		message.SendAdmin(ctx, u.ID, textPanelOK)
 	}
 	return issue(u, false)
 }
@@ -214,6 +241,14 @@ func (AuthService) Me(ctx context.Context, userID bson.ObjectID) (*models.User, 
 }
 
 // ChangePassword rotates the credential after verifying the old one.
+//
+// Legacy did more than write the hash: it also pushed the new password to the
+// Pterodactyl account and mailed the user twice, once for the site password and
+// once for the panel one (user_settings_controller.go:88 and :96). The panel
+// step is not cosmetic - `PterodactylSession` signs into the panel with the
+// password cached in `pterodactylPasswords`, so without it the customer's
+// passwordless console hand-off would keep using a credential that no longer
+// matches the account.
 func (AuthService) ChangePassword(ctx context.Context, userID bson.ObjectID, oldPassword, newPassword string) error {
 	u, err := store.User.ByID(ctx, userID)
 	if err != nil {
@@ -228,6 +263,25 @@ func (AuthService) ChangePassword(ctx context.Context, userID bson.ObjectID, old
 	if err := store.User.SetPassword(ctx, userID, auth.HashPassword(newPassword)); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot save password", err)
 	}
+	message.SendAdmin(ctx, u.ID, textPasswordSet)
+
+	if !u.PteUserCreated {
+		// No panel account to rotate yet. The change still succeeded, so it is
+		// not reported as a failure; the panel password is seeded from the
+		// user name when the account is created.
+		return nil
+	}
+	if err := pterodactyl.ClientFromConf().ChangePassword(ctx, u.Name, newPassword); err != nil {
+		glgf.Error("cannot change the pterodactyl password for " + u.Name + ": " + err.Error())
+		return apierr.Fail(apierr.CodePterodactylError,
+			"the site password was changed but the Pterodactyl Panel password was not, please try again")
+	}
+	// The cached password is what the console hand-off authenticates with, so
+	// it has to follow the panel or the next sign-in uses a stale credential.
+	if err := store.PtePassword.Upsert(ctx, u.ID, newPassword); err != nil {
+		glgf.Error("cannot cache the new panel password for " + u.Name + ": " + err.Error())
+	}
+	message.SendAdmin(ctx, u.ID, textPanelPassSet)
 	return nil
 }
 
@@ -297,6 +351,8 @@ func (AuthService) ConfirmEmailChange(ctx context.Context, userID bson.ObjectID,
 		return apierr.Wrap(apierr.CodeInternal, "cannot save e-mail", err)
 	}
 	redis.Del(ctx, mailCodeKey(newEmail), mailPendingKey(newEmail))
+	// Legacy announced the new address here (user_settings_controller.go:125).
+	message.SendAdmin(ctx, userID, textEmailSet+newEmail)
 	return nil
 }
 
@@ -395,6 +451,13 @@ func (AuthService) ResetPasswordFor(ctx context.Context, userID bson.ObjectID, m
 }
 
 // ConfirmRegistration consumes a registration confirmation key.
+//
+// Legacy created the panel account here rather than at registration, and mailed
+// the customer the panel failure or success text (reg_controller.go:163, :171).
+// The port creates the panel account during Register so the customer can buy
+// immediately, so this step reports the outcome instead of repeating the call.
+// The observable result is the same inbox text; the panel is never touched
+// twice, which would fail with a duplicate-username error.
 func (AuthService) ConfirmRegistration(ctx context.Context, key string) error {
 	info, err := email.ConfirmKey(ctx, key)
 	if err != nil {
@@ -411,6 +474,13 @@ func (AuthService) ConfirmRegistration(ctx context.Context, key string) error {
 	}
 	if err := store.RegConfirm.Delete(ctx, info.ID); err != nil {
 		glgf.Error("cannot delete used confirmation key: " + err.Error())
+	}
+	if u, err := store.User.ByID(ctx, info.UserID); err != nil {
+		glgf.Error("cannot load confirmed user: " + err.Error())
+	} else if u.PteUserCreated {
+		message.SendAdmin(ctx, u.ID, textPanelOK)
+	} else {
+		message.SendAdmin(ctx, u.ID, textPanelFailed)
 	}
 	return nil
 }

@@ -54,6 +54,13 @@ storage engine and the rendering layer are new.
 - 控制器层缓存无同步写入造成的竞态，现由带 `sync.RWMutex` 的服务层缓存持有。
 - 面板账号识别：由数据库 id 改为用户名，与旧版一致（包含 `RootAdmin`、
   `ExternalId`、面板服务器命名与 `OOMDisabled` 等）。
+- **修改站点密码时同步轮换翼龙面板密码**：旧版会调用
+  `pterodactyl.ChangePassword` 并更新缓存的 `pterodactylPasswords`，端口此前遗漏
+  了该步骤，导致面板上仍可使用旧密码。面板账号尚未创建时跳过该调用，而不是在
+  站点密码已写库后返回一个永远无法消除的错误（见 `docs/ARCHITECTURE.md` §11 (s)）。
+- **补回丢失的通知**：注册成功与面板账号创建结果、管理员提示、修改密码、修改邮箱、
+  续费时面板描述同步失败，以及确认注册时的面板账号结果，均恢复为旧版的触发时机
+  与文案（见 `docs/ARCHITECTURE.md` §11 (t)）。
 
 > **破坏性更改**：v1 不读取旧 MySQL 数据库，也不提供迁移路径，部署后从空库开始。
 

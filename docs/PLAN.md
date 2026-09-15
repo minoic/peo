@@ -102,7 +102,7 @@ file directory.
 
 ## 5. Deliberate divergences
 
-Eleven decisions where the tree does not match a literal reading of
+Fourteen decisions where the tree does not match a literal reading of
 [`AGENTS.md`](../AGENTS.md) or of legacy, several of which are narrower than they
 look. All are recorded in [`ARCHITECTURE.md` §11](./ARCHITECTURE.md) with the
 reasoning; the list is reproduced here only so it is not missed.
@@ -121,6 +121,8 @@ reasoning; the list is reproduced here only so it is not missed.
 | (p) | `SendAnyEmail` concatenates fragments instead of rendering `[a b c]` |
 | (q) | the registration confirmation mail is still not sent — the legacy path was dead code |
 | (r) | `IssueRegistrationKey` deletes its token when the mail cannot be sent |
+| (s) | `ChangePassword` skips the panel rotation when there is no panel account yet |
+| (t) | `ConfirmRegistration` reports the panel outcome instead of creating the account a second time |
 
 Two behaviour fixes that the spec calls out as *intentional* corrections were also
 applied and are listed in [`AGENTS.md` §11](../AGENTS.md): the wrong slice variable
@@ -151,6 +153,11 @@ rules from `AGENTS.md` §3. There are no tests for the service layer, because it
 behaviour is the legacy behaviour and a test would only assert that the port
 matches a reading of the original — the reviewable artefact is the diff against
 `legacy/`, not a reimplementation of it.
+
+The cost of that choice is that the service layer's datastore interactions — the
+Redis key writes in `ForgetPassword` and `ChangeEmail`, for instance — are only
+covered by review. They need a live Redis to exercise, and faking one would mean
+a new dependency plus a test that asserts the fake rather than the server.
 
 Formatting is a gate rather than a nicety: the tree was normalized to LF with
 `gofmt -w`, so `gofmt -l` returning non-empty is a real signal and CI treats it as
