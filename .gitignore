@@ -5,3 +5,7 @@ dist
 *.conf
 build
 .idea
+server/bin
+server/web/assets/*
+!server/web/assets/.gitkeep
+legacy/build

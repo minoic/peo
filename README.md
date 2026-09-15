@@ -1,129 +1,210 @@
 # peo
 
-![Docker Image Version (latest semver)](https://img.shields.io/docker/v/minoic/peo?sort=semver&label=docker%20image)  [![](https://img.shields.io/github/release-date/minoic/peo)](https://github.com/minoic/peo/releases) 
- [![](https://img.shields.io/github/stars/minoic/peo?style=social)](https://github.com/minoic/peo)
- 
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/minoic/peo/docker-image.yml?style=for-the-badge&logo=docker&label=GitHub%20Actions%20Build)
+[![](https://img.shields.io/github/stars/minoic/peo?style=social)](https://github.com/minoic/peo)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/minoic/peo/ci.yml?style=for-the-badge&logo=github&label=CI)
 
-> 更新计划：由于当前代码可维护性较差，后续更新会用 Gin + Vue/Flutter 重构，以 v1 版本发布，在此之前不会添加新的功能。
+A storefront and control panel for [Pterodactyl](https://github.com/pterodactyl/panel):
+sell servers automatically, provision them on the panel, and let customers manage,
+renew and top up their own.
 
-🎮用于建立 [翼龙面板](https://github.com/pterodactyl/panel) 的自动售卖系统和附加控制系统，自动化你的翼龙面板出售。
+It targets **Minecraft** hosts — the status probe speaks the Minecraft server-list
+ping protocol — and tracks Pterodactyl v1.11.x.
 
-目前已在 [demo](https://order.minoic.top) 稳定运行并跟进开发版本的部署（目前因网站备案原因暂停）。
+---
 
-主要用于 **Minecraft** 服务器的出售管理，暂不支持其它种类服务器的状态的信息获取
+## Architecture
 
-当前适配翼龙面板 v1.11.2
+This is a v1 rewrite. The business rules are the v0.2.x rules, unchanged; the
+transport and the storage engine are new.
 
-[minoic/peo - Docker Image | Docker Hub](https://hub.docker.com/r/minoic/peo)
+| | v0.2.x | v1 |
+|---|---|---|
+| HTTP | Beego v2 MVC, server-rendered templates | **Gin**, REST/JSON only |
+| Frontend | 30 Beego `.html` templates | **Flutter Web (WASM)** SPA |
+| Storage | gorm v1 + MySQL | **MongoDB** (official driver) |
+| Cache, sessions, rate limits | Redis | **Redis, unchanged** |
+| i18n | `beego/i18n`, 3 locales | removed, English only |
+| Captcha | `beego/captcha` | removed, Redis rate limiting instead |
 
-[更新日志](CHANGELOG.md)
+Three directories:
 
-## 截图
+| Path | What it is |
+|---|---|
+| [`server/`](./server) | the Go module `github.com/minoic/peo/server` |
+| [`flutter/`](./flutter) | the Flutter Web app |
+| [`legacy/`](./legacy) | the v0.2.x Beego module, **reference only** — not built, not shipped |
+| [`docs/`](./docs) | [architecture](./docs/ARCHITECTURE.md), [API](./docs/API.md), [data](./docs/CONTRACT-DATA.md), [routes](./docs/CONTRACT-ROUTES.md), [plan](./docs/PLAN.md) |
 
-![index.png](doc/index.png)
+The Go binary serves the compiled SPA, so there is **one container, one port and
+one origin**: no CORS preflights, no cookie plumbing at the edge.
 
-![recharge.png](doc/recharge.png)
+---
 
-## 特性
+## Features
 
-- [x] 登录、注册（首个用户为管理员）、找回密码、修改密码、改绑邮箱
-- [x] 主页商品展示、建立订单、支持余额支付或 KEY 支付
-- [x] 用户控制台：展示用户服务器信息、跳转控制台、运行时间记录、用同种 KEY 或余额自助续费
-- [x] 工单系统
-- [x] 用户消息通知
-- [x] 用户可分享的公共相册
-- [x] 管理员控制台：添加商品、整合包（Nest.Egg）、处理工单、管理相册、批量添加
-  KEY、导出KEY
-- [x] 周期任务：刷新缓存、检测服务器过期、检测 KEY 过期
-- [x] 充值系统：支持 KEY 充值或支付宝扫码支付（基于支付宝当面付 API ）
-- [x] 服务器到期自动邮件提醒用户、一定时间后在管理员控制台手动确认删除
-- [x] 跟进 Pterodactyl 的新版本 API
-- [ ] 优化模板复用，提高渲染效率
-- [ ] 添加微信支付
-- [x] 详细使用文档
-- [ ] 支付方式集成到订单页
-- [ ] 多语言国际化
-- [x] 跳转翼龙面板时自动登录（需要开启 SSL 且在同一子域如 peo.A.com、pte.A.com）。
-- [x] 修改配置存储方式为环境变量与本地数据库
-- [ ] 添加用户列表控制页面
-- [ ] 添加商品列表控制页面
-- [ ] 添加订单列表控制页面
+- Registration (the first account becomes the administrator), login, password
+  reset, password change, e-mail change with a mailed confirmation code
+- Storefront with monthly / quarterly / yearly pricing and per-product discounts
+- Order and pay with balance or with an activation key
+- Customer console: server list, live status, panel single-sign-on, uptime
+  accounting, self-service renew and reinstall
+- Support tickets
+- In-site messages with an unread badge
+- A shareable public gallery with moderation
+- Recharge by key or by Alipay face-to-face QR payment
+- Admin console: products, activation keys (batch generate and export), users,
+  orders, tickets, gallery review, runtime settings and health
+- Scheduled tasks: cache refresh, panel sync, expiry checks, key cleanup
+- Expiry e-mails, then suspension, then a confirmation step before an
+  administrator approves deletion
 
-如有改进建议或需求欢迎发送 Issue 或 Pull Request
+---
 
-## 部署
+## Quick start
 
-### 二进制文件
-
-1. 从 [release](https://github.com/minoic/peo/releases) 下载对应系统的发布软件包，解压。
-2. 修改且仅修改 `conf/settings.toml` 中的配置，主要包含 Database Settings 中的内容（Mysql、Redis），其余配置可在网站中修改。
-3. 运行可执行文件。
-
-### Docker（推荐）
-
-1. 安装 [Docker](https://www.runoob.com/docker/ubuntu-docker-install.html)、
-   [Docker Compose](https://www.runoob.com/docker/docker-compose.html)。
-2. 下载 [docker-compose.yml](./docker-compose.yml) 至任意文件夹。
-3. 在该文件夹内打开终端，运行
+### Docker Compose (recommended)
 
 ```bash
-docker-compose up
+git clone https://github.com/minoic/peo.git
+cd peo
+docker compose up -d
 ```
 
-或在后台运行
+Then open <http://localhost:8080> and register — the **first account is created as
+the administrator**. Open the admin console, go to Settings, and fill in the
+Pterodactyl hostname and API token plus your SMTP details.
+
+The stack is `peo` (port 8080), `mongo:7` and `redis:7`, with named volumes for
+the two databases and a bind mount of `./conf` for the saved settings.
+
+### Building the image yourself
 
 ```bash
-docker-compose up -d
+docker compose build peo
 ```
 
-若去掉末尾 `-d` 则在前台运行，按 Ctrl+C 退出。
+The image is a three-stage build: it compiles the Flutter Web (WASM) bundle,
+embeds that bundle into the Go binary, and ships one small runtime. The Flutter
+toolchain is downloaded from the official release archive and verified against a
+pinned SHA-256, so the build is reproducible without a prebuilt SDK image.
 
-### 网关
+### Running from source
 
-使用 Nginx 等软件监听 80/443 端口，配置 SSL 后设置反向代理将根目录转发到 8080 端口
+Requires Go 1.27.1 and a reachable MongoDB and Redis.
 
-（仅限 Docker 方式）若不需要网关、HTTPS、域名复用等功能，可直接将 docker-compose.yml
-中的
-
-```yaml
-    ports:
-      - "8080:8080"
+```bash
+cd server
+go build ./... && go run ./cmd/peo
 ```
 
-改为
+On first run the server writes `conf/settings.toml` from its embedded default and
+**continues** rather than exiting, so a container with no configuration boots and
+logs a warning. Point `MongoURI`, `MongoDatabaseName` and `RedisHost` at your
+services, then finish the configuration from the admin settings page.
+
+The API and the SPA are both served from `:8080`, and `/healthz` reports Mongo,
+Redis and Pterodactyl connectivity.
+
+The server must be started from the repository root (or with a working directory
+that contains `conf/`), because the configuration path is relative.
+
+### Frontend development
+
+Requires Flutter 3.47.4 with web support enabled.
+
+```bash
+cd flutter
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run -d chrome
+```
+
+Set `CORSOrigins` in `conf/settings.toml` while developing against a separately
+running server — in production it should stay empty, because the SPA is served
+from the same origin.
+
+To produce the bundle the server embeds:
+
+```bash
+cd flutter
+flutter build web --wasm --release
+```
+
+Then copy `flutter/build/web` into `server/web/assets/`, or just build the image,
+which does it for you.
+
+---
+
+## Configuration
+
+Settings live in `conf/settings.toml` and are all editable from the admin console
+at runtime — a save reloads the file, rebuilds the Alipay client and reconnects
+Mongo and Redis.
+
+The only values worth setting by hand before the first boot are the storage
+endpoints:
+
+| Key | Default |
+|---|---|
+| `MongoURI` | `mongodb://mongo:27017` |
+| `MongoDatabaseName` | `peo` |
+| `RedisHost` | `redis:6379` |
+| `RedisPassword` | empty |
+| `RedisDB` | `0` |
+
+Everything else — `WebApplicationName`, `WebHostName`, `PterodactylHostname`,
+`PterodactylToken`, SMTP, Alipay keys, feature switches — is described in the
+admin settings page itself.
+
+---
+
+## Reverse proxy
+
+Put Nginx (or equivalent) in front for TLS and terminate on port 8080.
+
+Panel single-sign-on needs a shared parent domain — for example `peo.example.com`
+and `pte.example.com` — and a valid certificate, because the handover cookie is
+scoped to the parent.
+
+To serve the app directly on port 80, change the published port in
+[`docker-compose.yml`](./docker-compose.yml):
 
 ```yaml
     ports:
       - "80:8080"
 ```
 
-## 升级
+---
 
-### 二进制文件
+## Upgrading
 
-下载新的软件包，将 static、views、二进制文件覆盖并重新运行，**不要覆盖设置文件**。
-
-### Docker
-
-在 `docker-compose.yml` 所在文件夹内，运行
+The v1 rewrite does **not** read a MySQL database. It is a fresh MongoDB schema
+and there is no migration path from v0.2.x: a v1 deployment starts empty.
 
 ```bash
-docker-compose stop
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
-## 自 v0.1.x 升级到 v0.2.0
+The `conf/` mount and the `mongo-data` volume are preserved across an image
+upgrade.
 
-v0.2.0 版本对配置文件模块有修改，直接升级时系统会尝试对其进行转换，若发生异常请尝试备份，将压缩包内的文件解压缩并覆盖，手动重新填写配置。
+---
 
-新版本不再支持其它数据库，固定为 mysql + redis 的组合，但结构上并无修改，只要连接正确即可，
+## Documentation
 
-## 使用
+| File | Contents |
+|---|---|
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | how the rewrite is put together, and every deliberate deviation |
+| [`docs/API.md`](./docs/API.md) | the REST surface: payloads, envelopes, status codes |
+| [`docs/CONTRACT-ROUTES.md`](./docs/CONTRACT-ROUTES.md) | the route table and middleware bindings |
+| [`docs/CONTRACT-DATA.md`](./docs/CONTRACT-DATA.md) | collections, fields, indexes, value vocabularies |
+| [`docs/PLAN.md`](./docs/PLAN.md) | workstream status and open items |
+| [`AGENTS.md`](./AGENTS.md) | the frozen target specification the code implements |
+| [`CHANGELOG.md`](./CHANGELOG.md) | release history |
 
-访问服务器的目标网址，如 `http://localhost:8080`。
+---
 
-点击右上角登录，注册一个账号，系统注册的第一个账号将被设置为管理员。
+## License
 
-打开管理员面板，找到左侧第二行“设置”，点击跳转到设置页面，填入所需信息。
+See the repository for licence terms. Issues and pull requests are welcome.
