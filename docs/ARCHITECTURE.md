@@ -278,7 +278,7 @@ existence is tested) and **code keys** whose value is a mailed numeric code.
 Only the throttle keys are pure counters whose stored value is ignored; the two
 code keys carry the mailed code as their value, which is the legacy shape.
 
-Three deliberate deviations from legacy, all narrower than they look:
+Four deliberate deviations from legacy, all narrower than they look:
 
 - **`FORGET:<email>` lives 30 minutes, not 1.** Legacy reused one 1-minute key as
   both the reset code and its resend throttle
@@ -291,6 +291,13 @@ Three deliberate deviations from legacy, all narrower than they look:
   to the same captcha generator it used for the on-screen challenge; removing the
   challenge removes the generator, so the port keeps the numeric-code contract the
   e-mail template renders but no longer seeds a Redis captcha pair.
+- **A code key is released when the mail cannot be sent.** Legacy wrote the key
+  before sending and then ignored the send failure (`mail_manager.go:48` returned
+  `"", nil`), so the address stayed throttled for the key's whole lifetime against
+  a code the user had never received. `ForgetPassword` and `ChangeEmail` now call
+  `redis.Release` on the write they had just made, which is what that helper
+  exists for. Anything that fails after a *successful* send still leaves the key
+  in place, so the throttle is unchanged on the happy path.
 
 `CHANGE_EMAIL_PENDING:<newEmail>` has no legacy counterpart and exists only
 because the confirm call must name the address it is confirming: legacy
@@ -422,3 +429,7 @@ differences are decisions.
 | (l) | the `FORGET` key lifetime | `FORGET:<email>` lives 30 minutes, not 1 | Legacy reused one 1-minute key as both the reset code and its own resend throttle, so the code expired before a user could realistically type it. The throttle rule is kept; only the deadline moved. See §6. |
 | (m) | the `CHANGE_EMAIL` key lifetime | `CHANGE_EMAIL<newEmail>` lives 30 minutes, not 1 | Same reason and same guard (`user_settings_controller.go:137`). See §6. |
 | (n) | — | an extra `CHANGE_EMAIL_PENDING:<newEmail>` key holds the requesting user's id | Legacy identified the pending address from the session, so the code key needed nothing else. The JSON confirm call carries `{email, code}` and has no session-address to compare against, so the address→owner binding is stored server-side; without it any account could confirm an address it does not own. See §6. |
+| (o) | — | `SendCaptcha` reports send failures to its caller | Legacy `mail_manager.go:48` returned `"", nil` after `msg.Send` failed, so `forget_password_controller.go:75` and `user_settings_controller.go:140` believed a mail had gone out and wrote the code key anyway — with a code the user never received, and no way to request another for the key's whole lifetime. The port returns the error so the caller can tell the user, and both callers release the key they had just written. |
+| (p) | — | `SendAnyEmail` concatenates its fragments instead of `fmt.Sprint`ing them | Legacy `mail_manager.go:59` called `fmt.Sprint(text)` on a `[]string`, which renders as `[a b c]`, so every work-order and expiry notification arrived wrapped in square brackets and separated by spaces. `message.Compose` and `email.joinText` both join with `""`, which is what the callers' fragments were written for. |
+| (q) | registration confirmation mail | still not sent, but the code is now readable | Legacy `email.ConfirmRegister` (`legacy/internal/email/mail_confirm.go:29`) had no caller, so the confirmation-mail path was dead and accounts were confirmed by hand; `legacy/AGENTS.md:97` records this. The port deliberately keeps the behaviour — `IssueRegistrationKey` likewise has no caller — and `POST /api/v1/auth/confirm-email/:key` still works for a token inserted by hand. Only the misleading "wired up again" comments were corrected. |
+| (r) | — | `IssueRegistrationKey` deletes its token when the mail cannot be sent | The legacy version created the row then called `sendConfirmMail`, which **panicked** on a connect failure (`mail_manager.go:17`) and left the row behind. A failed send now leaves no orphan token. Unreachable in production for the same reason as (q), but correct if the path is ever switched on. |

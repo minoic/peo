@@ -88,9 +88,10 @@ func SendAnyEmail(to string, fragments ...string) error {
 
 // SendConfirmRegister mails the registration confirmation link.
 //
-// The legacy code path that called this was unreachable - nothing invoked
-// email.ConfirmRegister - so registrations were confirmed by hand. It is wired
-// up again here.
+// This is the one legacy e-mail path that was never reachable: nothing invoked
+// email.ConfirmRegister, so no confirmation mail was ever sent and accounts were
+// confirmed by hand. The port keeps that behaviour deliberately - see
+// IssueRegistrationKey - so this function has no caller either.
 func SendConfirmRegister(to, userName, key string) error {
 	html, text := confirmRegistrationBody(userName, key)
 	if html == "" {

@@ -102,8 +102,8 @@ file directory.
 
 ## 5. Deliberate divergences
 
-Eight decisions where the tree does not match a literal reading of
-[`AGENTS.md`](../AGENTS.md) or of legacy, three of which are narrower than they
+Eleven decisions where the tree does not match a literal reading of
+[`AGENTS.md`](../AGENTS.md) or of legacy, several of which are narrower than they
 look. All are recorded in [`ARCHITECTURE.md` §11](./ARCHITECTURE.md) with the
 reasoning; the list is reproduced here only so it is not missed.
 
@@ -117,6 +117,10 @@ reasoning; the list is reproduced here only so it is not missed.
 | (l) | `FORGET:<email>` lives 30 min rather than legacy's 1 min |
 | (m) | `CHANGE_EMAIL<newEmail>` lives 30 min rather than legacy's 1 min |
 | (n) | an extra `CHANGE_EMAIL_PENDING:<newEmail>` key binds a code to its requester |
+| (o) | `SendCaptcha` reports send failures, and its callers release the key they wrote |
+| (p) | `SendAnyEmail` concatenates fragments instead of rendering `[a b c]` |
+| (q) | the registration confirmation mail is still not sent — the legacy path was dead code |
+| (r) | `IssueRegistrationKey` deletes its token when the mail cannot be sent |
 
 Two behaviour fixes that the spec calls out as *intentional* corrections were also
 applied and are listed in [`AGENTS.md` §11](../AGENTS.md): the wrong slice variable

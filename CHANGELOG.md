@@ -47,6 +47,10 @@ storage engine and the rendering layer are new.
 - 邮件确认按自身主键而非 `UserID` 查询用户。
 - 翼龙客户端未使用 `strings.TrimRight` 的结果，导致 URL 残留结尾 `/`。
 - 发送确认邮件失败时发生 panic，现改为返回错误。
+- 验证码邮件发送失败时不再残留限流键：旧版吞掉发送错误后仍写下键，导致该地址
+  在键的整个存活期内无法重试（`redis.Release` 回收刚写入的键）。
+- 通知类邮件不再被方括号包裹：旧版对切片调用 `fmt.Sprint`，渲染为 `[a b c]`，
+  现按调用方的片段拼接。
 - 控制器层缓存无同步写入造成的竞态，现由带 `sync.RWMutex` 的服务层缓存持有。
 - 面板账号识别：由数据库 id 改为用户名，与旧版一致（包含 `RootAdmin`、
   `ExternalId`、面板服务器命名与 `OOMDisabled` 等）。

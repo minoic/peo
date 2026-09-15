@@ -263,6 +263,10 @@ func (AuthService) ChangeEmail(ctx context.Context, userID bson.ObjectID, newEma
 		return apierr.Wrap(apierr.CodeInternal, "cannot store pending address", err)
 	}
 	if err := email.SendCaptcha(newEmail, code); err != nil {
+		// Neither key may outlive a send that never happened, or the address is
+		// throttled against a code nobody received.
+		redis.Release(ctx, mailCodeKey(newEmail))
+		redis.Release(ctx, mailPendingKey(newEmail))
 		return apierr.Wrap(apierr.CodeInternal, "cannot send confirmation e-mail", err)
 	}
 	return nil
@@ -352,6 +356,10 @@ func (AuthService) ForgetPassword(ctx context.Context, mail string) error {
 		return apierr.Wrap(apierr.CodeInternal, "cannot store reset code", err)
 	}
 	if err := email.SendCaptcha(mail, code); err != nil {
+		// The code is only useful if it arrived. Legacy set the key before the
+		// send as well, but swallowed the send error, so a broken SMTP relay
+		// locked the address out of the reset flow for the whole key lifetime.
+		redis.Release(ctx, resetCodeKey(mail))
 		return apierr.Wrap(apierr.CodeInternal, "cannot send reset e-mail", err)
 	}
 	return nil
