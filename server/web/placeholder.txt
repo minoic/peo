@@ -1,0 +1,12 @@
+This directory holds the compiled Flutter Web bundle.
+
+`assets/` is populated at image build time:
+
+    flutter build web --wasm --release
+    cp -r flutter/build/web/. server/web/assets/
+
+`assets/` is git-ignored (apart from a .gitkeep), so a checkout without it still
+compiles: the embed pattern lists every file under assets/, so embed.FS always
+matches and web.FS() returns the bundle only once index.html is present.
+Otherwise the SPA fallback serves it from disk — the development path.
+See web/embed.go and ../internal/api/static.go.
