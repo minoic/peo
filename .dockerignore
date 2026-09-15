@@ -1,0 +1,40 @@
+# Everything not needed to build the image. The context must still contain
+# `flutter/` (the SPA is compiled in stage 1) and `server/` (stage 2).
+
+# --- VCS / editors -----------------------------------------------------------
+.git
+.gitignore
+.github
+.idea
+.vscode
+*.iml
+
+# --- prebuilt artifacts ------------------------------------------------------
+build
+dist
+legacy/build
+
+# --- the reference implementation is never built -----------------------------
+legacy
+
+# --- Flutter build output, but not its sources -------------------------------
+# flutter/lib, flutter/web and the pubspec files must stay in the context.
+flutter/.dart_tool
+flutter/.idea
+flutter/build
+flutter/android
+flutter/ios
+flutter/linux
+flutter/macos
+flutter/windows
+flutter/.flutter-plugins-dependencies
+
+# --- never embed a bundle that was built on the developer's machine ----------
+# server/web/assets is populated from stage 1 instead.
+server/web/assets
+server/conf
+
+# --- docs and local state ----------------------------------------------------
+docs
+tmp
+*.log

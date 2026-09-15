@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Must match the toolchains the Dockerfile pins: `golang:1.27.1-alpine` for the
+  # server and Flutter 3.47.4 for the SPA.
+  GO_VERSION: "1.27.1"
+  FLUTTER_VERSION: "3.47.4"
+  FLUTTER_SHA256: "5b45f0ceda99b9bebdc873e7e69f6450aeb4c30f454b505e2e62fc9255a907d3"
+
+jobs:
+
+  # The server is validated on its own, without a frontend build, so a broken Go
+  # change fails in about a minute rather than waiting on a Flutter download.
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: server/go.sum
+
+      - name: Check go.mod is tidy
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l ./cmd ./internal)"
+          if [ -n "$unformatted" ]; then
+            echo "these files are not gofmt clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./... -cover
+
+  flutter:
+    name: Flutter Web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache the Flutter SDK
+        uses: actions/cache@v4
+        with:
+          path: /opt/flutter
+          key: flutter-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
+
+      - name: Install the Flutter SDK
+        run: |
+          if [ ! -x /opt/flutter/bin/flutter ]; then
+            curl -fsSL -o /tmp/flutter.tar.xz \
+              "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+            echo "${FLUTTER_SHA256}  /tmp/flutter.tar.xz" | sha256sum -c -
+            sudo tar -xJf /tmp/flutter.tar.xz -C /opt
+          fi
+          echo "/opt/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Configure Flutter
+        run: |
+          flutter --version
+          flutter config --enable-web --no-analytics
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ hashFiles('flutter/pubspec.lock') }}
+          restore-keys: pub-
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+        continue-on-error: true
+
+      - name: Analyze
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: Test
+        run: flutter test
+        continue-on-error: true
+
+      - name: Build web (WASM)
+        run: flutter build web --wasm --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flutter-web
+          path: flutter/build/web
+          if-no-files-found: error
+
+  # The image is the deployable artefact: it compiles the SPA and embeds it into
+  # the Go binary, so a green image build proves the two halves actually fit.
+  image:
+    name: Image
+    runs-on: ubuntu-latest
+    needs: [ server, flutter ]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

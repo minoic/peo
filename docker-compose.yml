@@ -1,0 +1,54 @@
+# peo - mongo + redis + peo
+#
+# The service hostnames below are load-bearing: the server's generated
+# conf/settings.toml defaults to MongoURI "mongodb://mongo:27017" and
+# RedisHost "redis:6379".
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  peo:
+    image: minoic/peo:dev
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+      args:
+        VERSION: dev
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      # Admin-saved settings live here; the image ships only the defaults.
+      - ./conf:/conf
+
+volumes:
+  mongo-data:
+  redis-data:
