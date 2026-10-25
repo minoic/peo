@@ -224,6 +224,8 @@ class ApiClient {
         if (decoded.isNotEmpty) return decoded;
       } on FormatException {
         // Fall back to the regular filename parameter below.
+      } on ArgumentError {
+        // Web URI decoding reports malformed percent escapes as ArgumentError.
       }
     }
 

@@ -14,6 +14,7 @@ import 'package:peo_web/models/documents.dart';
 import 'package:peo_web/models/order.dart';
 import 'package:peo_web/models/server_console.dart';
 import 'package:peo_web/models/site.dart';
+import 'package:peo_web/pages/user/order_pages.dart';
 import 'package:peo_web/pages/user/server_workspace_page.dart';
 import 'package:peo_web/pages/user/server_file_editor_page.dart';
 import 'package:peo_web/router/app_router.dart';
@@ -72,7 +73,14 @@ void main() {
           .any((item) => item.checked),
       isTrue,
     );
-    await tester.tap(find.text('Server server-b'));
+    await tester.tap(
+      find.ancestor(
+        of: find.text('Server server-b'),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is CheckedPopupMenuItem,
+        ),
+      ),
+    );
     await _pumpWorkspace(tester);
 
     expect(
@@ -113,7 +121,14 @@ void main() {
     await tester.tap(find.byTooltip('Choose server'));
     await tester.pumpAndSettle();
     expect(find.text('Server server-b'), findsOneWidget);
-    await tester.tap(find.text('Server server-b'));
+    await tester.tap(
+      find.ancestor(
+        of: find.text('Server server-b'),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is CheckedPopupMenuItem,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(
@@ -252,7 +267,10 @@ void main() {
     final sidebarState = tester.state(find.byType(UserSidebar));
     final serverCalls = app.api.serversCalls;
     app.router.go('/orders');
-    await tester.pump();
+    await _pumpUntilCondition(
+      tester,
+      () => find.byType(OrdersPage).evaluate().isNotEmpty,
+    );
 
     expect(find.text('Order history'), findsAtLeastNWidgets(1));
     expect(
@@ -270,7 +288,13 @@ void main() {
     expect(app.api.serversCalls, serverCalls);
 
     app.router.go('/orders?refresh=1');
-    await tester.pump();
+    await _pumpUntilCondition(
+      tester,
+      () =>
+          app.router.routerDelegate.currentConfiguration.uri.query ==
+          'refresh=1',
+    );
+    await tester.pump(Duration.zero);
     expect(tester.state(find.byType(UserSidebar)), same(sidebarState));
     expect(app.api.serversCalls, serverCalls);
     expect(
@@ -301,7 +325,7 @@ void main() {
     await tester.pumpWidget(app.widget);
     await tester.pumpAndSettle();
     app.router.go('/account');
-    await tester.pump();
+    await _pumpUntil(tester, find.text('Account Settings'));
 
     expect(find.text('Account Settings'), findsOneWidget);
     expect(
@@ -341,7 +365,10 @@ void main() {
       );
 
       app.router.go('/servers/server-a/files');
-      await tester.pump();
+      await _pumpUntilCondition(
+        tester,
+        () => _selectedSidebarTile(tester, 'Files').selected,
+      );
       expect(_workspaceContentOffset(tester), 6);
       await tester.pump(const Duration(milliseconds: 90));
       final halfwayOffset = _workspaceContentOffset(tester);
@@ -349,7 +376,10 @@ void main() {
       expect(halfwayOffset, lessThan(6));
 
       app.router.go('/servers/server-a/backups');
-      await tester.pump();
+      await _pumpUntilCondition(
+        tester,
+        () => _selectedSidebarTile(tester, 'Backups').selected,
+      );
       expect(_workspaceContentOffset(tester), 6);
       await tester.pumpAndSettle();
       expect(_workspaceContentOffset(tester), 0);
@@ -662,6 +692,21 @@ Future<void> _pumpWorkspace(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 220));
   await tester.pump();
+}
+
+Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  await _pumpUntilCondition(tester, () => finder.evaluate().isNotEmpty);
+  expect(finder, findsAtLeastNWidgets(1));
+}
+
+Future<void> _pumpUntilCondition(
+  WidgetTester tester,
+  bool Function() condition,
+) async {
+  for (var frame = 0; frame < 10 && !condition(); frame++) {
+    await tester.pump(Duration.zero);
+  }
+  expect(condition(), isTrue);
 }
 
 double _workspaceContentOffset(WidgetTester tester) => tester

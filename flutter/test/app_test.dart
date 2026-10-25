@@ -121,7 +121,9 @@ void main() {
       '/orders/order-id',
     );
     expect(find.text('Server address'), findsOneWidget);
-    await tester.tap(find.byType(DropdownButtonFormField<int>));
+    final allocations = find.byType(DropdownButtonFormField<int>);
+    await tester.ensureVisible(allocations);
+    await tester.tap(allocations);
     await tester.pumpAndSettle();
     expect(find.text('127.0.0.1:25565'), findsOneWidget);
     await app.dispose(tester);
