@@ -325,9 +325,9 @@ void main() {
     await tester.pumpWidget(app.widget);
     await tester.pumpAndSettle();
     app.router.go('/account');
-    await _pumpUntil(tester, find.text('Account Settings'));
+    await _pumpUntil(tester, find.text('Account settings'));
 
-    expect(find.text('Account Settings'), findsOneWidget);
+    expect(find.text('Account settings'), findsOneWidget);
     expect(
       find.byWidgetPredicate(
         (widget) =>
@@ -357,8 +357,15 @@ void main() {
       await _pumpWorkspace(tester);
       expect(_workspaceContentOffset(tester), 0);
       expect(
-        find.descendant(
-          of: find.byType(ServerWorkspacePage),
+        find.ancestor(
+          of: find.byKey(const ValueKey('server-workspace-content')),
+          matching: find.byType(FadeTransition),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.ancestor(
+          of: find.byKey(const ValueKey('server-workspace-content')),
           matching: find.byType(AnimatedOpacity),
         ),
         findsNothing,

@@ -130,7 +130,7 @@ jobs:
 
       # The app imports dart:js_interop, so tests must compile for a browser.
       - name: Test (Chrome)
-        run: flutter test --platform chrome
+        run: flutter test --platform chrome --reporter expanded
         env:
           CHROME_EXECUTABLE: /usr/bin/google-chrome
 

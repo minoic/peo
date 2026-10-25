@@ -144,22 +144,30 @@ class _MetricChartState extends State<_MetricChart> {
           ),
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              widget.points.isEmpty
-                  ? '—'
-                  : _time(
-                      context,
-                      widget.points.last.time.subtract(
-                        const Duration(minutes: 5),
+            Expanded(
+              child: Text(
+                widget.points.isEmpty
+                    ? '—'
+                    : _time(
+                        context,
+                        widget.points.last.time.subtract(
+                          const Duration(minutes: 5),
+                        ),
                       ),
-                    ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            Text(
-              widget.points.isEmpty
-                  ? '—'
-                  : _time(context, widget.points.last.time),
+            Expanded(
+              child: Text(
+                widget.points.isEmpty
+                    ? '—'
+                    : _time(context, widget.points.last.time),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
+              ),
             ),
           ],
         ),
