@@ -95,18 +95,18 @@ jobs:
       - name: Cache the Flutter SDK
         uses: actions/cache@v4
         with:
-          path: /opt/flutter
-          key: flutter-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
+          path: ${{ runner.temp }}/flutter
+          key: flutter-runner-temp-v1-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
 
       - name: Install the Flutter SDK
         run: |
-          if [ ! -x /opt/flutter/bin/flutter ]; then
+          if [ ! -x "$RUNNER_TEMP/flutter/bin/flutter" ]; then
             curl -fsSL -o /tmp/flutter.tar.xz \
               "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
             echo "${FLUTTER_SHA256}  /tmp/flutter.tar.xz" | sha256sum -c -
-            sudo tar -xJf /tmp/flutter.tar.xz -C /opt
+            tar -xJf /tmp/flutter.tar.xz -C "$RUNNER_TEMP"
           fi
-          echo "/opt/flutter/bin" >> "$GITHUB_PATH"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
 
       - name: Configure Flutter
         run: |
