@@ -50,9 +50,9 @@ jobs:
       run:
         working-directory: server
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: server/go.sum
@@ -90,10 +90,10 @@ jobs:
       run:
         working-directory: flutter
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache the Flutter SDK
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/flutter
           key: flutter-runner-temp-v1-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
@@ -113,7 +113,7 @@ jobs:
           flutter --version
           flutter config --enable-web --no-analytics
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.pub-cache
           key: pub-${{ hashFiles('flutter/pubspec.lock') }}
@@ -137,7 +137,7 @@ jobs:
       - name: Build web (WASM)
         run: flutter build web --wasm --release
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: flutter-web
           path: flutter/build/web
@@ -153,19 +153,19 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Log in to the registry
         if: github.event_name == 'push'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
           images: ghcr.io/${{ github.repository }}
@@ -174,7 +174,7 @@ jobs:
             type=sha,format=long
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
