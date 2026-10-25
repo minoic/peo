@@ -128,8 +128,11 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Test
-        run: flutter test
+      # The app imports dart:js_interop, so tests must compile for a browser.
+      - name: Test (Chrome)
+        run: flutter test --platform chrome
+        env:
+          CHROME_EXECUTABLE: /usr/bin/google-chrome
 
       - name: Build web (WASM)
         run: flutter build web --wasm --release
