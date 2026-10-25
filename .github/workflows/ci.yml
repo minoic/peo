@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ "master" ]
+    tags: [ "**" ]
   pull_request:
     branches: [ "master" ]
 
@@ -169,9 +170,10 @@ jobs:
         id: meta
         with:
           images: ghcr.io/${{ github.repository }}
+          flavor: latest=false
           tags: |
             type=ref,event=branch
-            type=sha,format=long
+            type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
 
       - uses: docker/build-push-action@v7
