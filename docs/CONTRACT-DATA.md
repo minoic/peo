@@ -383,10 +383,10 @@ deletion wins first → reject renewal before charging
 
 | Value | Condition |
 |---|---|
-| `pending` | `!paid` |
+| `pending` | `!paid && !closed` |
 | `paid` | `paid && !confirmed` |
 | `confirmed` | `confirmed` |
-| `closed` | `!paid && closed` |
+| `closed` | `!paid && !confirmed && closed` |
 
 `confirmed` implies `paid`; no writer sets `confirmed` without `paid`.
 Orders become closed at the 15-minute boundary after creation. Orders with an

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -131,7 +132,7 @@ func TestOrderProvisionOperationMongoCASAndRecovery(t *testing.T) {
 		t.Fatal(err)
 	}
 	confirmed := makeExpired("confirmed")
-	if err := Order.SetConfirmed(ctx, confirmed.ID, true); err != nil {
+	if _, err := Collection(models.CollOrders).UpdateOne(ctx, docIDFilter(confirmed.ID), bson.M{"$set": bson.M{"confirmed": true, "paid": false}}); err != nil {
 		t.Fatal(err)
 	}
 	failedPayment := makeExpired("failed-payment")
@@ -147,9 +148,35 @@ func TestOrderProvisionOperationMongoCASAndRecovery(t *testing.T) {
 	if _, err := Collection(models.CollOrders).InsertOne(ctx, legacy); err != nil {
 		t.Fatal(err)
 	}
+	expiredUnclosed := makeExpired("expired-unclosed")
+	if ok, err := Order.BeginProvision(ctx, expiredUnclosed.ID, &models.ProvisionOperation{ID: "expired-unclosed", State: "claimed"}); err != nil || ok {
+		t.Fatalf("expired but unclosed BeginProvision = (%v, %v), want false", ok, err)
+	}
+	raceOrder := makeExpired("race")
+	startRace := make(chan struct{})
+	var raceWG sync.WaitGroup
+	var closeErr error
+	var claimOK bool
+	var claimErr error
+	raceWG.Add(2)
+	go func() {
+		defer raceWG.Done()
+		<-startRace
+		closeErr = Order.CloseIfExpired(ctx, raceOrder.ID, closeNow)
+	}()
+	go func() {
+		defer raceWG.Done()
+		<-startRace
+		claimOK, claimErr = Order.BeginProvision(ctx, raceOrder.ID, &models.ProvisionOperation{ID: "race-claim", State: "claimed"})
+	}()
+	close(startRace)
+	raceWG.Wait()
+	if closeErr != nil || claimErr != nil || claimOK {
+		t.Fatalf("expire/claim race = close(%v), claim(%v, %v); expired order must never be claimed", closeErr, claimOK, claimErr)
+	}
 	closedCount, err := Order.CloseExpired(ctx, closeNow)
-	if err != nil || closedCount != 3 {
-		t.Fatalf("CloseExpired = (%d, %v), want expired, failed-payment and legacy orders", closedCount, err)
+	if err != nil || closedCount != 4 {
+		t.Fatalf("CloseExpired = (%d, %v), want expired, failed-payment, legacy and unclosed orders", closedCount, err)
 	}
 	if closedCount, err = Order.CloseExpired(ctx, closeNow.Add(time.Minute)); err != nil || closedCount != 0 {
 		t.Fatalf("repeat CloseExpired = (%d, %v), want no transition", closedCount, err)
@@ -177,6 +204,10 @@ func TestOrderProvisionOperationMongoCASAndRecovery(t *testing.T) {
 	legacyRead, err := Order.ByID(ctx, legacyID)
 	if err != nil || !legacyRead.Closed {
 		t.Fatalf("legacy order was not closed: %#v, %v", legacyRead, err)
+	}
+	raceRead, err := Order.ByID(ctx, raceOrder.ID)
+	if err != nil || !raceRead.Closed || raceRead.Provision != nil {
+		t.Fatalf("expire/claim race left an unsafe state: %#v, %v", raceRead, err)
 	}
 	if ok, err := Order.BeginProvision(ctx, expired.ID, &models.ProvisionOperation{ID: "too-late", State: "claimed"}); err != nil || ok {
 		t.Fatalf("expired BeginProvision = (%v, %v), want false", ok, err)

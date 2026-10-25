@@ -165,6 +165,7 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
   finalPrice: (json['finalPrice'] as num?)?.toInt() ?? 0,
   paid: json['paid'] as bool? ?? false,
   confirmed: json['confirmed'] as bool? ?? false,
+  closed: json['closed'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
@@ -178,6 +179,7 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'finalPrice': instance.finalPrice,
   'paid': instance.paid,
   'confirmed': instance.confirmed,
+  'closed': instance.closed,
 };
 
 _Message _$MessageFromJson(Map<String, dynamic> json) => _Message(

@@ -307,6 +307,7 @@ const (
 	OrderStatusPending   = "pending"
 	OrderStatusPaid      = "paid"
 	OrderStatusConfirmed = "confirmed"
+	OrderStatusClosed    = "closed"
 )
 
 // Message is an internal mail between the site and a user.

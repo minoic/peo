@@ -185,7 +185,11 @@ void main() {
   });
 }
 
-Order _order({bool paid = false, bool confirmed = false, bool closed = false}) => Order(
+Order _order({
+  bool paid = false,
+  bool confirmed = false,
+  bool closed = false,
+}) => Order(
   id: 'order-private-id',
   specId: 'spec-id',
   createdAt: '2026-10-01T12:30:00Z',

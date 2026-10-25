@@ -1525,7 +1525,7 @@ as String,
 /// @nodoc
 mixin _$Order {
 
- String? get id; String? get createdAt; String? get updatedAt; String get specId; String get userId; int get allocationId; int get originPrice; int get finalPrice; bool get paid; bool get confirmed;
+ String? get id; String? get createdAt; String? get updatedAt; String get specId; String get userId; int get allocationId; int get originPrice; int get finalPrice; bool get paid; bool get confirmed; bool get closed;
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1539,20 +1539,20 @@ $OrderCopyWith<Order> get copyWith => _$OrderCopyWithImpl<Order>(this as Order, 
 @override
 bool operator ==(Object other) {
   final _this = this as Order;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Order&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt)&&(identical(other.specId, _this.specId) || other.specId == _this.specId)&&(identical(other.userId, _this.userId) || other.userId == _this.userId)&&(identical(other.allocationId, _this.allocationId) || other.allocationId == _this.allocationId)&&(identical(other.originPrice, _this.originPrice) || other.originPrice == _this.originPrice)&&(identical(other.finalPrice, _this.finalPrice) || other.finalPrice == _this.finalPrice)&&(identical(other.paid, _this.paid) || other.paid == _this.paid)&&(identical(other.confirmed, _this.confirmed) || other.confirmed == _this.confirmed));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Order&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt)&&(identical(other.specId, _this.specId) || other.specId == _this.specId)&&(identical(other.userId, _this.userId) || other.userId == _this.userId)&&(identical(other.allocationId, _this.allocationId) || other.allocationId == _this.allocationId)&&(identical(other.originPrice, _this.originPrice) || other.originPrice == _this.originPrice)&&(identical(other.finalPrice, _this.finalPrice) || other.finalPrice == _this.finalPrice)&&(identical(other.paid, _this.paid) || other.paid == _this.paid)&&(identical(other.confirmed, _this.confirmed) || other.confirmed == _this.confirmed)&&(identical(other.closed, _this.closed) || other.closed == _this.closed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Order;
-  return Object.hash(runtimeType,_this.id,_this.createdAt,_this.updatedAt,_this.specId,_this.userId,_this.allocationId,_this.originPrice,_this.finalPrice,_this.paid,_this.confirmed);
+  return Object.hash(runtimeType,_this.id,_this.createdAt,_this.updatedAt,_this.specId,_this.userId,_this.allocationId,_this.originPrice,_this.finalPrice,_this.paid,_this.confirmed,_this.closed);
 }
 
 @override
 String toString() {
   final _this = this as Order;
-  return 'Order(id: ${_this.id}, createdAt: ${_this.createdAt}, updatedAt: ${_this.updatedAt}, specId: ${_this.specId}, userId: ${_this.userId}, allocationId: ${_this.allocationId}, originPrice: ${_this.originPrice}, finalPrice: ${_this.finalPrice}, paid: ${_this.paid}, confirmed: ${_this.confirmed})';
+  return 'Order(id: ${_this.id}, createdAt: ${_this.createdAt}, updatedAt: ${_this.updatedAt}, specId: ${_this.specId}, userId: ${_this.userId}, allocationId: ${_this.allocationId}, originPrice: ${_this.originPrice}, finalPrice: ${_this.finalPrice}, paid: ${_this.paid}, confirmed: ${_this.confirmed}, closed: ${_this.closed})';
 }
 
 
@@ -1563,7 +1563,7 @@ abstract mixin class $OrderCopyWith<$Res>  {
   factory $OrderCopyWith(Order value, $Res Function(Order) _then) = _$OrderCopyWithImpl;
 @useResult
 $Res call({
- String? id, String? createdAt, String? updatedAt, String specId, String userId, int allocationId, int originPrice, int finalPrice, bool paid, bool confirmed
+ String? id, String? createdAt, String? updatedAt, String specId, String userId, int allocationId, int originPrice, int finalPrice, bool paid, bool confirmed, bool closed
 });
 
 
@@ -1580,7 +1580,7 @@ class _$OrderCopyWithImpl<$Res>
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? specId = null,Object? userId = null,Object? allocationId = null,Object? originPrice = null,Object? finalPrice = null,Object? paid = null,Object? confirmed = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? specId = null,Object? userId = null,Object? allocationId = null,Object? originPrice = null,Object? finalPrice = null,Object? paid = null,Object? confirmed = null,Object? closed = null,}) {
   return _then(Order(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -1592,6 +1592,7 @@ as int,originPrice: null == originPrice ? _self.originPrice : originPrice // ign
 as int,finalPrice: null == finalPrice ? _self.finalPrice : finalPrice // ignore: cast_nullable_to_non_nullable
 as int,paid: null == paid ? _self.paid : paid // ignore: cast_nullable_to_non_nullable
 as bool,confirmed: null == confirmed ? _self.confirmed : confirmed // ignore: cast_nullable_to_non_nullable
+as bool,closed: null == closed ? _self.closed : closed // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -1677,10 +1678,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String? createdAt,  String? updatedAt,  String specId,  String userId,  int allocationId,  int originPrice,  int finalPrice,  bool paid,  bool confirmed)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String? createdAt,  String? updatedAt,  String specId,  String userId,  int allocationId,  int originPrice,  int finalPrice,  bool paid,  bool confirmed,  bool closed)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Order() when $default != null:
-return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.userId,_that.allocationId,_that.originPrice,_that.finalPrice,_that.paid,_that.confirmed);case _:
+return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.userId,_that.allocationId,_that.originPrice,_that.finalPrice,_that.paid,_that.confirmed,_that.closed);case _:
   return orElse();
 
 }
@@ -1698,10 +1699,10 @@ return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.user
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String? createdAt,  String? updatedAt,  String specId,  String userId,  int allocationId,  int originPrice,  int finalPrice,  bool paid,  bool confirmed)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String? createdAt,  String? updatedAt,  String specId,  String userId,  int allocationId,  int originPrice,  int finalPrice,  bool paid,  bool confirmed,  bool closed)  $default,) {final _that = this;
 switch (_that) {
 case _Order():
-return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.userId,_that.allocationId,_that.originPrice,_that.finalPrice,_that.paid,_that.confirmed);case _:
+return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.userId,_that.allocationId,_that.originPrice,_that.finalPrice,_that.paid,_that.confirmed,_that.closed);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1718,10 +1719,10 @@ return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.user
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String? createdAt,  String? updatedAt,  String specId,  String userId,  int allocationId,  int originPrice,  int finalPrice,  bool paid,  bool confirmed)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String? createdAt,  String? updatedAt,  String specId,  String userId,  int allocationId,  int originPrice,  int finalPrice,  bool paid,  bool confirmed,  bool closed)?  $default,) {final _that = this;
 switch (_that) {
 case _Order() when $default != null:
-return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.userId,_that.allocationId,_that.originPrice,_that.finalPrice,_that.paid,_that.confirmed);case _:
+return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.userId,_that.allocationId,_that.originPrice,_that.finalPrice,_that.paid,_that.confirmed,_that.closed);case _:
   return null;
 
 }
@@ -1733,7 +1734,7 @@ return $default(_that.id,_that.createdAt,_that.updatedAt,_that.specId,_that.user
 @JsonSerializable()
 
 class _Order extends Order {
-  const _Order({this.id, this.createdAt, this.updatedAt, this.specId = '', this.userId = '', this.allocationId = 0, this.originPrice = 0, this.finalPrice = 0, this.paid = false, this.confirmed = false}): super._();
+  const _Order({this.id, this.createdAt, this.updatedAt, this.specId = '', this.userId = '', this.allocationId = 0, this.originPrice = 0, this.finalPrice = 0, this.paid = false, this.confirmed = false, this.closed = false}): super._();
   factory _Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
 
 @override final  String? id;
@@ -1746,6 +1747,7 @@ class _Order extends Order {
 @override@JsonKey() final  int finalPrice;
 @override@JsonKey() final  bool paid;
 @override@JsonKey() final  bool confirmed;
+@override@JsonKey() final  bool closed;
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
@@ -1760,18 +1762,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Order&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.specId, specId) || other.specId == specId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.allocationId, allocationId) || other.allocationId == allocationId)&&(identical(other.originPrice, originPrice) || other.originPrice == originPrice)&&(identical(other.finalPrice, finalPrice) || other.finalPrice == finalPrice)&&(identical(other.paid, paid) || other.paid == paid)&&(identical(other.confirmed, confirmed) || other.confirmed == confirmed));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Order&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.specId, specId) || other.specId == specId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.allocationId, allocationId) || other.allocationId == allocationId)&&(identical(other.originPrice, originPrice) || other.originPrice == originPrice)&&(identical(other.finalPrice, finalPrice) || other.finalPrice == finalPrice)&&(identical(other.paid, paid) || other.paid == paid)&&(identical(other.confirmed, confirmed) || other.confirmed == confirmed)&&(identical(other.closed, closed) || other.closed == closed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,createdAt,updatedAt,specId,userId,allocationId,originPrice,finalPrice,paid,confirmed);
+    return Object.hash(runtimeType,id,createdAt,updatedAt,specId,userId,allocationId,originPrice,finalPrice,paid,confirmed,closed);
 }
 
 @override
 String toString() {
-    return 'Order(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, specId: $specId, userId: $userId, allocationId: $allocationId, originPrice: $originPrice, finalPrice: $finalPrice, paid: $paid, confirmed: $confirmed)';
+    return 'Order(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, specId: $specId, userId: $userId, allocationId: $allocationId, originPrice: $originPrice, finalPrice: $finalPrice, paid: $paid, confirmed: $confirmed, closed: $closed)';
 }
 
 
@@ -1782,7 +1784,7 @@ abstract mixin class _$OrderCopyWith<$Res> implements $OrderCopyWith<$Res> {
   factory _$OrderCopyWith(_Order value, $Res Function(_Order) _then) = __$OrderCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String? createdAt, String? updatedAt, String specId, String userId, int allocationId, int originPrice, int finalPrice, bool paid, bool confirmed
+ String? id, String? createdAt, String? updatedAt, String specId, String userId, int allocationId, int originPrice, int finalPrice, bool paid, bool confirmed, bool closed
 });
 
 
@@ -1799,7 +1801,7 @@ class __$OrderCopyWithImpl<$Res>
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? specId = null,Object? userId = null,Object? allocationId = null,Object? originPrice = null,Object? finalPrice = null,Object? paid = null,Object? confirmed = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? specId = null,Object? userId = null,Object? allocationId = null,Object? originPrice = null,Object? finalPrice = null,Object? paid = null,Object? confirmed = null,Object? closed = null,}) {
   return _then(_Order(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -1811,6 +1813,7 @@ as int,originPrice: null == originPrice ? _self.originPrice : originPrice // ign
 as int,finalPrice: null == finalPrice ? _self.finalPrice : finalPrice // ignore: cast_nullable_to_non_nullable
 as int,paid: null == paid ? _self.paid : paid // ignore: cast_nullable_to_non_nullable
 as bool,confirmed: null == confirmed ? _self.confirmed : confirmed // ignore: cast_nullable_to_non_nullable
+as bool,closed: null == closed ? _self.closed : closed // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
