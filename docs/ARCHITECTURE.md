@@ -347,12 +347,15 @@ out at `probeCacheTTL` (30 s), and probing is bounded to 16 workers.
 
 MongoDB connection settings come only from `PEO_MONGO_URI` and
 `PEO_MONGO_DATABASE_NAME`. They are deployment environment variables and are
-not editable through the admin console. All other application settings are
-stored in the singleton `app_settings` document in MongoDB.
+not editable through the admin console. Application settings are stored in
+the singleton `app_settings` document in MongoDB. `PEO_REDIS_ADDR` optionally
+overrides only the Redis network address at runtime; Redis password and DB
+remain in the settings document.
 
-- `config.Init()` loads embedded defaults and the two MongoDB environment
+- `config.Init()` loads embedded defaults and the MongoDB environment
   variables. `store.Init()` connects and then the process loads settings from
-  MongoDB before starting cron jobs or serving requests.
+  MongoDB before starting cron jobs or serving requests. The Redis address
+  environment override is applied when each settings snapshot is prepared.
 - If `app_settings` does not exist, embedded defaults seed it. When an existing
   `conf/settings.toml` is present, its non-Mongo settings are imported once
   during this initialization. MongoDB connection values in the file are ignored.
@@ -374,8 +377,9 @@ the existing value. `ConsoleOrigins` contains the exact browser origins trusted
 for terminal WebSockets.
 
 The Compose example uses `mongodb://mongo:27017` and database `peo` for the
-MongoDB service. Redis defaults to `redis:6379` and remains editable in the
-admin settings page.
+MongoDB service, and sets `PEO_REDIS_ADDR=redis:6379` for the application.
+Without that override, Redis defaults to `redis:6379` and remains editable in
+the admin settings page.
 
 ---
 

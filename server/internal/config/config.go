@@ -23,6 +23,7 @@ const (
 	SettingsFile = "conf/settings.toml"
 	MongoURIEnv  = "PEO_MONGO_URI"
 	MongoDBEnv   = "PEO_MONGO_DATABASE_NAME"
+	RedisAddrEnv = "PEO_REDIS_ADDR"
 )
 
 const legacyJWTSecret = "xiCI^gi0!HE1kKZO6*W6k&SPS3$6jufiu*0T7$t!jUktm@#o"
@@ -65,10 +66,11 @@ func Init() error {
 	if databaseName == "" {
 		databaseName = "peo"
 	}
+	redisAddr := strings.TrimSpace(os.Getenv(RedisAddrEnv))
 	mu.Lock()
 	v = defaults
 	aliClient = nil
-	active = &SettingsSnapshot{values: defaults}
+	active = &SettingsSnapshot{values: defaults, redisAddr: redisAddr}
 	mongoURI = uri
 	mongoDatabaseName = databaseName
 	mu.Unlock()
@@ -137,8 +139,9 @@ func LoadSettings(settings map[string]any) error {
 // SettingsSnapshot is a validated, immutable configuration candidate. Build it
 // before persisting settings so a failed validation cannot partially publish.
 type SettingsSnapshot struct {
-	values *viper.Viper
-	ali    *alipay.Client
+	values    *viper.Viper
+	ali       *alipay.Client
+	redisAddr string
 }
 
 // PrepareSettings validates settings and constructs dependent clients without
@@ -155,6 +158,9 @@ func PrepareSettings(settings map[string]any) (*SettingsSnapshot, error) {
 		}
 		fresh.Set(key, value)
 	}
+	// Redis can have different network addresses from the host and a container.
+	// Keep this deployment-only value separate from persisted business settings.
+	redisAddr := strings.TrimSpace(os.Getenv(RedisAddrEnv))
 
 	// Trailing slashes break URL concatenation in the Pterodactyl client and
 	// the frontend redirect helper.
@@ -172,7 +178,7 @@ func PrepareSettings(settings map[string]any) (*SettingsSnapshot, error) {
 		}
 	}
 
-	return &SettingsSnapshot{values: fresh, ali: client}, nil
+	return &SettingsSnapshot{values: fresh, ali: client, redisAddr: redisAddr}, nil
 }
 
 // PublishSettings atomically replaces the active settings and dependent client.
@@ -198,6 +204,15 @@ func (s *SettingsSnapshot) String(key string) string  { return s.values.GetStrin
 func (s *SettingsSnapshot) Int(key string) int        { return s.values.GetInt(key) }
 func (s *SettingsSnapshot) AliClient() *alipay.Client { return s.ali }
 func (s *SettingsSnapshot) Values() map[string]any    { return s.values.AllSettings() }
+
+// RedisAddress returns the deployment override when set, otherwise the stored
+// RedisHost business setting.
+func (s *SettingsSnapshot) RedisAddress() string {
+	if s.redisAddr != "" {
+		return s.redisAddr
+	}
+	return s.values.GetString("RedisHost")
+}
 
 // NewJWTSecret returns a fresh 256-bit key encoded as hex.
 func NewJWTSecret() (string, error) {

@@ -28,8 +28,11 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}/server/cmd/peo",
-      // The config path is relative to cwd: this selects server/conf/settings.toml.
-      "cwd": "${workspaceFolder}/server"
+      // Uses the host-published Redis port even when MongoDB settings target Compose.
+      "cwd": "${workspaceFolder}/server",
+      "env": {
+        "PEO_REDIS_ADDR": "127.0.0.1:6379"
+      }
     }
   ],
   "compounds": [

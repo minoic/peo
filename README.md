@@ -42,17 +42,20 @@ frontend bundle (see below). Set `PEO_MONGO_URI` and
 
 Embedded defaults seed application settings in MongoDB on first start. The
 default Redis host is `redis:6379`, which resolves inside the Compose network.
-For a fresh database when running the Go process on the host, create
-`server/conf/settings.toml` from `server/internal/config/default_settings.toml`
-before first start and set `RedisHost = "127.0.0.1:6379"`. Startup imports that
-file once into a new settings document. For an existing database, update the
-`RedisHost` value in its `app_settings` document before starting the service;
-the settings page depends on Redis being reachable.
+When running the Go process on the host, set `PEO_REDIS_ADDR=127.0.0.1:6379`;
+the VS Code Go debug target already sets it. This runtime override keeps the
+MongoDB business setting unchanged. Without the override, a fresh database
+uses `redis:6379`; legacy `server/conf/settings.toml` is imported once into a
+new settings document.
 Configure the Pterodactyl Panel, SMTP and Alipay settings from the admin settings
 page. The first registered account becomes the administrator.
 
-The root Compose file currently defines MongoDB and Redis; the application
-service is not enabled there. To build the application image:
+The root Compose file runs MongoDB, Redis and the application. Its
+`PEO_REDIS_ADDR=redis:6379` setting points the application at Redis on the
+Compose network even when the same database was previously used by a host-side
+debug server. For other deployments, `PEO_REDIS_ADDR` optionally overrides the
+Redis endpoint stored in MongoDB; Redis password and database settings remain
+in MongoDB. To build the application image:
 
 ```sh
 docker build -f Dockerfile -t peo:local .
@@ -60,8 +63,9 @@ docker build -f Dockerfile -t peo:local .
 
 The image build compiles Flutter Web, regenerates Freezed/JSON code, embeds the
 bundle in the Go binary, and packages a single runtime image. MongoDB connection
-settings are passed as `PEO_MONGO_URI` and `PEO_MONGO_DATABASE_NAME`; other
-settings, including Redis, are persisted in MongoDB.
+settings are passed as `PEO_MONGO_URI` and `PEO_MONGO_DATABASE_NAME`; business
+settings are persisted in MongoDB, with the optional `PEO_REDIS_ADDR`
+deployment override described above.
 
 ## Frontend development
 

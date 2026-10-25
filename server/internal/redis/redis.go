@@ -31,7 +31,7 @@ type managedClient struct {
 func newClient() *redis.Client {
 	settings := config.Snapshot()
 	return redis.NewClient(&redis.Options{
-		Addr:         settings.String("RedisHost"),
+		Addr:         settings.RedisAddress(),
 		DialTimeout:  3 * time.Second,
 		ReadTimeout:  3 * time.Second,
 		WriteTimeout: 3 * time.Second,

@@ -33,24 +33,20 @@ services:
       retries: 10
       start_period: 5s
 
-#  peo:
-#    image: minoic/peo:dev
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      args:
-#        VERSION: dev
-#    restart: unless-stopped
-#    depends_on:
-#      mongo:
-#        condition: service_healthy
-#      redis:
-#        condition: service_healthy
-#    ports:
-#      - "8080:8080"
-#    environment:
-#      PEO_MONGO_URI: mongodb://mongo:27017
-#      PEO_MONGO_DATABASE_NAME: peo
+  peo:
+   image: ghcr.io/minoic/peo:latest
+   restart: unless-stopped
+   depends_on:
+     mongo:
+       condition: service_healthy
+     redis:
+       condition: service_healthy
+   ports:
+     - "8080:8080"
+   environment:
+     PEO_MONGO_URI: mongodb://mongo:27017
+     PEO_MONGO_DATABASE_NAME: peo
+     PEO_REDIS_ADDR: redis:6379
 
 volumes:
   mongo-data:
