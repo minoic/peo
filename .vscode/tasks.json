@@ -1,0 +1,206 @@
+{
+  // Dev tasks for peo.
+  //
+  // Backend dependencies: MongoDB and Redis run in Compose. The Go server is
+  //          launched as a local VS Code debug process with cwd=server, so it
+  //          reads server/conf/settings.toml and listens on localhost:8080.
+  // Frontend: Flutter Web in debug mode on a fixed port (5173) so the URL is
+  //          stable across restarts.
+  //
+  // The Makefile targets are mirrored here instead of being invoked, because
+  // the Makefile sets SHELL := /bin/sh and does not run on Windows.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compose: up dependencies",
+      "detail": "Start MongoDB and Redis for the locally debugged Go backend",
+      "type": "shell",
+      "command": "docker compose up -d --wait mongo redis",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "compose: rebuild + up backend",
+      "detail": "docker compose up -d --build (rebuild the peo image, then start)",
+      "type": "shell",
+      "command": "docker compose up -d --build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "compose: build backend image",
+      "detail": "docker compose build peo (build only, no container start)",
+      "type": "shell",
+      "command": "docker compose build peo",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "compose: down backend",
+      "detail": "docker compose down (stops and removes the containers, keeps the volumes)",
+      "type": "shell",
+      "command": "docker compose down",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "compose: logs (peo)",
+      "detail": "docker compose logs -f peo (follow the server log)",
+      "type": "shell",
+      "command": "docker compose logs -f peo",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "compose: health check",
+      "detail": "GET http://localhost:8080/healthz (mongo + redis + pterodactyl reachability)",
+      "type": "shell",
+      "command": "curl.exe -fsS http://localhost:8080/healthz",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "flutter: pub get",
+      "detail": "flutter pub get",
+      "type": "shell",
+      "command": "flutter pub get",
+      "options": {
+        "cwd": "${workspaceFolder}/flutter"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: generate code",
+      "detail": "dart run build_runner build --delete-conflicting-outputs (freezed + json_serializable)",
+      "type": "shell",
+      "command": "dart run build_runner build --delete-conflicting-outputs",
+      "options": {
+        "cwd": "${workspaceFolder}/flutter"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: run web (debug)",
+      "detail": "flutter run -d chrome --web-port 5173 (hot reload; runs until stopped)",
+      "type": "shell",
+      "command": "flutter run -d chrome --web-port 5173",
+      "options": {
+        "cwd": "${workspaceFolder}/flutter"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "flutter: analyze",
+      "detail": "flutter analyze",
+      "type": "shell",
+      "command": "flutter analyze",
+      "options": {
+        "cwd": "${workspaceFolder}/flutter"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: test",
+      "detail": "flutter test",
+      "type": "shell",
+      "command": "flutter test",
+      "options": {
+        "cwd": "${workspaceFolder}/flutter"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: build web (wasm)",
+      "detail": "flutter build web --wasm --release (output in flutter/build/web)",
+      "type": "shell",
+      "command": "flutter build web --wasm --release",
+      "options": {
+        "cwd": "${workspaceFolder}/flutter"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "dev: backend + flutter web",
+      "detail": "Start the compose stack, then Flutter Web in debug mode",
+      "dependsOrder": "sequence",
+      "dependsOn": ["compose: up backend", "flutter: run web (debug)"],
+      "problemMatcher": []
+    }
+  ]
+}

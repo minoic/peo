@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -78,6 +79,32 @@ func (h *AdminHandler) Products(c *gin.Context) {
 // GET /api/v1/admin/products/form
 func (h *AdminHandler) ProductForm(c *gin.Context) {
 	ok(c, dto.AdminProductFormResponse{Fields: service.Admin.ProductForm()})
+}
+
+func (h *AdminHandler) PanelTags(c *gin.Context) {
+	items, err := service.Admin.PanelTags(c.Request.Context())
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	out := make([]dto.PanelTag, 0, len(items))
+	for _, item := range items {
+		out = append(out, dto.PanelTag{ID: item.ID, Name: item.Name, Slug: item.Slug, LegacyNestID: item.LegacyNestID})
+	}
+	ok(c, dto.PanelTagListResponse{Items: out})
+}
+
+func (h *AdminHandler) PanelTagEggs(c *gin.Context) {
+	items, err := service.Admin.PanelTagEggs(c.Request.Context(), c.Param("tagSlug"))
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	eggs := make([]service.Egg, 0, len(items))
+	for _, item := range items {
+		eggs = append(eggs, service.Egg{Id: item.Id, Name: item.Name})
+	}
+	ok(c, dto.EggListResponse{Eggs: eggs})
 }
 
 // CreateProduct writes one product per enabled billing cycle.
@@ -265,19 +292,22 @@ func (h *AdminHandler) ReviewGallery(c *gin.Context) {
 		return
 	}
 	ctx := c.Request.Context()
-	if c.Param("action") == "pass" {
+	switch c.Param("action") {
+	case "pass":
 		if err := service.Admin.PassGalleryItem(ctx, itemID); err != nil {
 			fail(c, err)
 			return
 		}
 		ok(c, msg("album item published"))
-		return
+	case "delete":
+		if err := service.Admin.DeleteGalleryItem(ctx, itemID); err != nil {
+			fail(c, err)
+			return
+		}
+		ok(c, msg("album item deleted"))
+	default:
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"ok": false, "error": gin.H{"code": "validation_failed", "message": "unknown gallery action"}})
 	}
-	if err := service.Admin.DeleteGalleryItem(ctx, itemID); err != nil {
-		fail(c, err)
-		return
-	}
-	ok(c, msg("album item deleted"))
 }
 
 // Settings returns the settings schema with the current values filled in.

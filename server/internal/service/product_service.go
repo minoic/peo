@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -45,16 +46,18 @@ type ProductCard struct {
 	Intros   []Intro `json:"intros"`
 	// Price is the total for the billing cycle of the bucket the card sits in;
 	// MonthPrice is the monthly list price before the discount.
-	Price      uint `json:"price"`
-	MonthPrice uint `json:"monthPrice"`
-	ValidDays  int  `json:"validDays"`
-	DeleteDays int  `json:"deleteDays"`
-	Memory     int  `json:"memory"`
-	Cpu        int  `json:"cpu"`
-	Disk       int  `json:"disk"`
-	Backups    int  `json:"backups"`
-	Nest       int  `json:"nest"`
-	Egg        int  `json:"egg"`
+	Price         uint   `json:"price"`
+	MonthPrice    uint   `json:"monthPrice"`
+	ValidDays     int    `json:"validDays"`
+	DeleteDays    int    `json:"deleteDays"`
+	Memory        int    `json:"memory"`
+	Cpu           int    `json:"cpu"`
+	Disk          int    `json:"disk"`
+	Backups       int    `json:"backups"`
+	Nest          int    `json:"nest"`
+	Egg           int    `json:"egg"`
+	TagSlug       string `json:"tagSlug,omitempty"`
+	AllowedEggIDs []int  `json:"allowedEggIds"`
 }
 
 // Storefront is the grouped product catalogue.
@@ -73,6 +76,7 @@ type ProductDetail struct {
 	Product  ProductCard `json:"product"`
 	Pricing  Pricing     `json:"pricing"`
 	NestName string      `json:"nestName,omitempty"`
+	TagSlug  string      `json:"tagSlug,omitempty"`
 	EggName  string      `json:"eggName,omitempty"`
 	Eggs     []Egg       `json:"eggs,omitempty"`
 }
@@ -91,7 +95,12 @@ type ProductService struct {
 	mu       sync.RWMutex
 	cached   Storefront
 	built    bool
-	eggCache sync.Map // nest id -> []Egg
+	eggCache sync.Map // panel identity + tag -> expiring []Egg
+}
+
+type eggCacheEntry struct {
+	eggs    []Egg
+	expires time.Time
 }
 
 // Products is the default ProductService.
@@ -167,23 +176,27 @@ func (s *ProductService) build(ctx context.Context) (Storefront, error) {
 
 // card turns a product document into the storefront representation.
 func (s *ProductService) card(ctx context.Context, cli *pterodactyl.Client, spec *models.WareSpec) ProductCard {
-	nest, err := cli.GetNest(ctx, spec.Nest)
-	if err != nil {
-		glgf.Warn("product: cannot read nest ", spec.Nest, ": ", err)
+	tagSlug := spec.TagSlug
+	if tagSlug == "" && spec.PanelLegacyNestID() != 0 {
+		if tag, err := cli.TagForLegacyNest(ctx, spec.PanelLegacyNestID()); err == nil {
+			tagSlug = tag.Slug
+		}
 	}
 	card := ProductCard{
-		SpecID:     spec.ID.Hex(),
-		WareName:   spec.WareName,
-		Discount:   spec.Discount,
-		Memory:     spec.Memory,
-		Cpu:        spec.Cpu,
-		Disk:       spec.Disk,
-		Backups:    spec.Backups,
-		Nest:       spec.Nest,
-		Egg:        spec.Egg,
-		MonthPrice: spec.PricePerMonth,
-		ValidDays:  days(spec.ValidDuration),
-		DeleteDays: days(spec.DeleteDuration),
+		SpecID:        spec.ID.Hex(),
+		WareName:      spec.WareName,
+		Discount:      spec.Discount,
+		Memory:        spec.Memory,
+		Cpu:           spec.Cpu,
+		Disk:          spec.Disk,
+		Backups:       spec.Backups,
+		Nest:          spec.Nest,
+		Egg:           spec.Egg,
+		TagSlug:       tagSlug,
+		AllowedEggIDs: allowedEggs(spec),
+		MonthPrice:    spec.PricePerMonth,
+		ValidDays:     days(spec.ValidDuration),
+		DeleteDays:    days(spec.DeleteDuration),
 	}
 	// When the administrator turned the site-wide discount off every card shows
 	// the list price, so a stale per product percentage cannot mislead anyone.
@@ -203,8 +216,10 @@ func (s *ProductService) card(ctx context.Context, cli *pterodactyl.Client, spec
 		{Key: "backups", Value: strconv.Itoa(spec.Backups)},
 		{Key: "virtualEnv", Value: virtualEnv},
 	}
-	if nest != nil && nest.Description != "" {
-		intros = append(intros, Intro{Label: nest.Description})
+	if tagSlug != "" {
+		if tag, err := cli.GetTag(ctx, tagSlug); err == nil && tag.Name != "" {
+			intros = append(intros, Intro{Label: tag.Name})
+		}
 	}
 	intros = append(intros, Intro{
 		Key:   "retention",
@@ -237,16 +252,25 @@ func (s *ProductService) Detail(ctx context.Context, specID bson.ObjectID) (*Pro
 		card.Price = card.MonthPrice
 	}
 	detail := &ProductDetail{Product: card, Pricing: PriceFor(spec)}
-	if nest, err := cli.GetNest(ctx, spec.Nest); err == nil {
-		detail.NestName = nest.Name
+	detail.TagSlug = card.TagSlug
+	if tag, err := cli.GetTag(ctx, detail.TagSlug); err == nil {
+		detail.NestName = tag.Name
 	}
-	eggs, err := s.Eggs(ctx, spec.Nest)
+	eggs, err := s.eggsForTag(ctx, cli, detail.TagSlug)
 	if err != nil {
-		glgf.Warn("product: cannot list eggs for nest ", spec.Nest, ": ", err)
+		glgf.Warn("product: cannot list eggs for tag ", detail.TagSlug, ": ", err)
 	} else {
-		detail.Eggs = eggs
+		allowed := make(map[int]bool, len(detail.Product.AllowedEggIDs))
+		for _, id := range detail.Product.AllowedEggIDs {
+			allowed[id] = true
+		}
+		for _, egg := range eggs {
+			if allowed[egg.Id] {
+				detail.Eggs = append(detail.Eggs, egg)
+			}
+		}
 	}
-	if egg, err := cli.GetEgg(ctx, spec.Nest, spec.Egg); err == nil {
+	if egg, err := cli.GetEgg(ctx, 0, spec.Egg); err == nil {
 		detail.EggName = egg.Name
 	}
 	return detail, nil
@@ -256,10 +280,29 @@ func (s *ProductService) Detail(ctx context.Context, specID bson.ObjectID) (*Pro
 // level EggsMap, which the cron emptied and refilled behind the controllers'
 // backs.
 func (s *ProductService) Eggs(ctx context.Context, nestID int) ([]Egg, error) {
-	if cached, ok := s.eggCache.Load(nestID); ok {
-		return cached.([]Egg), nil
+	cli := pterodactyl.ClientFromConf()
+	tag, err := cli.TagForLegacyNest(ctx, nestID)
+	if err != nil {
+		return nil, err
 	}
-	raw, err := pterodactyl.ClientFromConf().GetAllEggs(ctx, nestID)
+	return s.eggsForTag(ctx, cli, tag.Slug)
+}
+
+// EggsForTag lists templates assigned to one Panel 2 tag.
+func (s *ProductService) EggsForTag(ctx context.Context, tagSlug string) ([]Egg, error) {
+	return s.eggsForTag(ctx, pterodactyl.ClientFromConf(), tagSlug)
+}
+
+func (s *ProductService) eggsForTag(ctx context.Context, cli *pterodactyl.Client, tagSlug string) ([]Egg, error) {
+	key := cli.IdentityFingerprint() + ":tag:" + tagSlug
+	if cached, ok := s.eggCache.Load(key); ok {
+		entry := cached.(eggCacheEntry)
+		if time.Now().Before(entry.expires) {
+			return entry.eggs, nil
+		}
+		s.eggCache.Delete(key)
+	}
+	raw, err := cli.GetEggsForTag(ctx, tagSlug)
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +310,7 @@ func (s *ProductService) Eggs(ctx context.Context, nestID int) ([]Egg, error) {
 	for i := range raw {
 		out = append(out, Egg{Id: raw[i].Id, Name: raw[i].Name})
 	}
-	s.eggCache.Store(nestID, out)
+	s.eggCache.Store(key, eggCacheEntry{eggs: out, expires: time.Now().Add(refreshEvery)})
 	return out, nil
 }
 
@@ -280,26 +323,47 @@ func (s *ProductService) CacheEggs(ctx context.Context) {
 		glgf.Error("product: cannot list products to cache eggs: ", err)
 		return
 	}
-	seen := make(map[int]bool, len(specs))
+	cli := pterodactyl.ClientFromConf()
+	seen := make(map[string]bool, len(specs))
 	for i := range specs {
-		nest := specs[i].Nest
-		if seen[nest] {
+		tag := specs[i].TagSlug
+		if tag == "" && specs[i].PanelLegacyNestID() != 0 {
+			if resolved, e := cli.TagForLegacyNest(ctx, specs[i].PanelLegacyNestID()); e == nil {
+				tag = resolved.Slug
+			}
+		}
+		if seen[tag] || tag == "" {
 			continue
 		}
-		seen[nest] = true
-		eggs, err := s.Eggs(ctx, nest)
+		seen[tag] = true
+		eggs, err := s.eggsForTag(ctx, cli, tag)
 		if err != nil {
-			glgf.Error("product: cannot cache eggs of nest ", nest, ": ", err)
+			glgf.Error("product: cannot cache eggs of tag ", tag, ": ", err)
 			continue
 		}
-		glgf.Info("product: cached ", len(eggs), " eggs for nest ", nest)
+		glgf.Info("product: cached ", len(eggs), " eggs for tag ", tag)
 	}
 }
 
 // InvalidateEggs drops the cached templates of a nest after an administrator
 // changed what the panel offers.
 func (s *ProductService) InvalidateEggs(nestID int) {
-	s.eggCache.Delete(nestID)
+	// The Panel cache is keyed by identity and tag; a legacy nest ID does not
+	// identify a single cached entry, so invalidate the small egg cache as a whole.
+	s.eggCache.Range(func(key, _ any) bool {
+		s.eggCache.Delete(key)
+		return true
+	})
+}
+
+func (s *ProductService) InvalidateTag(tagSlug string) {
+	suffix := ":tag:" + tagSlug
+	s.eggCache.Range(func(key, _ any) bool {
+		if strings.HasSuffix(key.(string), suffix) {
+			s.eggCache.Delete(key)
+		}
+		return true
+	})
 }
 
 // List returns every product document, which the admin console edits.

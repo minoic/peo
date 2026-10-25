@@ -87,17 +87,18 @@ var routeTable = []string{
 	"GET /api/v1/site/storefront",
 	"GET /api/v1/products/:specId",
 	"GET /api/v1/nests/:nestId/eggs",
+	"GET /api/v1/tags/:tagSlug/eggs",
 	"POST /api/v1/auth/login",
 	"POST /api/v1/auth/register",
 	"GET /api/v1/auth/confirm-email/:key",
 	"POST /api/v1/auth/forget-password",
 	"POST /api/v1/auth/reset-password",
 	"POST /api/v1/alipay/notify",
+	"GET /api/v1/gallery",
 
 	// authenticated
 	"POST /api/v1/auth/logout",
 	"GET /api/v1/auth/me",
-	"POST /api/v1/user/pterodactyl-session",
 	"PUT /api/v1/user/password",
 	"PUT /api/v1/user/email",
 	"POST /api/v1/user/email/confirm",
@@ -115,7 +116,25 @@ var routeTable = []string{
 	"POST /api/v1/servers/:id/renew-by-balance",
 	"POST /api/v1/servers/:id/reinstall",
 	"POST /api/v1/servers/:id/delete",
-	"GET /api/v1/gallery",
+	"GET /api/v1/servers/:id/console",
+	"GET /api/v1/servers/:id/resources",
+	"POST /api/v1/servers/:id/power",
+	"POST /api/v1/servers/:id/command",
+	"POST /api/v1/servers/:id/terminal-ticket",
+	"GET /api/v1/servers/:id/files",
+	"POST /api/v1/servers/:id/files/read",
+	"PUT /api/v1/servers/:id/files/write",
+	"POST /api/v1/servers/:id/files/:action",
+	"GET /api/v1/servers/:id/files/download",
+	"PUT /api/v1/servers/:id/files/upload",
+	"GET /api/v1/servers/:id/backups",
+	"POST /api/v1/servers/:id/backups",
+	"GET /api/v1/servers/:id/backups/:backupId/download",
+	"POST /api/v1/servers/:id/backups/:backupId/:action",
+	"DELETE /api/v1/servers/:id/backups/:backupId",
+	"GET /api/v1/servers/:id/startup",
+	"PUT /api/v1/servers/:id/startup/variable",
+	"PUT /api/v1/servers/:id/startup/image",
 	"GET /api/v1/gallery/mine",
 	"POST /api/v1/gallery",
 	"POST /api/v1/gallery/:id/like",
@@ -139,6 +158,8 @@ var routeTable = []string{
 	"GET /api/v1/admin/products",
 	"GET /api/v1/admin/products/raw",
 	"GET /api/v1/admin/products/form",
+	"GET /api/v1/admin/panel/tags",
+	"GET /api/v1/admin/panel/tags/:tagSlug/eggs",
 	"POST /api/v1/admin/products",
 	"PUT /api/v1/admin/products/:specId",
 	"DELETE /api/v1/admin/products/:specId",
@@ -156,6 +177,54 @@ var routeTable = []string{
 
 	// liveness
 	"GET /healthz",
+	"GET /api/v1/servers/:id/terminal",
+}
+
+func TestConsoleRoutesRequireAuthenticationAndTerminalTicketOrigin(t *testing.T) {
+	r := buildEngine(t)
+	protected := []struct {
+		method string
+		path   string
+	}{
+		{http.MethodGet, "/api/v1/servers/507f1f77bcf86cd799439011/console"},
+		{http.MethodGet, "/api/v1/servers/507f1f77bcf86cd799439011/resources"},
+		{http.MethodPost, "/api/v1/servers/507f1f77bcf86cd799439011/power"},
+		{http.MethodPost, "/api/v1/servers/507f1f77bcf86cd799439011/command"},
+		{http.MethodPost, "/api/v1/servers/507f1f77bcf86cd799439011/terminal-ticket"},
+		{http.MethodGet, "/api/v1/servers/507f1f77bcf86cd799439011/files"},
+		{http.MethodPost, "/api/v1/servers/507f1f77bcf86cd799439011/files/read"},
+		{http.MethodPut, "/api/v1/servers/507f1f77bcf86cd799439011/files/write"},
+		{http.MethodGet, "/api/v1/servers/507f1f77bcf86cd799439011/backups"},
+		{http.MethodPost, "/api/v1/servers/507f1f77bcf86cd799439011/backups"},
+		{http.MethodGet, "/api/v1/servers/507f1f77bcf86cd799439011/startup"},
+		{http.MethodPut, "/api/v1/servers/507f1f77bcf86cd799439011/startup/image"},
+	}
+	for _, tc := range protected {
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, httptest.NewRequest(tc.method, tc.path, strings.NewReader(`{}`)))
+		if rec.Code != http.StatusUnauthorized {
+			t.Errorf("%s %s returned %d without a bearer token, want 401", tc.method, tc.path, rec.Code)
+		}
+	}
+
+	if err := config.LoadSettings(map[string]any{"ConsoleOrigins": "https://peo.example"}); err != nil {
+		t.Fatal(err)
+	}
+	terminalPath := "/api/v1/servers/507f1f77bcf86cd799439011/terminal?ticket=invalid"
+	badOrigin := httptest.NewRecorder()
+	badReq := httptest.NewRequest(http.MethodGet, terminalPath, nil)
+	badReq.Header.Set("Origin", "https://evil.example")
+	r.ServeHTTP(badOrigin, badReq)
+	if badOrigin.Code != http.StatusForbidden {
+		t.Errorf("terminal with an untrusted Origin returned %d, want 403", badOrigin.Code)
+	}
+	noTicket := httptest.NewRecorder()
+	noTicketReq := httptest.NewRequest(http.MethodGet, "/api/v1/servers/507f1f77bcf86cd799439011/terminal", nil)
+	noTicketReq.Header.Set("Origin", "https://peo.example")
+	r.ServeHTTP(noTicket, noTicketReq)
+	if noTicket.Code != http.StatusUnauthorized {
+		t.Errorf("terminal without a ticket returned %d, want 401", noTicket.Code)
+	}
 }
 
 func TestRouterRouteTable(t *testing.T) {
@@ -172,6 +241,38 @@ func TestRouterRouteTable(t *testing.T) {
 	} {
 		if set[gone] {
 			t.Errorf("captcha route %q must not be registered", gone)
+		}
+	}
+}
+
+// TestGalleryRouteAuthenticationBindings pins the public feed and protected gallery actions.
+func TestGalleryRouteAuthenticationBindings(t *testing.T) {
+	r := buildEngine(t)
+
+	// The public listing must reach its handler rather than be rejected by Auth.
+	// No MongoDB is configured in this router test, so its handler-level failure
+	// is expected; the 401 distinction pins the middleware binding.
+	publicRec := httptest.NewRecorder()
+	publicReq := httptest.NewRequest(http.MethodGet, "/api/v1/gallery", nil)
+	r.ServeHTTP(publicRec, publicReq)
+	if publicRec.Code == http.StatusUnauthorized {
+		t.Fatalf("GET /api/v1/gallery was rejected as unauthenticated: %s", publicRec.Body.String())
+	}
+
+	for _, tc := range []struct {
+		method string
+		path   string
+	}{
+		{http.MethodGet, "/api/v1/gallery/mine"},
+		{http.MethodPost, "/api/v1/gallery"},
+		{http.MethodPost, "/api/v1/gallery/507f1f77bcf86cd799439011/like"},
+		{http.MethodDelete, "/api/v1/gallery/507f1f77bcf86cd799439011"},
+	} {
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(tc.method, tc.path, strings.NewReader(`{"itemName":"test","imgSource":"https://example.test/image.png"}`))
+		r.ServeHTTP(rec, req)
+		if rec.Code != http.StatusUnauthorized {
+			t.Errorf("%s %s status = %d, want %d", tc.method, tc.path, rec.Code, http.StatusUnauthorized)
 		}
 	}
 }

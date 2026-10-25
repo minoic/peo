@@ -1,11 +1,49 @@
-tmp
-dist
-.idea/dataSources/
-*.log
+# Local state and caches
+tmp/
+.tmp/
+.cache/
+.dart_tool/
+coverage/
+
+# Environment files and local credentials
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
 *.conf
-build
-.idea
-server/bin
+server/conf/settings.toml
+pterodactyl/wings/config.yml
+
+# Build output
+build/
+dist/
+server/bin/
+server/cmd/peo/__debug_bin*
 server/web/assets/*
 !server/web/assets/.gitkeep
-legacy/build
+flutter/build/
+flutter/.flutter-plugins
+flutter/.flutter-plugins-dependencies
+pterodactyl/wings/wings_linux_*
+pterodactyl/*.pteroext
+
+# Editors and operating systems
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.run/*.local.xml
+*.iml
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

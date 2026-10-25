@@ -1,0 +1,12 @@
+{
+  "name": "peo/peo-panel-extension",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Peo\\PanelExtension\\": "src/"
+    }
+  },
+  "config": {
+    "autoloader-suffix": "PeoPanelExtension"
+  }
+}

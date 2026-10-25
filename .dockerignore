@@ -1,40 +1,51 @@
-# Everything not needed to build the image. The context must still contain
-# `flutter/` (the SPA is compiled in stage 1) and `server/` (stage 2).
-
-# --- VCS / editors -----------------------------------------------------------
+# Repository metadata and developer tooling
 .git
-.gitignore
 .github
 .idea
 .vscode
+.run
 *.iml
 
-# --- prebuilt artifacts ------------------------------------------------------
+# Local credentials and configuration
+**/.env
+**/.env.*
+**/secrets.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+server/conf
+pterodactyl/wings/config.yml
+
+# Local build output and caches
 build
 dist
-legacy/build
-
-# --- the reference implementation is never built -----------------------------
-legacy
-
-# --- Flutter build output, but not its sources -------------------------------
-# flutter/lib, flutter/web and the pubspec files must stay in the context.
+tmp
+.tmp
+.cache
+coverage
+*.log
+server/bin
+server/cmd/peo/__debug_bin*
 flutter/.dart_tool
 flutter/.idea
 flutter/build
+flutter/.flutter-plugins
+flutter/.flutter-plugins-dependencies
 flutter/android
 flutter/ios
 flutter/linux
 flutter/macos
 flutter/windows
-flutter/.flutter-plugins-dependencies
+pterodactyl/wings/wings_linux_*
+pterodactyl/*.pteroext
 
-# --- never embed a bundle that was built on the developer's machine ----------
-# server/web/assets is populated from stage 1 instead.
-server/web/assets
-server/conf
+# Flutter is built in stage 1 and copied into the Go build stage.
+# Keep .gitkeep so `//go:embed all:assets` has its source directory.
+server/web/assets/*
+!server/web/assets/.gitkeep
 
-# --- docs and local state ----------------------------------------------------
+# Documentation is not needed to build the runtime image.
 docs
-tmp
-*.log

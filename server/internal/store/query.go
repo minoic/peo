@@ -16,6 +16,25 @@ import (
 
 var errNilDocument = errors.New("store: cannot insert a nil document")
 
+type legacyDocNormalizer interface {
+	NormalizeLegacyDoc()
+}
+
+func normalizeLegacyDoc(doc any) {
+	if normalizer, ok := doc.(legacyDocNormalizer); ok {
+		normalizer.NormalizeLegacyDoc()
+	}
+}
+
+// docIDFilter matches both the flattened _id field used by current documents
+// and the nested doc._id field used by records written by the old BSON shape.
+func docIDFilter(id bson.ObjectID) bson.M {
+	return bson.M{"$or": bson.A{
+		bson.M{"_id": id},
+		bson.M{"doc._id": id},
+	}}
+}
+
 // stampable is satisfied by every model through its embedded models.Doc.
 type stampable interface{ StampNow(created bool) }
 
@@ -90,6 +109,9 @@ func findMany[T any](ctx context.Context, coll string, filter any,
 	if err := cur.All(ctx, &out); err != nil {
 		return nil, err
 	}
+	for i := range out {
+		normalizeLegacyDoc(&out[i])
+	}
 	return out, nil
 }
 
@@ -101,6 +123,7 @@ func findOne[T any](ctx context.Context, coll string, filter any,
 	if err := Collection(coll).FindOne(ctx, filter, opts...).Decode(&out); err != nil {
 		return nil, err
 	}
+	normalizeLegacyDoc(&out)
 	return &out, nil
 }
 
@@ -167,7 +190,9 @@ func updateOneRaw(ctx context.Context, coll string, filter any, update any) (int
 }
 
 // incUpdate builds an $inc update, used for balances and like counters.
-func incUpdate(fields bson.M) bson.M { return bson.M{"$inc": fields} }
+func incUpdate(fields bson.M) bson.M {
+	return bson.M{"$inc": fields, "$set": bson.M{"updatedAt": time.Now()}}
+}
 
 func deleteOne(ctx context.Context, coll string, filter any) (int64, error) {
 	ctx, cancel := withTimeout(ctx)

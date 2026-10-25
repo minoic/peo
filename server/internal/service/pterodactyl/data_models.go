@@ -3,8 +3,7 @@ package pterodactyl
 import "time"
 
 // The structs in this file mirror the JSON shapes returned by the Pterodactyl
-// Application API (panel v1.11.2). Field names, JSON tags and the (sic) capital
-// "Description" tags are kept exactly as the panel emits them.
+// Application API. Panel 2.0 uses eggs and tags in place of nests.
 //
 // User is a panel account.
 type User struct {
@@ -44,19 +43,35 @@ type ScriptInfo struct {
 
 // Egg is a server template.
 type Egg struct {
-	Id           int                    `json:"id"`
-	Uuid         string                 `json:"uuid"`
-	Name         string                 `json:"name"`
-	Nest         int                    `json:"nest"`
-	Author       string                 `json:"author"`
-	Description  string                 `json:"Description"`
-	DockerImage  string                 `json:"docker_image"`
-	DockerImages map[string]string      `json:"docker_images"`
-	Config       map[string]interface{} `json:"config"`
-	Script       ScriptInfo             `json:"script"`
-	StartUp      string                 `json:"startup"`
-	CreatedAt    time.Time              `json:"created_at"`
-	UpdatedAt    time.Time              `json:"updated_at"`
+	Id            int                    `json:"id"`
+	Uuid          string                 `json:"uuid"`
+	Name          string                 `json:"name"`
+	Nest          int                    `json:"nest"`
+	Author        string                 `json:"author"`
+	Description   string                 `json:"Description"`
+	DockerImage   string                 `json:"docker_image"`
+	DockerImages  map[string]string      `json:"docker_images"`
+	Config        map[string]interface{} `json:"config"`
+	Script        ScriptInfo             `json:"script"`
+	StartUp       string                 `json:"startup"`
+	CreatedAt     time.Time              `json:"created_at"`
+	UpdatedAt     time.Time              `json:"updated_at"`
+	Relationships struct {
+		Tags struct {
+			Data []struct {
+				Attributes Tag `json:"attributes"`
+			} `json:"data"`
+		} `json:"tags"`
+	} `json:"relationships"`
+}
+
+// Tag groups Eggs in Panel 2.0. LegacyNestID is present only when imported from
+// a Panel 1.x nest and is not assumed unique by callers.
+type Tag struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	Slug         string `json:"slug"`
+	LegacyNestID *int   `json:"legacy_nest_id"`
 }
 
 // Node is a daemon host.
@@ -131,6 +146,9 @@ type Server struct {
 	Allocation    int           `json:"allocation"`
 	NestId        int           `json:"nest"`
 	EggId         int           `json:"egg"`
+	TagSlug       string        `json:"-"`
+	AllowedEggIDs []int         `json:"-"`
+	DockerImage   string        `json:"docker_image,omitempty"`
 	Container     ContainerInfo `json:"container"`
 	UpdatedAt     time.Time     `json:"updated_at"`
 	CreatedAt     time.Time     `json:"created_at"`

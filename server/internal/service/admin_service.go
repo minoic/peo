@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/minoic/glgf"
@@ -20,6 +21,8 @@ import (
 	"github.com/minoic/peo/server/internal/store"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
+
+var settingsSaveMu sync.Mutex
 
 // Activation code targets. The legacy admin form encoded the action in the same
 // numeric field as the product id, using sentinel values near the maximum uint64
@@ -372,7 +375,10 @@ type ProductInput struct {
 	Backups         int    `json:"backups"`
 	NodeID          int    `json:"nodeId"`
 	NestID          int    `json:"nestId"`
+	LegacyNestID    int    `json:"legacyNestId"`
+	TagSlug         string `json:"tagSlug"`
 	EggID           int    `json:"eggId"`
+	AllowedEggIDs   []int  `json:"allowedEggIds"`
 	Image           string `json:"image"`
 	DeleteTime      int    `json:"deleteTime"`
 	Price           uint   `json:"price"`
@@ -382,6 +388,33 @@ type ProductInput struct {
 	// Discount is used by the single-cycle update path only; creation derives
 	// the per-cycle discounts from Discount0/1/2.
 	Discount int `json:"discount"`
+}
+
+func legacyNestInput(in ProductInput) int {
+	if in.LegacyNestID != 0 {
+		return in.LegacyNestID
+	}
+	return in.NestID
+}
+
+func normalizedAllowedEggs(primary int, allowed []int) []int {
+	seen := make(map[int]bool, len(allowed)+1)
+	out := make([]int, 0, len(allowed)+1)
+	appendEgg := func(id int) {
+		if id > 0 && !seen[id] {
+			seen[id] = true
+			out = append(out, id)
+		}
+	}
+	appendEgg(primary)
+	for _, id := range allowed {
+		appendEgg(id)
+	}
+	return out
+}
+
+func allowedEggs(spec *models.WareSpec) []int {
+	return normalizedAllowedEggs(spec.Egg, spec.AllowedEggIDs)
 }
 
 // FormField describes one input of a generated form. The client renders it,
@@ -419,8 +452,9 @@ func (AdminService) ProductForm() []FormField {
 		{Name: "io", Label: "Block IO Weight", Description: "Disk IO weight, between 100 and 1000.", Type: "number", Required: true, Default: 500},
 		{Name: "backups", Label: "Backup limit", Description: "Number of backups the customer may create, between 0 and 1000.", Type: "number", Required: true, Default: 0},
 		{Name: "node_id", Label: "Node ID", Description: "Panel node the server is created on.", Type: "number", Required: true, Default: 0},
-		{Name: "nest_id", Label: "Nest ID", Description: "Nest the server uses.", Type: "number", Required: true},
-		{Name: "egg_id", Label: "Egg ID", Description: "Egg the server uses; it must belong to the nest above.", Type: "number", Required: true},
+		{Name: "tag_slug", Label: "Tag", Description: "Panel 2 tag used to group the allowed Eggs.", Type: "text", Required: true},
+		{Name: "egg_id", Label: "Egg ID", Description: "Egg the server uses; it must be tagged with the selected tag.", Type: "number", Required: true},
+		{Name: "allowed_egg_ids", Label: "Allowed reinstall Eggs", Description: "Egg IDs this product permits during reinstall; the primary Egg is always included.", Type: "number_list", Required: false},
 		{Name: "image", Label: "Docker image", Description: "Custom Docker image (optional); leave empty for the egg default.", Type: "text"},
 		{Name: "delete_time", Label: "Delete delay (days)", Description: "Grace period before an expired server may be deleted.", Type: "number", Required: true, Default: 7},
 		{Name: "price", Label: "Price (per 30 days, CNY)", Description: "Undiscounted monthly price in CNY.", Type: "number", Required: true},
@@ -447,7 +481,10 @@ type AdminProduct struct {
 	Backups           int    `json:"backups"`
 	Node              int    `json:"node"`
 	Nest              int    `json:"nest"`
+	LegacyNestID      int    `json:"legacyNestId"`
+	TagSlug           string `json:"tagSlug"`
 	Egg               int    `json:"egg"`
+	AllowedEggIDs     []int  `json:"allowedEggIds"`
 	DockerImage       string `json:"dockerImage"`
 	OomDisabled       bool   `json:"oomDisabled"`
 	StartOnCompletion bool   `json:"startOnCompletion"`
@@ -478,7 +515,10 @@ func (AdminService) ProductList(ctx context.Context) ([]AdminProduct, error) {
 			Backups:           s.Backups,
 			Node:              s.Node,
 			Nest:              s.Nest,
+			LegacyNestID:      s.PanelLegacyNestID(),
+			TagSlug:           s.TagSlug,
 			Egg:               s.Egg,
+			AllowedEggIDs:     allowedEggs(s),
 			DockerImage:       s.DockerImage,
 			OomDisabled:       s.OomDisabled,
 			StartOnCompletion: s.StartOnCompletion,
@@ -512,7 +552,7 @@ func (AdminService) CreateProduct(ctx context.Context, in ProductInput) ([]strin
 	if len(ids) == 0 {
 		return nil, apierr.Fail(apierr.CodeValidationFailed, "at least one billing cycle must be enabled")
 	}
-	Admin.refreshProducts(ctx, in.NestID)
+	Admin.refreshProducts(ctx, legacyNestInput(in))
 	return ids, nil
 }
 
@@ -534,7 +574,7 @@ func (AdminService) UpdateProduct(ctx context.Context, specID bson.ObjectID, in 
 	if err := store.Spec.Update(ctx, specID, spec); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot save the product", err)
 	}
-	Admin.refreshProducts(ctx, in.NestID)
+	Admin.refreshProducts(ctx, legacyNestInput(in))
 	return nil
 }
 
@@ -547,7 +587,7 @@ func (AdminService) DeleteProduct(ctx context.Context, specID bson.ObjectID) err
 	if err := store.Spec.Delete(ctx, specID); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot delete the product", err)
 	}
-	Admin.refreshProducts(ctx, spec.Nest)
+	Admin.refreshProducts(ctx, spec.PanelLegacyNestID())
 	return nil
 }
 
@@ -564,8 +604,11 @@ func (AdminService) specFromInput(in ProductInput) *models.WareSpec {
 		Disk:              in.Disk,
 		Io:                in.Io,
 		Backups:           in.Backups,
-		Nest:              in.NestID,
+		Nest:              legacyNestInput(in),
+		LegacyNestID:      legacyNestInput(in),
+		TagSlug:           strings.TrimSpace(in.TagSlug),
 		Egg:               in.EggID,
+		AllowedEggIDs:     normalizedAllowedEggs(in.EggID, in.AllowedEggIDs),
 		StartOnCompletion: true,
 		OomDisabled:       true,
 		DockerImage:       strings.TrimSpace(in.Image),
@@ -611,10 +654,46 @@ func (AdminService) validateProduct(ctx context.Context, in *ProductInput) error
 	if _, err := cli.GetNode(ctx, in.NodeID); err != nil {
 		return apierr.Wrap(apierr.CodeValidationFailed, "the node id is negative or the node does not exist", err)
 	}
-	if _, err := cli.GetEgg(ctx, in.NestID, in.EggID); err != nil {
-		return apierr.Wrap(apierr.CodeValidationFailed, "the egg does not exist in the panel", err)
+	if strings.TrimSpace(in.TagSlug) == "" {
+		return apierr.Fail(apierr.CodeValidationFailed, "select a Panel 2 tag for this product")
+	}
+	if _, err := cli.GetTag(ctx, in.TagSlug); err != nil {
+		return apierr.Wrap(apierr.CodeValidationFailed, "the selected Panel 2 tag does not exist", err)
+	}
+	if allowed, err := cli.EggHasTag(ctx, in.EggID, in.TagSlug); err != nil || !allowed {
+		return apierr.Wrap(apierr.CodeValidationFailed, "the selected egg is not in the selected tag", err)
+	}
+	in.AllowedEggIDs = normalizedAllowedEggs(in.EggID, in.AllowedEggIDs)
+	for _, eggID := range in.AllowedEggIDs {
+		allowed, err := cli.EggHasTag(ctx, eggID, in.TagSlug)
+		if err != nil || !allowed {
+			return apierr.Wrap(apierr.CodeValidationFailed, "an allowed reinstall egg is not in the selected tag", err)
+		}
+	}
+	if in.Image != "" {
+		egg, err := cli.GetEgg(ctx, 0, in.EggID)
+		if err != nil {
+			return apierr.Wrap(apierr.CodeValidationFailed, "cannot load the selected egg", err)
+		}
+		allowed := false
+		for _, image := range egg.DockerImages {
+			if image == in.Image {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return apierr.Fail(apierr.CodeValidationFailed, "the selected image is not allowed by the egg")
+		}
 	}
 	return nil
+}
+
+func (AdminService) PanelTags(ctx context.Context) ([]pterodactyl.Tag, error) {
+	return pterodactyl.ClientFromConf().GetAllTags(ctx)
+}
+func (AdminService) PanelTagEggs(ctx context.Context, slug string) ([]pterodactyl.Egg, error) {
+	return pterodactyl.ClientFromConf().GetEggsForTag(ctx, slug)
 }
 
 // refreshProducts rebuilds the storefront cache and drops the cached egg list of
@@ -873,21 +952,22 @@ type SettingField struct {
 	Description string `json:"description"`
 	Type        string `json:"type"`
 	Value       string `json:"value"`
+	Secret      bool   `json:"secret,omitempty"`
+	Configured  bool   `json:"configured,omitempty"`
 }
 
-// settingsSchema is the ordered description of every editable setting. The
-// legacy list mapped MYSQLHost/MYSQLDatabaseName onto the Mongo connection;
-// the two MySQL credentials have no equivalent and are gone.
+// settingsSchema is the ordered description of every editable business setting.
+// MongoDB connection settings are deployment environment variables and are not
+// part of this schema.
 var settingsSchema = []SettingField{
-	{Key: "WebHostName", Label: "Site address", Description: "Public address of the site. It must share a parent domain with the Pterodactyl panel and use HTTPS for single sign-on.", Type: SettingTypeText},
+	{Key: "WebHostName", Label: "Site address", Description: "Public origin of the PEO site used for same-origin console WebSockets.", Type: SettingTypeText},
+	{Key: "ConsoleOrigins", Label: "Console WebSocket origins", Description: "Comma-separated exact browser origins allowed to open server console WebSockets.", Type: SettingTypeText},
 	{Key: "WebApplicationName", Label: "Site name", Description: "Shown in the page title and in outgoing mail.", Type: SettingTypeText},
 	{Key: "WebDescription", Label: "Site description", Description: "Short one-line description of the site.", Type: SettingTypeText},
 	{Key: "WebAdminAddress", Label: "Administrator contact", Description: "Contact address shown in the page footer.", Type: SettingTypeText},
 	{Key: "PterodactylHostname", Label: "Panel address", Description: "Base address of the Pterodactyl panel. It must not end with a slash.", Type: SettingTypeText},
-	{Key: "PterodactylToken", Label: "Panel token", Description: "Pterodactyl application API key.", Type: SettingTypeText},
-	{Key: "DatabaseSalt", Label: "Database SALT", Description: "Password salt. Changing it logs every user out.", Type: SettingTypeText},
-	{Key: "MongoURI", Label: "MongoDB address", Description: "Connection string, for example mongodb://IP:port.", Type: SettingTypeText},
-	{Key: "MongoDatabaseName", Label: "MongoDB database name", Description: "Database that holds the business collections.", Type: SettingTypeText},
+	{Key: "PterodactylToken", Label: "Panel token", Description: "Backend-only Pterodactyl Application API key. Blank keeps the current token.", Type: SettingTypeText},
+	{Key: "DatabaseSalt", Label: "Database SALT", Description: "Password salt. Changing it changes password verification but does not revoke existing sessions.", Type: SettingTypeText},
 	{Key: "RedisHost", Label: "Redis address", Description: "Redis address in the form IP:port.", Type: SettingTypeText},
 	{Key: "RedisPassword", Label: "Redis password", Description: "Leave empty when the server has no password.", Type: SettingTypeText},
 	{Key: "RedisDB", Label: "Redis database", Description: "Index of the Redis database to use.", Type: SettingTypeText},
@@ -910,29 +990,60 @@ var settingsSchema = []SettingField{
 	{Key: "SocialLinkTitle", Label: "Community link title", Description: "Text shown for the community link.", Type: SettingTypeText},
 }
 
-// Settings returns the schema with the current value of every key filled in.
-// The TOML file is the single source of truth; there is no database override.
+// Settings returns the schema with the current value of every database-backed
+// business setting filled in. MongoDB connection settings are deployment-only
+// environment variables and are not exposed here.
 func (AdminService) Settings(ctx context.Context) ([]SettingField, error) {
-	out := make([]SettingField, 0, len(settingsSchema))
-	for _, f := range settingsSchema {
-		f.Value = config.String(f.Key)
-		out = append(out, f)
-	}
-	return out, nil
+	return settingFields(config.String), nil
 }
 
-// SaveSettings validates every submitted value against the schema, applies it,
-// writes the configuration file and reconnects the datastores so the change is
-// live immediately. Unknown keys are ignored so an old client cannot introduce
-// arbitrary entries.
+func settingFields(valueFor func(string) string) []SettingField {
+	out := make([]SettingField, 0, len(settingsSchema))
+	for _, f := range settingsSchema {
+		if f.Key == "PterodactylToken" {
+			f.Secret = true
+			f.Configured = valueFor(f.Key) != ""
+			f.Value = ""
+		} else {
+			f.Value = valueFor(f.Key)
+		}
+		out = append(out, f)
+	}
+	return out
+}
+
+func preserveBlankSecret(key, raw string) bool {
+	return strings.EqualFold(strings.TrimSpace(key), "PterodactylToken") && strings.TrimSpace(raw) == ""
+}
+
+func setSettingValue(settings map[string]any, key string, value any) {
+	canonical := strings.ToLower(key)
+	for existing := range settings {
+		if strings.EqualFold(existing, key) && existing != canonical {
+			delete(settings, existing)
+		}
+	}
+	settings[canonical] = value
+}
+
+// SaveSettings validates every submitted value against the schema and stores
+// the updated business settings in MongoDB. Unknown keys are ignored so an old
+// client cannot introduce arbitrary entries.
 func (AdminService) SaveSettings(ctx context.Context, values map[string]string) error {
+	settingsSaveMu.Lock()
+	defer settingsSaveMu.Unlock()
+	settings := config.Settings()
 	known := make(map[string]string, len(settingsSchema))
 	for _, f := range settingsSchema {
-		known[f.Key] = f.Type
+		known[strings.ToLower(f.Key)] = f.Type
 	}
 	for key, raw := range values {
-		typ, ok := known[key]
+		canonicalKey := strings.ToLower(strings.TrimSpace(key))
+		typ, ok := known[canonicalKey]
 		if !ok {
+			continue
+		}
+		if preserveBlankSecret(canonicalKey, raw) {
 			continue
 		}
 		switch typ {
@@ -941,30 +1052,34 @@ func (AdminService) SaveSettings(ctx context.Context, values map[string]string) 
 			if err != nil {
 				return apierr.Wrap(apierr.CodeValidationFailed, key+" must be a boolean", err)
 			}
-			config.Set(key, b)
+			setSettingValue(settings, canonicalKey, b)
 		case SettingTypeNumber:
 			n, err := strconv.Atoi(strings.TrimSpace(raw))
 			if err != nil {
 				return apierr.Wrap(apierr.CodeValidationFailed, key+" must be a number", err)
 			}
-			config.Set(key, n)
+			setSettingValue(settings, canonicalKey, n)
 		default:
 			value := strings.TrimSpace(raw)
-			if key == "WebHostName" || key == "PterodactylHostname" {
+			if canonicalKey == "webhostname" || canonicalKey == "pterodactylhostname" {
 				value = strings.TrimRight(value, "/")
 			}
-			config.Set(key, value)
+			setSettingValue(settings, canonicalKey, value)
 		}
 	}
-	if err := config.Save(); err != nil {
-		return apierr.Wrap(apierr.CodeInternal, "cannot write the configuration", err)
+	candidate, err := config.PrepareSettings(settings)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeValidationFailed, "cannot apply the configuration", err)
 	}
-	// The datastores read their connection settings at connect time, so they are
-	// torn down and rebuilt for the new values to take effect.
-	store.Reset()
-	if err := store.Init(); err != nil {
-		glgf.Error("admin: cannot reconnect to mongodb: ", err)
+	if config.NeedsJWTSecretRotation(candidate.Values()) {
+		return apierr.Fail(apierr.CodeValidationFailed, "JWTSecret must be a private, non-empty key")
 	}
+	if err := store.SaveAppSettings(ctx, candidate.Values()); err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot save the configuration", err)
+	}
+	config.PublishSettings(candidate)
+	pterodactyl.InvalidatePanelCache()
+	Products.InvalidateEggs(0)
 	redis.Reset()
 	return nil
 }
@@ -977,12 +1092,13 @@ type ComponentStatus struct {
 
 // Health is the diagnostics panel of the settings page.
 type Health struct {
-	Mongo       ComponentStatus `json:"mongo"`
-	Redis       ComponentStatus `json:"redis"`
-	Pterodactyl ComponentStatus `json:"pterodactyl"`
-	Version     string          `json:"version"`
-	BuildTime   string          `json:"buildTime"`
-	GoVersion   string          `json:"goVersion"`
+	Mongo          ComponentStatus `json:"mongo"`
+	Redis          ComponentStatus `json:"redis"`
+	Pterodactyl    ComponentStatus `json:"pterodactyl"`
+	PanelExtension ComponentStatus `json:"panelExtension"`
+	Version        string          `json:"version"`
+	BuildTime      string          `json:"buildTime"`
+	GoVersion      string          `json:"goVersion"`
 }
 
 // Health probes every external dependency and reports the build metadata. A
@@ -1010,6 +1126,11 @@ func (AdminService) Health(ctx context.Context) *Health {
 		h.Pterodactyl = ComponentStatus{Message: err.Error()}
 	} else {
 		h.Pterodactyl = ComponentStatus{OK: true, Message: "success"}
+	}
+	if err := pterodactyl.BridgeClientFromConf().CheckCapabilities(ctx); err != nil {
+		h.PanelExtension = ComponentStatus{Message: err.Error()}
+	} else {
+		h.PanelExtension = ComponentStatus{OK: true, Message: "success"}
 	}
 	return h
 }

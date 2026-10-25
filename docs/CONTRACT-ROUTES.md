@@ -53,7 +53,8 @@ Every route belongs to exactly one of three groups. Each group is created with
 ### 3.1 `OptionalAuth()`
 
 Populates the request context with the caller when a valid token is present, and
-continues silently when it is absent or invalid. Used by public pages whose *content*
+continues anonymously when it is absent, invalid, revoked, or the Redis revocation
+check fails. Used by public pages whose *content*
 changes for a logged-in visitor — the shop header, for instance, shows the unread
 message count.
 
@@ -61,18 +62,23 @@ A route in this group must never assume a user exists.
 
 ### 3.2 `Auth()`
 
-Rejects the request with a `401` `unauthorized` envelope unless all of the following
+Rejects invalid sessions with a `401` `unauthorized` envelope unless all of the following
 hold:
 
 1. the header is `Authorization: Bearer <token>`;
-2. the JWT signature verifies against the hardcoded key inherited from
-   `legacy/internal/session/auth_jwt.go`;
+2. the JWT signature verifies against the installation's configured `JWTSecret`
+   (empty and formerly public fallback secrets are rejected);
 3. the `jti` is **not** present in Redis under `JWTBLACKLIST:<jti>`;
 4. the user document referenced by `sub` still exists.
 
 Condition 4 is the legacy `session.Logged()` rule: a valid token for a deleted user is
 still rejected. Condition 3 is new, and is what makes `POST /auth/logout` meaningful
 for a stateless token.
+
+A Redis revocation-query failure returns `500 internal_error` rather than
+accepting a token whose revocation status cannot be established. On first startup
+with an empty or formerly public secret, a random key is persisted atomically;
+tokens signed using the old key must be replaced by logging in again.
 
 ### 3.3 `Auth()` + `Admin()`
 
@@ -98,9 +104,10 @@ GET    /api/v1/auth/confirm-email/:key
 POST   /api/v1/auth/forget-password
 POST   /api/v1/auth/reset-password
 POST   /api/v1/alipay/notify
+GET    /api/v1/gallery
 ```
 
-Nine of the ten answer the standard JSON envelope. **`POST /api/v1/alipay/notify` does
+Ten of the eleven answer the standard JSON envelope. **`POST /api/v1/alipay/notify` does
 not** — see §7.
 
 `GET /api/v1/site/config` is the bootstrap call: it reports `loggedIn`, `isAdmin` and
@@ -111,6 +118,10 @@ group needs `OptionalAuth` rather than no middleware at all.
 ware id. A ware is a product line and a spec is one priced configuration of it; the
 shop lists specs. The client never sees ware ids.
 
+`GET /api/v1/gallery` is also public: anonymous visitors receive approved items.
+The route remains registered regardless of `AlbumEnabled`; Flutter hides the
+feature UI when that switch is off, but the public API read is unchanged.
+
 ---
 
 ## 5. Authenticated routes — `Auth()`
@@ -120,16 +131,11 @@ shop lists specs. The client never sees ware ids.
 ```
 POST   /api/v1/auth/logout
 GET    /api/v1/auth/me
-POST   /api/v1/user/pterodactyl-session
 PUT    /api/v1/user/password
 PUT    /api/v1/user/email
 POST   /api/v1/user/email/confirm
 POST   /api/v1/user/pterodactyl-user
 ```
-
-`POST /user/pterodactyl-session` is the panel SSO handshake: it returns a one-time
-cookie, a login URL and a subdomain. The client navigates the browser to that URL.
-The token is never sent to the panel.
 
 `PUT` is used for the two account mutations because both are idempotent replacements
 of a field. There is no `PATCH`.
@@ -145,6 +151,9 @@ POST   /api/v1/orders/:id/pay
 POST   /api/v1/orders/:id/pay-by-balance
 ```
 
+Expired orders remain accessible through the order routes for history. Their
+payment endpoints reject attempts after the 15-minute payment window.
+
 `GET /orders/:id/allocations` is served by the **product** handler, not the order
 handler, because it proxies the Pterodactyl allocation list for the order's egg. It
 lives under the order path because it is scoped to one order.
@@ -159,6 +168,26 @@ POST   /api/v1/servers/:id/renew
 POST   /api/v1/servers/:id/renew-by-balance
 POST   /api/v1/servers/:id/reinstall
 POST   /api/v1/servers/:id/delete
+GET    /api/v1/servers/:id/console
+GET    /api/v1/servers/:id/resources
+POST   /api/v1/servers/:id/power
+POST   /api/v1/servers/:id/command
+POST   /api/v1/servers/:id/terminal-ticket
+GET    /api/v1/servers/:id/terminal (Origin + one-time ticket; no Bearer middleware)
+GET    /api/v1/servers/:id/files
+POST   /api/v1/servers/:id/files/read
+PUT    /api/v1/servers/:id/files/write
+POST   /api/v1/servers/:id/files/:action
+GET    /api/v1/servers/:id/files/download
+PUT    /api/v1/servers/:id/files/upload
+GET    /api/v1/servers/:id/backups
+POST   /api/v1/servers/:id/backups
+GET    /api/v1/servers/:id/backups/:backupId/download
+POST   /api/v1/servers/:id/backups/:backupId/:action
+DELETE /api/v1/servers/:id/backups/:backupId
+GET    /api/v1/servers/:id/startup
+PUT    /api/v1/servers/:id/startup/variable
+PUT    /api/v1/servers/:id/startup/image
 ```
 
 `GET /servers/status` is a sibling of the `:id` wildcard. Gin allows this: a static
@@ -177,24 +206,26 @@ admin resolves the delete confirmation. This is deliberately not a `DELETE` verb
 because the request is not retractable by the user and is not idempotent in the sense
 `DELETE` implies.
 
+Console REST routes use the current entity ownership and administrator state. The
+browser WebSocket endpoint is the only unauthenticated-by-Bearer route: it checks a
+configured exact Origin and consumes a 30-second, single-use ticket bound to the
+current login token and entity before upgrading. Panel/Wings credentials remain
+server-side; file and backup signed URLs are validated and streamed through Go.
+
 ### Gallery
 
 ```
-GET    /api/v1/gallery
 GET    /api/v1/gallery/mine
 POST   /api/v1/gallery
 POST   /api/v1/gallery/:id/like
 DELETE /api/v1/gallery/:id
 ```
 
-These are registered **unconditionally**, even when `AlbumEnabled` is `false`. The
-legacy Beego router guarded the gallery controller behind the same flag, so a disabled
-gallery produced a `404`. Recording the divergence deliberately: guarding the route on
-a *runtime settings value* means a settings save changes the routing table, which is
-not something a router should do, and it makes the Flutter router's job impossible
-because the same path sometimes exists. Instead the route always exists, the service
-enforces the flag, and `SiteConfigResponse.albumEnabled` tells the client to hide the
-UI.
+These authenticated routes are registered unconditionally, even when `AlbumEnabled`
+is `false`. `/gallery/mine` includes pending items; submission, like, and delete
+remain behind `Auth()`. The public approved-items feed is listed in §4 and is also
+registered unconditionally. `SiteConfigResponse.albumEnabled` tells Flutter to hide
+the feature UI; it does not change the API route table or filter the public feed.
 
 ### Messages
 
@@ -209,6 +240,10 @@ DELETE /api/v1/messages/:id
 `/messages/read-all` is again a static sibling of `:id`. Marking one message read is a
 `POST` to a sub-resource rather than a `PATCH` on the message, because the message body
 is not what changes — a separate fact about it does.
+
+In the Flutter client, the navigation `Message` entry opens the inbox in a dialog and
+keeps the current page in place. The legacy `/messages` SPA path remains authenticated
+and opens the same dialog before returning to the user console.
 
 ### Work orders
 
@@ -279,13 +314,20 @@ Notes on the ones that are not obvious:
   rejects one. Approval deletes the Pterodactyl server and the local entity.
 - **`POST /admin/gallery/:id/:action`** collapses approve and reject into one route
   with an action segment (`pass` / `delete`) rather than two routes, because the body
-  and the response are identical and only the transition differs.
+  and the response are identical and only the transition differs. Any other
+  action returns a validation error without modifying the submission.
 - **`GET /admin/settings`** returns an ordered array of `{key,label,description,type,value}`.
-  **`PUT /admin/settings`** takes a flat `map[string]string` of `key → value`. A save
-  rewrites `conf/settings.toml`, swaps the viper instance, rebuilds the Alipay client,
-  and resets the Mongo and Redis connections. Unknown keys in the map are ignored, so a
-  client that sends back the whole form including read-only fields does not fail.
-- **`GET /admin/health`** is the same three-component probe as `/healthz`, wrapped in
+  **`PUT /admin/settings`** takes a flat `map[string]string` of setting values.
+  A save updates the singleton `app_settings` document in MongoDB, swaps the
+  in-memory configuration and rebuilds the Alipay client. Redis is reset when
+  settings change. MongoDB connection settings are deployment-only environment
+  variables (`PEO_MONGO_URI` and `PEO_MONGO_DATABASE_NAME`) and are excluded
+  from this API. Unknown submitted keys are ignored.
+  `PterodactylToken` is write-only (`secret:true`, `configured`, empty `value`);
+  an empty update preserves the existing token. `ConsoleOrigins` stores exact
+  additional browser origins for terminal WebSockets.
+
+- **`GET /admin/health`** probes MongoDB, Redis, Panel API, and Panel extension, wrapped in
   the envelope and gated on admin, so the dashboard can show it without treating a
   failing dependency as an authentication problem.
 
@@ -298,7 +340,7 @@ force-fitting the envelope.
 
 | Route | Body | Why |
 |---|---|---|
-| `POST /api/v1/alipay/notify` | the literal string `success` or `fail`, `text/plain` | Alipay's protocol expects exactly these two words. It is the only unauthenticated mutation endpoint in the service. It is authenticated the only way the protocol allows: the Alipay SDK verifies the request signature. Replying with JSON makes Alipay retry forever. |
+| `POST /api/v1/alipay/notify` | the literal string `success` or `fail`, `text/plain` | Alipay's protocol expects exactly these two words. The SDK verifies the provider signature; PEO Bearer authentication is not required. Other public writes include login, registration and password-reset flows with their own validation. Replying with JSON breaks the callback acknowledgement protocol. |
 | `GET /api/v1/admin/keys/export` | a zip archive, with `Content-Disposition: attachment; filename="peo-keys.zip"` | A download. Wrapping a binary in base64 inside an envelope would inflate it by a third for no benefit, and `Dio` on the Flutter side already handles a byte response. |
 
 Note that `/alipay/notify` is **outside the `Auth()` group** but *inside* `OptionalAuth()`.
@@ -342,6 +384,19 @@ which serves a file from the embedded Flutter bundle when the path names one, an
 `index.html` otherwise. The SPA handler itself answers `404` — with a JSON envelope —
 for `/api/` and `/healthz` prefixes, so a mistyped API path still returns JSON rather
 than an HTML page. See [`ARCHITECTURE.md`](./ARCHITECTURE.md) §8.
+
+Flutter uses path-based browser URLs, so client routes appear as `/console` and
+`/admin/settings` without a `#` fragment. The SPA fallback above must keep serving
+`index.html` for these deep links so they also work when opened directly or refreshed.
+
+The Flutter user console links to `/servers/:id` (the console view) and
+`/servers/:id/:tab`, where `tab` is `console`, `files`, `backups`, `startup`, or
+`manage`. Editable server files open `/servers/:id/editor?path=...` in a dedicated
+editor page; that route remains under the existing signed-in guard and uses the
+existing authenticated file read/write endpoints. A dirty draft asks before a
+client-side route change. An unknown tab is redirected to that server's console
+view. These are client-side pages and do not add API routes or change the REST
+contract.
 
 The consequence for this contract: a route that is *absent* from the tables is not a
 `404` from Gin, it is a `404` from the SPA handler. `router_test.go` calls

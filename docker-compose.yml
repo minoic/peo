@@ -1,8 +1,7 @@
 # peo - mongo + redis + peo
 #
-# The service hostnames below are load-bearing: the server's generated
-# conf/settings.toml defaults to MongoURI "mongodb://mongo:27017" and
-# RedisHost "redis:6379".
+# MongoDB connection settings are supplied through PEO_MONGO_URI and
+# PEO_MONGO_DATABASE_NAME. All other settings live in MongoDB.
 
 services:
   mongo:
@@ -10,6 +9,8 @@ services:
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
+    ports:
+      - "27017:27017"
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
@@ -23,6 +24,8 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
+    ports:
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -30,24 +33,24 @@ services:
       retries: 10
       start_period: 5s
 
-  peo:
-    image: minoic/peo:dev
-    build:
-      context: .
-      dockerfile: server/Dockerfile
-      args:
-        VERSION: dev
-    restart: unless-stopped
-    depends_on:
-      mongo:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    volumes:
-      # Admin-saved settings live here; the image ships only the defaults.
-      - ./conf:/conf
+#  peo:
+#    image: minoic/peo:dev
+#    build:
+#      context: .
+#      dockerfile: server/Dockerfile
+#      args:
+#        VERSION: dev
+#    restart: unless-stopped
+#    depends_on:
+#      mongo:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      PEO_MONGO_URI: mongodb://mongo:27017
+#      PEO_MONGO_DATABASE_NAME: peo
 
 volumes:
   mongo-data:

@@ -4,8 +4,12 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"math"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/minoic/glgf"
@@ -27,6 +31,9 @@ const dateOnly = "2006-01-02"
 
 // day is a convenience for the duration literals below.
 const day = 24 * time.Hour
+
+// PendingOrderLifetime is the payment window for an order.
+const PendingOrderLifetime = models.OrderPaymentWindow
 
 // OrderService owns the purchase flow: pricing, payment and provisioning.
 type OrderService struct{}
@@ -149,11 +156,21 @@ func (OrderService) ByID(ctx context.Context, orderID, userID bson.ObjectID, isA
 	if o.UserID != userID && !isAdmin {
 		return nil, apierr.Fail(apierr.CodeForbidden, "this order belongs to another account")
 	}
+	if err := store.Order.CloseIfExpired(ctx, orderID, time.Now()); err != nil {
+		return nil, apierr.Wrap(apierr.CodeInternal, "cannot expire order", err)
+	}
+	o, err = store.Order.ByID(ctx, orderID)
+	if err != nil {
+		return nil, apierr.Wrap(apierr.CodeNotFound, "order not found", err)
+	}
 	return o, nil
 }
 
 // ListByUser returns the orders of a user, newest first.
 func (OrderService) ListByUser(ctx context.Context, userID bson.ObjectID) ([]models.Order, error) {
+	if _, err := store.Order.CloseExpiredByUser(ctx, userID, time.Now()); err != nil {
+		return nil, apierr.Wrap(apierr.CodeInternal, "cannot expire orders", err)
+	}
 	return store.Order.ByUser(ctx, userID)
 }
 
@@ -172,29 +189,69 @@ func (OrderService) PayWithKey(ctx context.Context, orderID, userID bson.ObjectI
 	if o.Paid {
 		return apierr.Fail(apierr.CodeAlreadyPaid, "order is already paid")
 	}
+	if o.Closed {
+		return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+	}
+	if orderExpired(o, time.Now()) && (o.Provision == nil || o.Provision.State == "payment_failed") {
+		if err := store.Order.CloseIfExpired(ctx, o.ID, time.Now()); err != nil {
+			return apierr.Wrap(apierr.CodeInternal, "cannot close expired order", err)
+		}
+		return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+	}
 	key, err := store.Key.ByString(ctx, keyString)
 	if err != nil {
 		return apierr.Wrap(apierr.CodeInvalidKey, "activation code not found", err)
 	}
-	if key.Exp.Before(time.Now()) || key.SpecID != o.SpecID {
+	claimID := "order:" + o.ID.Hex()
+	if o.Provision != nil && o.Provision.State != "payment_failed" && o.Provision.PaymentMethod == "key" && o.Provision.KeyID == key.ID {
+		claimID = o.Provision.ID
+	}
+	if (key.Exp.Before(time.Now()) && (key.ClaimID != claimID || key.ClaimUser != userID)) || key.SpecID != o.SpecID {
 		return apierr.Fail(apierr.CodeInvalidKey, "activation code is not valid for this product")
 	}
-	if err := provision(ctx, o, allocationID, hostName); err != nil {
+	if o.Provision != nil && o.Provision.State != "payment_failed" {
+		if o.Provision.PaymentMethod != "key" || o.Provision.KeyID != key.ID || o.Provision.AllocationID != allocationID || o.Provision.CustomerHost != hostName {
+			return apierr.Fail(apierr.CodeConflict, "order payment is already in progress")
+		}
+		return runProvision(ctx, o, o.Provision)
+	}
+	op, err := prepareProvision(ctx, o, "key", key.ID, allocationID, hostName)
+	if err != nil {
 		return err
 	}
-	// The customer already has their server; a failure to clean up the code is
-	// logged rather than surfaced, because a second redemption would be caught
-	// by the paid check above.
-	if err := store.Key.Delete(ctx, key.ID); err != nil {
-		glgf.Error("order: cannot delete redeemed key " + key.KeyString + ": " + err.Error())
+	claimed, err := store.Order.BeginProvision(ctx, o.ID, op)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot reserve order payment", err)
+	}
+	if !claimed {
+		fresh, readErr := store.Order.ByID(ctx, o.ID)
+		if readErr == nil && fresh.Provision != nil && fresh.Provision.ID == op.ID && fresh.Provision.PaymentMethod == "key" && fresh.Provision.KeyID == key.ID && fresh.Provision.AllocationID == allocationID && fresh.Provision.CustomerHost == hostName {
+			op = fresh.Provision
+		} else {
+			if readErr == nil {
+				if fresh.Closed {
+					return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+				}
+				if orderExpired(fresh, time.Now()) && (fresh.Provision == nil || fresh.Provision.State == "payment_failed") {
+					if closeErr := store.Order.CloseIfExpired(ctx, o.ID, time.Now()); closeErr != nil {
+						return apierr.Wrap(apierr.CodeInternal, "cannot close expired order", closeErr)
+					}
+					return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+				}
+			}
+			return apierr.Fail(apierr.CodeConflict, "order payment is already in progress")
+		}
+	}
+	if err := runProvision(ctx, o, op); err != nil {
+		return err
 	}
 	glgf.Info("order: activation code redeemed " + key.KeyString)
+	message.SendAdmin(ctx, o.UserID, message.Compose("Your order #", o.ID.Hex(), " created its server; please confirm it in the control panel"))
 	return nil
 }
 
-// PayWithBalance pays an order from the account balance and provisions the
-// server. The balance is debited only after the server exists, so a panel
-// outage never costs the customer money.
+// PayWithBalance reserves the charge in the durable order operation before
+// provisioning; recovery completes the same intent after a panel outage.
 func (OrderService) PayWithBalance(ctx context.Context, orderID, userID bson.ObjectID, allocationID int, hostName string) error {
 	o, err := store.Order.ByID(ctx, orderID)
 	if err != nil {
@@ -206,42 +263,83 @@ func (OrderService) PayWithBalance(ctx context.Context, orderID, userID bson.Obj
 	if o.Paid {
 		return apierr.Fail(apierr.CodeAlreadyPaid, "order is already paid")
 	}
-	u, err := store.User.ByID(ctx, userID)
+	if o.Closed {
+		return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+	}
+	if orderExpired(o, time.Now()) && (o.Provision == nil || o.Provision.State == "payment_failed") {
+		if err := store.Order.CloseIfExpired(ctx, o.ID, time.Now()); err != nil {
+			return apierr.Wrap(apierr.CodeInternal, "cannot close expired order", err)
+		}
+		return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+	}
+	if o.Provision != nil && o.Provision.State != "payment_failed" {
+		if o.Provision.PaymentMethod != "balance" || o.Provision.AllocationID != allocationID || o.Provision.CustomerHost != hostName {
+			return apierr.Fail(apierr.CodeConflict, "order payment is already in progress")
+		}
+		return runProvision(ctx, o, o.Provision)
+	}
+	if o.FinalPrice > math.MaxInt64 {
+		return apierr.Fail(apierr.CodeValidationFailed, "order amount is invalid")
+	}
+	op, err := prepareProvision(ctx, o, "balance", bson.NilObjectID, allocationID, hostName)
 	if err != nil {
-		return apierr.Wrap(apierr.CodeNotFound, "user not found", err)
-	}
-	if u.Balance < o.FinalPrice {
-		return apierr.Fail(apierr.CodeInsufficientBalance, "your balance is not enough")
-	}
-	if err := provision(ctx, o, allocationID, hostName); err != nil {
 		return err
 	}
-	if err := store.User.AddBalance(ctx, u.ID, -int64(o.FinalPrice)); err != nil {
-		// The server exists but the customer was not charged. Rolling the
-		// server back is worse than absorbing the loss, so it is reported to an
-		// administrator instead.
-		glgf.Error("order: cannot debit balance for order " + o.ID.Hex() + ": " + err.Error())
-		message.SendToAdmins(ctx, message.Compose("Order ", o.ID.Hex(), " created its server but the balance could not be debited; please verify by hand"))
+	claimed, err := store.Order.BeginProvision(ctx, o.ID, op)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot reserve order payment", err)
 	}
+	if !claimed {
+		fresh, readErr := store.Order.ByID(ctx, o.ID)
+		if readErr == nil && fresh.Provision != nil && fresh.Provision.ID == op.ID && fresh.Provision.PaymentMethod == "balance" && fresh.Provision.AllocationID == allocationID && fresh.Provision.CustomerHost == hostName {
+			op = fresh.Provision
+		} else {
+			if readErr == nil {
+				if fresh.Closed {
+					return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+				}
+				if orderExpired(fresh, time.Now()) && (fresh.Provision == nil || fresh.Provision.State == "payment_failed") {
+					if closeErr := store.Order.CloseIfExpired(ctx, o.ID, time.Now()); closeErr != nil {
+						return apierr.Wrap(apierr.CodeInternal, "cannot close expired order", closeErr)
+					}
+					return apierr.Fail(apierr.CodeConflict, "order has expired and is closed")
+				}
+			}
+			return apierr.Fail(apierr.CodeConflict, "order payment is already in progress")
+		}
+	}
+	if err := runProvision(ctx, o, op); err != nil {
+		return err
+	}
+	message.SendAdmin(ctx, o.UserID, message.Compose(
+		"Your order #", o.ID.Hex(), " created its server; please confirm it in the control panel"))
 	return nil
 }
 
-// provision creates the panel server and then records the facts that depend on
-// it. Everything panel-side happens before any local write, so a failure leaves
-// no half-provisioned record behind; the reverse order would need a rollback.
-func provision(ctx context.Context, o *models.Order, allocationID int, hostName string) error {
+func orderExpired(o *models.Order, now time.Time) bool {
+	return !o.CreatedAt.IsZero() && !now.Before(o.CreatedAt.Add(PendingOrderLifetime))
+}
+
+// ExpirePending closes orders whose payment window has elapsed.
+func (OrderService) ExpirePending(ctx context.Context) {
+	if _, err := store.Order.CloseExpired(ctx, time.Now()); err != nil {
+		glgf.Error("order: cannot close expired orders: ", err)
+	}
+}
+
+func prepareProvision(ctx context.Context, o *models.Order, paymentMethod string, keyID bson.ObjectID, allocationID int, hostName string) (*models.ProvisionOperation, error) {
 	u, err := store.User.ByID(ctx, o.UserID)
 	if err != nil {
-		return apierr.Wrap(apierr.CodeNotFound, "user not found", err)
+		return nil, apierr.Wrap(apierr.CodeNotFound, "user not found", err)
 	}
 	spec, err := store.Spec.ByID(ctx, o.SpecID)
 	if err != nil {
-		return apierr.Wrap(apierr.CodeNotFound, "product not found", err)
+		return nil, apierr.Wrap(apierr.CodeNotFound, "product not found", err)
 	}
 	cli := pterodactyl.ClientFromConf()
 	pteUser, err := cli.GetUser(ctx, u.Name)
 	if err != nil {
-		return apierr.Wrap(apierr.CodePterodactylError, "cannot find the panel account", err)
+		return nil, apierr.Wrap(apierr.CodePterodactylError, "cannot find the panel account", err)
 	}
 	// A product pinned to node 0 is placed on a randomly chosen node, which
 	// spreads new servers across the fleet.
@@ -249,10 +347,10 @@ func provision(ctx context.Context, o *models.Order, allocationID int, hostName 
 	if nodeID == 0 {
 		nodes, err := cli.GetAllNodes(ctx)
 		if err != nil {
-			return apierr.Wrap(apierr.CodePterodactylError, "cannot list panel nodes", err)
+			return nil, apierr.Wrap(apierr.CodePterodactylError, "cannot list panel nodes", err)
 		}
 		if len(nodes) == 0 {
-			return apierr.Fail(apierr.CodePterodactylError, "the panel has no nodes")
+			return nil, apierr.Fail(apierr.CodePterodactylError, "the panel has no nodes")
 		}
 		nodeID = nodes[rand.Intn(len(nodes))].Id
 	}
@@ -262,8 +360,7 @@ func provision(ctx context.Context, o *models.Order, allocationID int, hostName 
 	// panel operator sees and what legacy used to group servers per customer.
 	externalID := u.Name + o.ID.Hex()
 	validDate := time.Now().Add(spec.ValidDuration)
-
-	if err := cli.CreateServer(ctx, pterodactyl.Server{
+	request, err := cli.PrepareCreateServerRequest(ctx, pterodactyl.Server{
 		ExternalId:  externalID,
 		Name:        externalID,
 		Description: ExpiryLabel + validDate.Format(dateOnly),
@@ -281,45 +378,189 @@ func provision(ctx context.Context, o *models.Order, allocationID int, hostName 
 		UserId:        pteUser.Uid,
 		NodeId:        nodeID,
 		Allocation:    allocationID,
-		NestId:        spec.Nest,
+		NestId:        spec.PanelLegacyNestID(),
 		EggId:         spec.Egg,
-	}); err != nil {
-		glgf.Error("order: cannot create server for order " + o.ID.Hex() + ": " + err.Error())
-		return apierr.Wrap(apierr.CodePterodactylError, "cannot create the server", err)
+		TagSlug:       spec.TagSlug,
+		AllowedEggIDs: allowedEggs(spec),
+		DockerImage:   spec.DockerImage,
+	})
+	if err != nil {
+		return nil, apierr.Wrap(apierr.CodePterodactylError, "cannot prepare the server", err)
 	}
+	return &models.ProvisionOperation{ID: "order:" + o.ID.Hex() + ":" + bson.NewObjectID().Hex(), PaymentMethod: paymentMethod, KeyID: keyID, Amount: uint64(o.FinalPrice), AllocationID: allocationID, ExternalID: externalID, CustomerHost: hostName, PanelHost: cli.HostName(), TokenFingerprint: cli.IdentityFingerprint(), ExpiresAt: validDate, ValidDuration: spec.ValidDuration, CreatePayload: request, State: "claimed"}, nil
+}
 
-	entity := &models.WareEntity{
-		UserID:           u.ID,
-		SpecID:           spec.ID,
-		ServerExternalID: externalID,
-		UserExternalID:   u.Name,
-		HostName:         hostName,
-		ValidDate:        validDate,
+func runProvision(ctx context.Context, o *models.Order, op *models.ProvisionOperation) error {
+	workCtx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+	leaseID := bson.NewObjectID().Hex()
+	now := time.Now()
+	acquired, err := store.Order.AcquireProvisionLease(workCtx, o.ID, op.ID, leaseID, now, now.Add(2*time.Minute))
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot claim order recovery", err)
 	}
-	if err := store.Entity.Create(ctx, entity); err != nil {
-		_ = cli.DeleteServer(ctx, externalID)
+	if !acquired {
+		return apierr.Fail(apierr.CodeConflict, "order payment is already in progress")
+	}
+	defer func() { _ = store.Order.ReleaseProvisionLease(context.Background(), o.ID, op.ID, leaseID) }()
+	fresh, err := store.Order.ByID(workCtx, o.ID)
+	if err != nil || fresh.Provision == nil || fresh.Provision.ID != op.ID {
+		return apierr.Wrap(apierr.CodeInternal, "order operation disappeared", err)
+	}
+	if fresh.Paid || fresh.Provision.State == "completed" {
+		return nil
+	}
+	op = fresh.Provision
+	return runProvisionOwned(workCtx, o, op, leaseID)
+}
+
+func runProvisionOwned(ctx context.Context, o *models.Order, op *models.ProvisionOperation, leaseID string) error {
+	current := pterodactyl.ClientFromConf()
+	if current.HostName() != op.PanelHost || current.IdentityFingerprint() != op.TokenFingerprint {
+		return apierr.Fail(apierr.CodePterodactylError, "the panel credentials for this pending order have changed")
+	}
+	if op.State == "claimed" || op.State == "ready" {
+		if op.PaymentMethod == "key" {
+			key, err := store.Key.Claim(ctx, op.KeyID, op.ID, o.UserID, o.SpecID, time.Now())
+			if err != nil {
+				if errors.Is(err, store.ErrNotFound) {
+					if stateErr := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "payment_failed"); stateErr != nil {
+						return apierr.Wrap(apierr.CodeInternal, "cannot release failed order payment", stateErr)
+					}
+					return apierr.Wrap(apierr.CodeInvalidKey, "activation code is not available", err)
+				}
+				return apierr.Wrap(apierr.CodeInternal, "cannot determine activation code claim state", err)
+			}
+			_ = key
+		} else if op.PaymentMethod == "balance" {
+			if op.Amount > math.MaxInt64 {
+				return apierr.Fail(apierr.CodeValidationFailed, "order amount is invalid")
+			}
+			var err error
+			if op.Amount > 0 {
+				_, err = store.User.ApplyBalanceOnce(ctx, o.UserID, op.ID, -int64(op.Amount))
+			}
+			if errors.Is(err, store.ErrBalanceOperationCanceled) {
+				if stateErr := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "payment_failed"); stateErr != nil {
+					return apierr.Wrap(apierr.CodeInternal, "cannot finalize canceled order payment", stateErr)
+				}
+				return apierr.Fail(apierr.CodeInsufficientBalance, "your balance is not enough")
+			}
+			if errors.Is(err, store.ErrInsufficientBalance) {
+				canceled, applied, cancelErr := store.User.CancelBalanceOperation(ctx, o.UserID, op.ID, op.Amount)
+				if cancelErr != nil {
+					return apierr.Wrap(apierr.CodeInternal, "cannot resolve order payment", cancelErr)
+				}
+				if applied {
+					err = nil
+				} else if canceled {
+					if stateErr := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "payment_failed"); stateErr != nil {
+						return apierr.Wrap(apierr.CodeInternal, "cannot record failed order payment", stateErr)
+					}
+					return apierr.Wrap(apierr.CodeInsufficientBalance, "your balance is not enough", err)
+				} else {
+					return apierr.Fail(apierr.CodeInternal, "cannot determine order payment state")
+				}
+			}
+			if err != nil {
+				return apierr.Wrap(apierr.CodeInternal, "cannot charge the balance", err)
+			}
+		} else {
+			return apierr.Fail(apierr.CodeInternal, "unknown payment method in pending order")
+		}
+		if op.State == "claimed" {
+			if err := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "ready"); err != nil {
+				return apierr.Wrap(apierr.CodeInternal, "cannot update order operation", err)
+			}
+			op.State = "ready"
+		}
+	}
+	if op.State == "claimed" || op.State == "ready" || op.State == "creating" {
+		created, err := current.GetServerUncached(ctx, op.ExternalID)
+		if err != nil && !pterodactyl.IsNotFound(err) {
+			return apierr.Wrap(apierr.CodePterodactylError, "cannot verify the server on the panel", err)
+		}
+		if err == nil && created != nil {
+			if err := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "server_created"); err != nil {
+				return apierr.Wrap(apierr.CodeInternal, "cannot record server creation", err)
+			}
+			op.State = "server_created"
+		} else {
+			if op.State == "creating" || op.State == "ready" {
+				if err := rebaseProvisionExpiry(ctx, o, op, leaseID); err != nil {
+					return err
+				}
+			}
+			if op.State != "creating" {
+				if err := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "creating"); err != nil {
+					return apierr.Wrap(apierr.CodeInternal, "cannot record create attempt", err)
+				}
+				op.State = "creating"
+			}
+			createErr := current.CreateServerRequest(ctx, json.RawMessage(op.CreatePayload))
+			if createErr != nil {
+				created, lookupErr := current.GetServerUncached(ctx, op.ExternalID)
+				if lookupErr != nil {
+					if pterodactyl.IsNotFound(lookupErr) {
+						return apierr.Wrap(apierr.CodePterodactylError, "server creation is pending retry", createErr)
+					}
+					return apierr.Wrap(apierr.CodePterodactylError, "server creation outcome is unknown", lookupErr)
+				}
+				if created == nil {
+					return apierr.Fail(apierr.CodePterodactylError, "server creation outcome is unknown")
+				}
+			}
+			if err := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "server_created"); err != nil {
+				return apierr.Wrap(apierr.CodeInternal, "cannot record server creation", err)
+			}
+			op.State = "server_created"
+		}
+	}
+	entity := &models.WareEntity{UserID: o.UserID, SpecID: o.SpecID, OrderID: o.ID, ServerExternalID: op.ExternalID, UserExternalID: strings.TrimSuffix(op.ExternalID, o.ID.Hex()), HostName: op.CustomerHost, ValidDate: op.ExpiresAt}
+	if err := store.Entity.EnsureForOrder(ctx, o.ID, entity); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot record the server", err)
 	}
-	if err := store.Order.SetAllocation(ctx, o.ID, allocationID); err != nil {
-		rollback(ctx, cli, externalID, entity.ID)
-		return apierr.Wrap(apierr.CodeInternal, "cannot record the allocation", err)
+	if op.State != "entity_recorded" && op.State != "completed" {
+		if err := store.Order.AdvanceProvision(ctx, o.ID, op.ID, leaseID, "entity_recorded"); err != nil {
+			return apierr.Wrap(apierr.CodeInternal, "cannot record the server", err)
+		}
 	}
-	if err := store.Order.SetConfirmed(ctx, o.ID, true); err != nil {
-		rollback(ctx, cli, externalID, entity.ID)
+	if err := store.Order.CompleteProvision(ctx, o.ID, op.ID, leaseID, op.AllocationID); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot confirm the order", err)
 	}
-	message.SendAdmin(ctx, u.ID, message.Compose(
-		"Your order #", o.ID.Hex(), " created its server; please confirm it in the control panel"))
-	glgf.Info("order: order confirmed " + o.ID.Hex())
+	if op.PaymentMethod == "key" {
+		if err := consumeProvisionKey(ctx, o, op); err != nil {
+			glgf.Error("order: cannot finish redeeming key: ", err)
+		}
+	}
 	return nil
 }
 
-// rollback undoes a partially written provisioning attempt.
-func rollback(ctx context.Context, cli *pterodactyl.Client, externalID string, entityID bson.ObjectID) {
-	if err := cli.DeleteServer(ctx, externalID); err != nil {
-		glgf.Error("order: cannot roll back server " + externalID + ": " + err.Error())
+func consumeProvisionKey(ctx context.Context, o *models.Order, op *models.ProvisionOperation) error {
+	if err := store.Key.DeleteClaimed(ctx, op.KeyID, op.ID, o.UserID); err != nil {
+		return err
 	}
-	if err := store.Entity.Delete(ctx, entityID); err != nil {
-		glgf.Error("order: cannot roll back server record " + entityID.Hex() + ": " + err.Error())
+	return store.Order.MarkProvisionKeyConsumed(ctx, o.ID, op.ID)
+}
+
+func rebaseProvisionExpiry(ctx context.Context, o *models.Order, op *models.ProvisionOperation, leaseID string) error {
+	if op.ValidDuration <= 0 {
+		return apierr.Fail(apierr.CodeInternal, "pending order has no stored service duration")
 	}
+	var payload map[string]any
+	if err := json.Unmarshal(op.CreatePayload, &payload); err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot read persisted create request", err)
+	}
+	expires := time.Now().Add(op.ValidDuration)
+	payload["description"] = ExpiryLabel + expires.Format(dateOnly)
+	request, err := json.Marshal(payload)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot update persisted create request", err)
+	}
+	if err := store.Order.RebaseProvisionExpiry(ctx, o.ID, op.ID, leaseID, expires, request); err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot persist renewed service expiry", err)
+	}
+	op.ExpiresAt = expires
+	op.CreatePayload = request
+	return nil
 }

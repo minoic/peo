@@ -2,6 +2,7 @@ package pterodactyl
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/minoic/glgf"
@@ -13,18 +14,14 @@ import (
 )
 
 // GraceDays is how long an expired server keeps running before it is eligible
-// for destruction. It is stored per product as DeleteDuration; this constant is
-// only the fallback for records written before that field existed.
+// for destruction. The legacy expiry sweep used this fixed ten-day window for
+// every product.
 const GraceDays = 10
 
-// GracePeriod returns the grace window of a server record, falling back to
-// GraceDays when the product can no longer be resolved.
-func GracePeriod(ctx context.Context, e *models.WareEntity) time.Duration {
-	spec, err := store.Spec.ByID(ctx, e.SpecID)
-	if err != nil || spec.DeleteDuration <= 0 {
-		return GraceDays * 24 * time.Hour
-	}
-	return spec.DeleteDuration
+// GracePeriod returns the legacy fixed grace window. DeleteDuration is a
+// storefront/product field, but the legacy sweep did not consult it.
+func GracePeriod(_ context.Context, _ *models.WareEntity) time.Duration {
+	return GraceDays * 24 * time.Hour
 }
 
 // CheckServers is the five-minute sweep over every provisioned server.
@@ -58,18 +55,21 @@ func CheckServers(ctx context.Context) {
 		tooLate := e.ValidDate.Add(grace).Before(now)
 
 		switch {
+		case e.DeleteStatus == 3:
+			// A claimed deletion is owned by its durable operation and must not be
+			// cleared by a stale expiry snapshot.
+			continue
+
 		case expired && tooLate && e.DeleteStatus == 2:
 			// An administrator confirmed the deletion: destroy the server.
-			if err := cli.DeleteServer(ctx, e.ServerExternalID); err != nil {
+			if err := ConfirmDelete(ctx, e.ID); err != nil {
 				glgf.Error("pterodactyl: cannot delete server ", e.ServerExternalID, ": ", err)
-				continue
 			}
-			if err := store.Entity.Delete(ctx, e.ID); err != nil {
-				glgf.Error("pterodactyl: cannot remove deleted server record ", e.ID.Hex(), ": ", err)
-				continue
+
+		case expired && tooLate && e.DeleteStatus == 3:
+			if err := ConfirmDelete(ctx, e.ID); err != nil {
+				glgf.Error("pterodactyl: cannot resume server deletion ", e.ServerExternalID, ": ", err)
 			}
-			_ = store.DeleteConfirm.DeleteByWare(ctx, e.ID)
-			glgf.Info("pterodactyl: destroyed server ", e.ServerExternalID)
 
 		case expired && tooLate && e.DeleteStatus == 0:
 			// Past the grace window: ask an administrator to confirm.
@@ -77,8 +77,9 @@ func CheckServers(ctx context.Context) {
 				glgf.Error("pterodactyl: cannot open delete confirmation: ", err)
 				continue
 			}
-			if err := store.Entity.SetDeleteStatus(ctx, e.ID, 1); err != nil {
+			if changed, err := store.Entity.SetDeleteStatusCAS(ctx, e.ID, e.DeleteStatus, e.ValidDate, 1); err != nil || !changed {
 				glgf.Error("pterodactyl: cannot record delete status: ", err)
+				_ = store.DeleteConfirm.DeleteByWare(ctx, e.ID)
 				continue
 			}
 			glgf.Info("pterodactyl: server ", e.ServerExternalID, " is awaiting delete confirmation")
@@ -89,8 +90,9 @@ func CheckServers(ctx context.Context) {
 
 		case e.DeleteStatus != 0:
 			// Renewed: undo the deletion state and lift the suspension.
-			if err := store.Entity.SetDeleteStatus(ctx, e.ID, 0); err != nil {
+			if changed, err := store.Entity.SetDeleteStatusCAS(ctx, e.ID, e.DeleteStatus, e.ValidDate, 0); err != nil || !changed {
 				glgf.Error("pterodactyl: cannot clear delete status: ", err)
+				continue
 			}
 			if err := store.DeleteConfirm.DeleteByWare(ctx, e.ID); err != nil {
 				glgf.Error("pterodactyl: cannot remove delete confirmation: ", err)
@@ -144,8 +146,34 @@ func ConfirmDelete(ctx context.Context, entityID bson.ObjectID) error {
 	if err != nil {
 		return err
 	}
-	if err := ClientFromConf().DeleteServer(ctx, e.ServerExternalID); err != nil {
-		return err
+	op := e.PanelDelete
+	if op == nil {
+		if e.DeleteStatus == 3 {
+			return errors.New("server deletion has no pinned panel target; manual reconciliation required")
+		}
+		cli := ClientFromConf()
+		op = &models.PanelDeleteOperation{ID: "delete:" + e.ID.Hex(), ExternalID: e.ServerExternalID, PanelHost: cli.HostName(), TokenFingerprint: cli.IdentityFingerprint(), State: "pending"}
+		claimed, claimErr := store.Entity.BeginPanelDelete(ctx, e.ID, e.DeleteStatus, op)
+		if claimErr != nil {
+			return claimErr
+		}
+		if !claimed {
+			return errors.New("server deletion is no longer pending")
+		}
+	} else if e.DeleteStatus != 3 {
+		return errors.New("server deletion operation is not in claimed state")
+	}
+	if op.State != "upstream_deleted" {
+		cli := ClientFromConf()
+		if cli.HostName() != op.PanelHost || cli.IdentityFingerprint() != op.TokenFingerprint {
+			return errors.New("panel credentials for this deletion have changed; restore the original panel configuration")
+		}
+		if err := cli.DeleteServerIdempotent(ctx, op.ExternalID); err != nil {
+			return err
+		}
+		if err := store.Entity.SetPanelDeleteState(ctx, entityID, op.ID, "upstream_deleted"); err != nil {
+			return err
+		}
 	}
 	if err := store.Entity.Delete(ctx, entityID); err != nil {
 		return err
@@ -153,11 +181,30 @@ func ConfirmDelete(ctx context.Context, entityID bson.ObjectID) error {
 	return store.DeleteConfirm.DeleteByWare(ctx, entityID)
 }
 
+// RecoverPendingDeletes retries durable deletions without changing their
+// recorded Panel target.
+func RecoverPendingDeletes(ctx context.Context) {
+	entities, err := store.Entity.PendingPanelDeletes(ctx)
+	if err != nil {
+		glgf.Error("pterodactyl: cannot list pending panel deletions: ", err)
+		return
+	}
+	for i := range entities {
+		if err := ConfirmDelete(ctx, entities[i].ID); err != nil {
+			glgf.Error("pterodactyl: cannot recover deletion ", entities[i].ID.Hex(), ": ", err)
+		}
+	}
+}
+
 // RejectDelete cancels a pending deletion, leaving the server suspended but
 // intact so the owner can still renew it.
 func RejectDelete(ctx context.Context, entityID bson.ObjectID) error {
-	if err := store.DeleteConfirm.DeleteByWare(ctx, entityID); err != nil {
+	changed, err := store.Entity.ResetDeleteRequest(ctx, entityID)
+	if err != nil {
 		return err
 	}
-	return store.Entity.SetDeleteStatus(ctx, entityID, 0)
+	if !changed {
+		return errors.New("server deletion is no longer pending")
+	}
+	return store.DeleteConfirm.DeleteByWare(ctx, entityID)
 }

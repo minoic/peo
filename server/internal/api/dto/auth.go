@@ -67,11 +67,3 @@ type SessionResponse struct {
 type UserResponse struct {
 	User *models.User `json:"user"`
 }
-
-// PterodactylSessionResponse carries the panel session cookie and the target
-// URL the browser must be sent to for the passwordless hand-off.
-type PterodactylSessionResponse struct {
-	Cookie    string `json:"cookie"`
-	LoginURL  string `json:"loginUrl"`
-	Subdomain string `json:"subdomain"`
-}

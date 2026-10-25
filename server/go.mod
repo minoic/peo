@@ -15,6 +15,7 @@ require (
 	github.com/spf13/viper v1.17.0
 	github.com/xhit/go-simple-mail v2.2.2+incompatible
 	go.mongodb.org/mongo-driver/v2 v2.9.1
+	golang.org/x/net v0.55.0
 )
 
 require (
@@ -86,7 +87,6 @@ require (
 	golang.org/x/arch v0.22.0 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.39.0 // indirect

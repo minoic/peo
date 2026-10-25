@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/minoic/peo/server/internal/api/dto"
-	"github.com/minoic/peo/server/internal/config"
 	"github.com/minoic/peo/server/internal/middleware"
 	"github.com/minoic/peo/server/internal/service"
 )
@@ -36,6 +33,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 //
 // POST /api/v1/auth/logout
 func (h *AuthHandler) Logout(c *gin.Context) {
+	service.RevokeTerminalSessions(middleware.Token(c))
 	if err := service.Auth.Logout(c.Request.Context(), middleware.Token(c)); err != nil {
 		fail(c, err)
 		return
@@ -115,31 +113,6 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 	ok(c, msg("password updated"))
-}
-
-// PterodactylSession replaces the legacy `/delay/login` redirect: it signs in to
-// the panel on the user's behalf, plants the panel session cookie for the shared
-// parent domain, and hands the browser the URL to follow. The same origin rule
-// of the deployment means the cookie is set by this server, so no redirect from
-// this endpoint is needed and a JSON client can drive the hand-off itself.
-//
-// POST /api/v1/user/pterodactyl-session
-func (h *AuthHandler) PterodactylSession(c *gin.Context) {
-	session, subdomain, err := service.Auth.PterodactylSession(c.Request.Context(), middleware.UserID(c))
-	if err != nil {
-		fail(c, err)
-		return
-	}
-	// maxAge 43200 seconds, path "/", scoped to the shared parent domain and
-	// only over HTTPS, exactly as the legacy controller did.
-	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie("pterodactyl_session", session, 43200, "/", subdomain, true, false)
-	host := config.String("PterodactylHostname")
-	ok(c, dto.PterodactylSessionResponse{
-		Cookie:    session,
-		LoginURL:  host + "/auth/login",
-		Subdomain: subdomain,
-	})
 }
 
 func sessionResponse(s *service.Session) dto.SessionResponse {

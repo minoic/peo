@@ -33,17 +33,20 @@ type Code string
 // Error codes. Keeping them as constants means a typo is a compile error on the
 // server and a documented value on the client.
 const (
-	CodeUnauthorized        Code = "unauthorized"
-	CodeForbidden           Code = "forbidden"
-	CodeNotFound            Code = "not_found"
-	CodeValidationFailed    Code = "validation_failed"
-	CodeConflict            Code = "conflict"
-	CodeRateLimited         Code = "rate_limited"
-	CodeInsufficientBalance Code = "insufficient_balance"
-	CodeInvalidKey          Code = "invalid_key"
-	CodeAlreadyPaid         Code = "already_paid"
-	CodePterodactylError    Code = "pte_error"
-	CodeInternal            Code = "internal_error"
+	CodeUnauthorized          Code = "unauthorized"
+	CodeForbidden             Code = "forbidden"
+	CodeNotFound              Code = "not_found"
+	CodeValidationFailed      Code = "validation_failed"
+	CodeConflict              Code = "conflict"
+	CodeRateLimited           Code = "rate_limited"
+	CodeInsufficientBalance   Code = "insufficient_balance"
+	CodeInvalidKey            Code = "invalid_key"
+	CodeAlreadyPaid           Code = "already_paid"
+	CodePterodactylError      Code = "pte_error"
+	CodeExtensionUnavailable  Code = "panel_extension_unavailable"
+	CodePanelPermissionDenied Code = "panel_permission_denied"
+	CodePanelUnavailable      Code = "panel_unavailable"
+	CodeInternal              Code = "internal_error"
 )
 
 // Error carries a code and message through the call stack so a service can
@@ -93,6 +96,12 @@ func statusForCode(c Code) int {
 	case CodeInsufficientBalance, CodeInvalidKey:
 		return http.StatusBadRequest
 	case CodePterodactylError:
+		return http.StatusBadGateway
+	case CodeExtensionUnavailable:
+		return http.StatusBadGateway
+	case CodePanelPermissionDenied:
+		return http.StatusBadGateway
+	case CodePanelUnavailable:
 		return http.StatusBadGateway
 	default:
 		return http.StatusInternalServerError

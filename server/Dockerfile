@@ -64,7 +64,7 @@ RUN dart run build_runner build --delete-conflicting-outputs \
 FROM golang:1.27.1-alpine AS build
 
 ARG VERSION=dev
-ARG BUILD_TIME=
+ARG BUILD_TIME
 
 WORKDIR /src/server
 
@@ -107,11 +107,9 @@ RUN apt-get update \
 
 COPY --from=build /out/peo /peo
 
-# The binary resolves conf/settings.toml relative to the working directory, and
-# config.Init creates it from the embedded default on first boot. Mount a volume
-# here so the admin settings survive an image upgrade.
+# MongoDB connection settings are passed through PEO_MONGO_URI and
+# PEO_MONGO_DATABASE_NAME. Business settings are stored in MongoDB.
 WORKDIR /
-VOLUME ["/conf"]
 
 # The legacy Beego admin server on 8088 is gone; /healthz replaces it.
 EXPOSE 8080

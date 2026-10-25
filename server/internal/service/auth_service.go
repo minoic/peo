@@ -15,7 +15,6 @@ import (
 	"github.com/minoic/glgf"
 	"github.com/minoic/peo/server/internal/apierr"
 	"github.com/minoic/peo/server/internal/auth"
-	"github.com/minoic/peo/server/internal/config"
 	"github.com/minoic/peo/server/internal/models"
 	"github.com/minoic/peo/server/internal/redis"
 	"github.com/minoic/peo/server/internal/service/email"
@@ -56,8 +55,8 @@ func mailPendingKey(mail string) string { return "CHANGE_EMAIL_PENDING:" + mail 
 // resetCodeKey is the legacy key holding the password reset code. Legacy used
 // "FORGET" + address (forget_password_controller.go:79) for both the reset code
 // and its resend throttle, so a resend could not happen inside the code's life;
-// the port keeps that behaviour with one key holding the code.
-func resetCodeKey(mail string) string { return "FORGET:" + mail }
+// the port keeps that key family with one key holding the code.
+func resetCodeKey(mail string) string { return "FORGET" + mail }
 
 // The texts of the automated site mail. Legacy rendered these through
 // beego/i18n; the spec removed i18n, so the English strings from
@@ -70,7 +69,7 @@ const (
 	textFirstMessage = "This is your first message"
 	textAdminTips    = "You are the first registered account and have been set as an administrator."
 	textPanelFailed  = "Failed to create Pterodactyl Panel account. Please create one in User Settings before purchasing servers!"
-	textPanelOK      = "Your Pterodactyl Panel account has been created! You can now purchase servers. Your account name is your email, and your password is your username. Please remember to change your password upon logging in."
+	textPanelOK      = "Your Pterodactyl Panel account has been created. Set a private Panel password before using it."
 	textPasswordSet  = "You have just changed your password!"
 	textPanelPassSet = "You have just changed your Pterodactyl Panel password!"
 	textEmailSet     = "You have just changed your bound e-mail address to "
@@ -105,9 +104,6 @@ func (AuthService) Register(ctx context.Context, name, mail, password, clientKey
 	if err := auth.ValidateEmail(mail); err != nil {
 		return nil, apierr.Wrap(apierr.CodeValidationFailed, err.Error(), err)
 	}
-	if len(password) < 6 {
-		return nil, apierr.Fail(apierr.CodeValidationFailed, "password must be at least 6 characters")
-	}
 	if clientKey != "" && redis.Limited(ctx, "REGISTER_IP:"+clientKey) {
 		return nil, apierr.Fail(apierr.CodeRateLimited, "too many registrations, try again later")
 	}
@@ -135,16 +131,25 @@ func (AuthService) Register(ctx context.Context, name, mail, password, clientKey
 	if err != nil {
 		return nil, apierr.Wrap(apierr.CodeInternal, "cannot count users", err)
 	}
+	uuid, err := random.UUID()
+	if err != nil {
+		return nil, apierr.Wrap(apierr.CodeInternal, "cannot create account identifier", err)
+	}
+	panelPassword, err := random.String(48)
+	if err != nil {
+		return nil, apierr.Wrap(apierr.CodeInternal, "cannot create panel password", err)
+	}
 	u := &models.User{
 		Name:     name,
 		Email:    mail,
 		Password: auth.HashPassword(password),
-		IsAdmin:  total == 0,
-		UUID:     random.UUID(),
+		UUID:     uuid,
 	}
-	if err := store.User.Create(ctx, u); err != nil {
+	claimed, err := store.User.CreateWithBootstrapAdmin(ctx, u, total == 0)
+	if err != nil {
 		return nil, apierr.Wrap(apierr.CodeInternal, "cannot create user", err)
 	}
+	u.IsAdmin = claimed
 	// The welcome mail is sent before the panel is called, exactly where legacy
 	// sent it (reg_controller.go:101), so a user whose registration succeeds
 	// always has something in their inbox even if the panel is unreachable.
@@ -157,20 +162,17 @@ func (AuthService) Register(ctx context.Context, name, mail, password, clientKey
 	// user from signing up, they can retry from the settings page.
 	cli := pterodactyl.ClientFromConf()
 	created := false
-	// The panel identifies a customer by their username, exactly as legacy did
-	// (reg_controller.go:106): ExternalId, Username and Password are all the
-	// name, and the first registrant of an empty database is a panel root
-	// admin. Both facts are part of the panel contract the spec keeps frozen.
-	if err := cli.CreateUser(ctx, pterodactyl.PostPteUser{
+	err = cli.CreateUser(ctx, pterodactyl.PostPteUser{
 		ExternalId: u.Name,
 		Username:   u.Name,
 		Email:      u.Email,
-		Password:   u.Name,
+		Password:   panelPassword,
 		Language:   "zh",
-		RootAdmin:  u.IsAdmin,
+		RootAdmin:  false,
 		FirstName:  u.Name,
 		LastName:   "_",
-	}); err != nil {
+	})
+	if err != nil {
 		glgf.Error("cannot create pterodactyl user for " + u.Name + ": " + err.Error())
 		message.SendAdmin(ctx, u.ID, textPanelFailed)
 	} else {
@@ -180,9 +182,6 @@ func (AuthService) Register(ctx context.Context, name, mail, password, clientKey
 		glgf.Error("cannot persist PteUserCreated for " + u.Name + ": " + err.Error())
 	}
 	if created {
-		if err := store.PtePassword.Upsert(ctx, u.ID, u.Name); err != nil {
-			glgf.Error("cannot cache panel password for " + u.Name + ": " + err.Error())
-		}
 		message.SendAdmin(ctx, u.ID, textPanelOK)
 	}
 	return issue(u, false)
@@ -242,13 +241,7 @@ func (AuthService) Me(ctx context.Context, userID bson.ObjectID) (*models.User, 
 
 // ChangePassword rotates the credential after verifying the old one.
 //
-// Legacy did more than write the hash: it also pushed the new password to the
-// Pterodactyl account and mailed the user twice, once for the site password and
-// once for the panel one (user_settings_controller.go:88 and :96). The panel
-// step is not cosmetic - `PterodactylSession` signs into the panel with the
-// password cached in `pterodactylPasswords`, so without it the customer's
-// passwordless console hand-off would keep using a credential that no longer
-// matches the account.
+// The panel password is also rotated when the user already has a panel account.
 func (AuthService) ChangePassword(ctx context.Context, userID bson.ObjectID, oldPassword, newPassword string) error {
 	u, err := store.User.ByID(ctx, userID)
 	if err != nil {
@@ -256,9 +249,6 @@ func (AuthService) ChangePassword(ctx context.Context, userID bson.ObjectID, old
 	}
 	if !auth.CheckPassword(u.Password, oldPassword) {
 		return apierr.Fail(apierr.CodeValidationFailed, "current password is wrong")
-	}
-	if len(newPassword) < 6 {
-		return apierr.Fail(apierr.CodeValidationFailed, "new password must be at least 6 characters")
 	}
 	if err := store.User.SetPassword(ctx, userID, auth.HashPassword(newPassword)); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot save password", err)
@@ -278,9 +268,6 @@ func (AuthService) ChangePassword(ctx context.Context, userID bson.ObjectID, old
 	}
 	// The cached password is what the console hand-off authenticates with, so
 	// it has to follow the panel or the next sign-in uses a stale credential.
-	if err := store.PtePassword.Upsert(ctx, u.ID, newPassword); err != nil {
-		glgf.Error("cannot cache the new panel password for " + u.Name + ": " + err.Error())
-	}
 	message.SendAdmin(ctx, u.ID, textPanelPassSet)
 	return nil
 }
@@ -309,7 +296,10 @@ func (AuthService) ChangeEmail(ctx context.Context, userID bson.ObjectID, newEma
 	if redis.Limited(ctx, mailCodeKey(newEmail)) {
 		return apierr.Fail(apierr.CodeRateLimited, "confirmation e-mail already sent, try again later")
 	}
-	code := random.Digits(captchaDigits)
+	code, err := random.Digits(captchaDigits)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot generate confirmation code", err)
+	}
 	if err := redis.Set(ctx, mailCodeKey(newEmail), code, captchaTTL); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot store confirmation code", err)
 	}
@@ -366,24 +356,29 @@ func (AuthService) EnsurePterodactylUser(ctx context.Context, userID bson.Object
 		return nil
 	}
 	cli := pterodactyl.ClientFromConf()
-	// An account may already exist with this name (for instance from a manual
-	// import); treat that as success and refresh the cached password instead.
-	if _, err := cli.GetUser(ctx, u.Name); err != nil {
-		if err := cli.CreateUser(ctx, pterodactyl.PostPteUser{
-			ExternalId: u.Name,
-			Username:   u.Name,
-			Email:      u.Email,
-			Password:   u.Name,
-			Language:   "zh",
-			RootAdmin:  u.IsAdmin,
-			FirstName:  u.Name,
-			LastName:   "_",
-		}); err != nil {
-			return apierr.Wrap(apierr.CodePterodactylError, "cannot create panel account", err)
+	if _, err := cli.GetUser(ctx, u.Name); err == nil {
+		return store.User.MarkPteCreated(ctx, u.ID, true)
+	} else {
+		var apiErr *pterodactyl.APIError
+		if !errors.As(err, &apiErr) || apiErr.StatusCode != 404 {
+			return apierr.Wrap(apierr.CodePterodactylError, "cannot check panel account", err)
 		}
 	}
-	if err := store.PtePassword.Upsert(ctx, u.ID, u.Name); err != nil {
-		return apierr.Wrap(apierr.CodeInternal, "cannot cache panel password", err)
+	password, err := random.String(48)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot generate panel password", err)
+	}
+	if err := cli.CreateUser(ctx, pterodactyl.PostPteUser{
+		ExternalId: u.Name,
+		Username:   u.Name,
+		Email:      u.Email,
+		Password:   password,
+		Language:   "zh",
+		RootAdmin:  false,
+		FirstName:  u.Name,
+		LastName:   "_",
+	}); err != nil {
+		return apierr.Wrap(apierr.CodePterodactylError, "cannot create panel account", err)
 	}
 	if err := store.User.MarkPteCreated(ctx, u.ID, true); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot persist panel account state", err)
@@ -407,7 +402,10 @@ func (AuthService) ForgetPassword(ctx context.Context, mail string) error {
 	if redis.Limited(ctx, resetCodeKey(mail)) {
 		return nil
 	}
-	code := random.Digits(captchaDigits)
+	code, err := random.Digits(captchaDigits)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot generate reset code", err)
+	}
 	if err := redis.Set(ctx, resetCodeKey(mail), code, captchaTTL); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot store reset code", err)
 	}
@@ -439,9 +437,6 @@ func (AuthService) ResetPasswordFor(ctx context.Context, userID bson.ObjectID, m
 	want, ok := redis.Get(ctx, resetCodeKey(mail))
 	if !ok || want != code {
 		return apierr.Fail(apierr.CodeValidationFailed, "reset code is wrong or expired")
-	}
-	if len(newPassword) < 6 {
-		return apierr.Fail(apierr.CodeValidationFailed, "password must be at least 6 characters")
 	}
 	if err := store.User.SetPassword(ctx, userID, auth.HashPassword(newPassword)); err != nil {
 		return apierr.Wrap(apierr.CodeInternal, "cannot save password", err)
@@ -496,28 +491,4 @@ func issue(u *models.User, remember bool) (*Session, error) {
 		ttl = auth.LongTokenTTL
 	}
 	return &Session{AccessToken: token, ExpiresAt: time.Now().Add(ttl), User: u}, nil
-}
-
-// PterodactylSession hands a logged-in user over to the panel without asking
-// for the password again, by planting the panel session cookie on the shared
-// parent domain.
-func (AuthService) PterodactylSession(ctx context.Context, userID bson.ObjectID) (string, string, error) {
-	u, err := store.User.ByID(ctx, userID)
-	if err != nil {
-		return "", "", apierr.Wrap(apierr.CodeNotFound, "user not found", err)
-	}
-	pw := u.Name
-	if cached, err := store.PtePassword.ByUser(ctx, u.ID); err == nil && cached.Password != "" {
-		pw = cached.Password
-	}
-	session, err := pterodactyl.ClientFromConf().Login(ctx, u.Email, pw)
-	if err != nil {
-		return "", "", apierr.Wrap(apierr.CodePterodactylError, "cannot sign in to the panel", err)
-	}
-	domain := config.SiteSubdomain()
-	host := config.String("PterodactylHostname")
-	if host == "" {
-		return "", "", apierr.Fail(apierr.CodeInternal, "PterodactylHostname is not configured")
-	}
-	return session, domain, nil
 }

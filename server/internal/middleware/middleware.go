@@ -43,9 +43,16 @@ func Auth() gin.HandlerFunc {
 		}
 		// A token issued before logout is blacklisted in Redis until it would
 		// have expired anyway.
-		if claims.ID != "" && redis.Limited(c.Request.Context(), auth.TokenBlacklistKey(claims.ID)) {
-			apierr.Abort(c, apierr.Fail(apierr.CodeUnauthorized, "token has been revoked"))
-			return
+		if claims.ID != "" {
+			revoked, err := redis.Revoked(c.Request.Context(), auth.TokenBlacklistKey(claims.ID))
+			if err != nil {
+				apierr.Abort(c, apierr.Wrap(apierr.CodeInternal, "cannot validate session", err))
+				return
+			}
+			if revoked {
+				apierr.Abort(c, apierr.Fail(apierr.CodeUnauthorized, "token has been revoked"))
+				return
+			}
 		}
 		id, err := models.ObjectIDFromHex(claims.Subject)
 		if err != nil {
@@ -55,8 +62,14 @@ func Auth() gin.HandlerFunc {
 		// The account is re-read on every request: an administrator who is
 		// demoted or a user who is deleted loses access immediately rather than
 		// when the token happens to expire.
+		glgf.Debug(id.Hex())
 		u, err := store.User.ByID(c.Request.Context(), id)
 		if err != nil {
+			glgf.Error("User.ByID: %v", err)
+			if !store.IsNotFound(err) {
+				apierr.Abort(c, apierr.Wrap(apierr.CodeInternal, "cannot load account", err))
+				return
+			}
 			apierr.Abort(c, apierr.Fail(apierr.CodeUnauthorized, "account no longer exists"))
 			return
 		}
@@ -79,6 +92,13 @@ func OptionalAuth() gin.HandlerFunc {
 		if err != nil {
 			c.Next()
 			return
+		}
+		if claims.ID != "" {
+			revoked, err := redis.Revoked(c.Request.Context(), auth.TokenBlacklistKey(claims.ID))
+			if err != nil || revoked {
+				c.Next()
+				return
+			}
 		}
 		id, err := models.ObjectIDFromHex(claims.Subject)
 		if err != nil {
@@ -122,6 +142,7 @@ func CORS(origins string) gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Credentials", "true")
 			c.Header("Access-Control-Allow-Headers", "Authorization,Content-Type,Accept")
 			c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+			c.Header("Access-Control-Expose-Headers", "Content-Disposition")
 			c.Header("Access-Control-Max-Age", "600")
 		}
 		if c.Request.Method == http.MethodOptions {
@@ -136,6 +157,9 @@ func CORS(origins string) gin.HandlerFunc {
 // always receives JSON, and logs the stack.
 func Recovery() gin.HandlerFunc {
 	return gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
+		if recovered == http.ErrAbortHandler {
+			panic(recovered)
+		}
 		glgf.Errorf("panic on %s %s: %v", c.Request.Method, c.Request.URL.Path, recovered)
 		apierr.Abort(c, apierr.Fail(apierr.CodeInternal, "internal server error"))
 	})

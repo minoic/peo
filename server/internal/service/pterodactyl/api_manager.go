@@ -3,12 +3,12 @@ package pterodactyl
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"strconv"
 	"strings"
 	"time"
@@ -56,12 +56,21 @@ type Client struct {
 	http  *http.Client
 }
 
+// APIError records the upstream HTTP status without exposing its response body.
+type APIError struct {
+	StatusCode int
+}
+
+func (e *APIError) Error() string {
+	return fmt.Sprintf("pterodactyl: request returned %d", e.StatusCode)
+}
+
 // NewClient builds a client for a panel.
 //
 // The legacy implementation called strings.TrimRight without assigning the
 // result, so a trailing slash in PterodactylHostname produced URLs with a double
 // slash that the panel's router rejected. The trim is applied here, and
-// config.Reload trims the setting as well.
+// config.LoadSettings trims the setting as well.
 func NewClient(url string, token string) *Client {
 	return &Client{
 		url:   strings.TrimRight(strings.TrimSpace(url), "/"),
@@ -73,21 +82,33 @@ func NewClient(url string, token string) *Client {
 // HostName returns the configured panel address.
 func (c *Client) HostName() string { return c.url }
 
+// IdentityFingerprint binds a durable operation to the panel credential that
+// started it without storing the credential itself.
+func (c *Client) IdentityFingerprint() string {
+	digest := sha256.Sum256([]byte(c.url + "\x00" + c.token))
+	return fmt.Sprintf("%x", digest[:])
+}
+
 // Invalidate drops the cached entry for a resource. Mutating calls use it so the
 // next read observes the change instead of a stale cache hit.
 func Invalidate(keys ...string) {
-	for _, key := range keys {
-		cache.Remove(key)
-	}
+	cache.Purge()
 }
 
 // InvalidateServer forgets a cached server document.
-func InvalidateServer(externalID string) { cache.Remove(serverKey(externalID)) }
+func InvalidateServer(externalID string) { cache.Purge() }
 
 // InvalidateEggs forgets every cached egg list for a nest.
 func InvalidateEggs(nestID int) {
-	cache.Remove(nestKey(nestID))
-	cache.Remove(eggsKey(nestID))
+	cache.Purge()
+}
+
+// InvalidatePanelCache removes cached resources when connection settings change.
+func InvalidatePanelCache() { cache.Purge() }
+
+func (c *Client) cacheKey(key string) string {
+	digest := sha256.Sum256([]byte(c.token))
+	return c.url + ":" + fmt.Sprintf("%x", digest[:8]) + ":" + key
 }
 
 func nestKey(nestID int) string { return "NEST" + strconv.Itoa(nestID) }
@@ -140,9 +161,8 @@ func (c *Client) api(ctx context.Context, data interface{}, endPoint, method str
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, fmt.Errorf("pterodactyl: %s %s returned %d: %s",
-			method, endPoint, resp.StatusCode, strings.TrimSpace(string(raw)))
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, &APIError{StatusCode: resp.StatusCode}
 	}
 	return raw, nil
 }
@@ -168,8 +188,7 @@ func cachedGet[T any](key string, ttl time.Duration, fetch func() (*T, error)) (
 
 // TestConnection verifies the hostname and token by listing nodes.
 func (c *Client) TestConnection(ctx context.Context) error {
-	raw, err := c.api(ctx, nil, "nodes", http.MethodGet)
-	glgf.Debug("pterodactyl api probe: ", string(raw))
+	_, err := c.api(ctx, nil, "nodes", http.MethodGet)
 	return err
 }
 
@@ -248,31 +267,32 @@ func (c *Client) ChangePassword(ctx context.Context, externalID, password string
 
 // GetNest returns a nest, cached for three minutes.
 func (c *Client) GetNest(ctx context.Context, nestID int) (*Nest, error) {
-	return cachedGet(nestKey(nestID), nestCacheTTL, func() (*Nest, error) {
-		raw, err := c.api(ctx, nil, "nests/"+strconv.Itoa(nestID), http.MethodGet)
-		if err != nil {
-			return nil, err
-		}
-		var dec struct {
-			Attributes Nest `json:"attributes"`
-		}
-		if err := json.Unmarshal(raw, &dec); err != nil {
-			return nil, err
-		}
-		return &dec.Attributes, nil
-	})
+	tag, err := c.TagForLegacyNest(ctx, nestID)
+	if err != nil {
+		return nil, err
+	}
+	return &Nest{Id: nestID, Name: tag.Name, Description: ""}, nil
 }
 
 // GetAllNests returns every nest.
 func (c *Client) GetAllNests(ctx context.Context) ([]Nest, error) {
-	return paged[Nest](ctx, c, "nests")
+	tags, err := c.GetAllTags(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Nest, 0)
+	for _, tag := range tags {
+		if tag.LegacyNestID != nil {
+			out = append(out, Nest{Id: *tag.LegacyNestID, Name: tag.Name})
+		}
+	}
+	return out, nil
 }
 
 // GetEgg returns one egg of a nest, cached for a minute.
 func (c *Client) GetEgg(ctx context.Context, nestID, eggID int) (*Egg, error) {
-	return cachedGet(eggKey(nestID, eggID), eggCacheTTL, func() (*Egg, error) {
-		raw, err := c.api(ctx, nil,
-			"nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID), http.MethodGet)
+	return cachedGet(c.cacheKey(eggKey(nestID, eggID)), eggCacheTTL, func() (*Egg, error) {
+		raw, err := c.api(ctx, nil, "eggs/"+strconv.Itoa(eggID)+"?include=tags", http.MethodGet)
 		if err != nil {
 			return nil, err
 		}
@@ -281,6 +301,18 @@ func (c *Client) GetEgg(ctx context.Context, nestID, eggID int) (*Egg, error) {
 		}
 		if err := json.Unmarshal(raw, &dec); err != nil {
 			return nil, err
+		}
+		if nestID > 0 {
+			matched := false
+			for _, rel := range dec.Attributes.Relationships.Tags.Data {
+				if rel.Attributes.LegacyNestID != nil && *rel.Attributes.LegacyNestID == nestID {
+					matched = true
+					break
+				}
+			}
+			if !matched {
+				return nil, fmt.Errorf("pterodactyl: egg %d has no mapping to legacy nest %d", eggID, nestID)
+			}
 		}
 		return &dec.Attributes, nil
 	})
@@ -295,7 +327,11 @@ func (c *Client) GetAllEggs(ctx context.Context, nestID int) ([]Egg, error) {
 	pool <- struct{}{}
 	defer func() { <-pool }()
 
-	eggs, err := paged[Egg](ctx, c, "nests/"+strconv.Itoa(nestID)+"/eggs")
+	tag, err := c.TagForLegacyNest(ctx, nestID)
+	if err != nil {
+		return nil, err
+	}
+	eggs, err := c.GetEggsForTag(ctx, tag.Slug)
 	if err != nil {
 		return nil, err
 	}
@@ -303,6 +339,90 @@ func (c *Client) GetAllEggs(ctx context.Context, nestID int) ([]Egg, error) {
 		glgf.Error("pterodactyl: cannot cache " + key + ": " + err.Error())
 	}
 	return eggs, nil
+}
+
+// GetAllTags lists Panel 2 template tags.
+func (c *Client) GetAllTags(ctx context.Context) ([]Tag, error) { return paged[Tag](ctx, c, "tags") }
+
+// GetTag resolves one stable slug from Panel 2.
+func (c *Client) GetTag(ctx context.Context, slug string) (*Tag, error) {
+	if strings.TrimSpace(slug) == "" || strings.ContainsAny(slug, "/?#") {
+		return nil, errors.New("pterodactyl: invalid tag slug")
+	}
+	all, err := c.GetAllTags(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var found *Tag
+	for i := range all {
+		if all[i].Slug == slug {
+			if found != nil {
+				return nil, errors.New("pterodactyl: duplicate tag slug")
+			}
+			found = &all[i]
+		}
+	}
+	if found == nil {
+		return nil, errors.New("pterodactyl: tag not found")
+	}
+	return found, nil
+}
+
+// TagForLegacyNest maps only an unambiguous legacy Nest identifier. Zero or
+// duplicate matches are errors so operators must choose a tag explicitly.
+func (c *Client) TagForLegacyNest(ctx context.Context, nestID int) (*Tag, error) {
+	tags, err := c.GetAllTags(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var found *Tag
+	for i := range tags {
+		if tags[i].LegacyNestID != nil && *tags[i].LegacyNestID == nestID {
+			if found != nil {
+				return nil, fmt.Errorf("pterodactyl: legacy nest %d maps to multiple tags; select a tag slug in product settings", nestID)
+			}
+			found = &tags[i]
+		}
+	}
+	if found == nil {
+		return nil, fmt.Errorf("pterodactyl: legacy nest %d has no tag mapping; select a tag slug in product settings", nestID)
+	}
+	return found, nil
+}
+
+// GetEggsForTag loads eggs and keeps only those explicitly assigned to tagSlug.
+func (c *Client) GetEggsForTag(ctx context.Context, tagSlug string) ([]Egg, error) {
+	if _, err := c.GetTag(ctx, tagSlug); err != nil {
+		return nil, err
+	}
+	eggs, err := paged[Egg](ctx, c, "eggs?include=tags")
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Egg, 0)
+	for _, egg := range eggs {
+		for _, rel := range egg.Relationships.Tags.Data {
+			if rel.Attributes.Slug == tagSlug {
+				out = append(out, egg)
+				break
+			}
+		}
+	}
+	return out, nil
+}
+
+// EggHasTag checks the Egg-to-Tag relationship returned by Panel 2.
+func (c *Client) EggHasTag(ctx context.Context, eggID int, tagSlug string) (bool, error) {
+	egg, err := c.GetEgg(ctx, 0, eggID)
+	if err != nil {
+		return false, err
+	}
+	for _, rel := range egg.Relationships.Tags.Data {
+		if rel.Attributes.Slug == tagSlug {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // GetAllNodes returns every node.
@@ -346,7 +466,7 @@ func (c *Client) GetAllocations(ctx context.Context, nodeID int) ([]Allocation, 
 // requires when a server is created.
 func (c *Client) GetEnv(ctx context.Context, nestID, eggID int) (map[string]string, error) {
 	raw, err := c.api(ctx, nil,
-		"nests/"+strconv.Itoa(nestID)+"/eggs/"+strconv.Itoa(eggID)+"?include=variables", http.MethodGet)
+		"eggs/"+strconv.Itoa(eggID)+"?include=variables", http.MethodGet)
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +504,7 @@ func (c *Client) GetEnv(ctx context.Context, nestID, eggID int) (map[string]stri
 
 // GetServer looks a server up by external id, cached for a minute.
 func (c *Client) GetServer(ctx context.Context, externalID string) (*Server, error) {
-	return cachedGet(serverKey(externalID), serverCacheTTL, func() (*Server, error) {
+	return cachedGet(c.cacheKey(serverKey(externalID)), serverCacheTTL, func() (*Server, error) {
 		raw, err := c.api(ctx, nil, "servers/external/"+externalID, http.MethodGet)
 		if err != nil {
 			return nil, err
@@ -397,6 +517,28 @@ func (c *Client) GetServer(ctx context.Context, externalID string) (*Server, err
 		}
 		return &dec.Attributes, nil
 	})
+}
+
+// GetServerUncached is used by durable operations to distinguish an absent
+// server from a stale cache entry after an ambiguous upstream response.
+func (c *Client) GetServerUncached(ctx context.Context, externalID string) (*Server, error) {
+	raw, err := c.api(ctx, nil, "servers/external/"+externalID, http.MethodGet)
+	if err != nil {
+		return nil, err
+	}
+	var dec struct {
+		Attributes Server `json:"attributes"`
+	}
+	if err := json.Unmarshal(raw, &dec); err != nil {
+		return nil, err
+	}
+	return &dec.Attributes, nil
+}
+
+// IsNotFound reports whether an Application API request received HTTP 404.
+func IsNotFound(err error) bool {
+	var apiErr *APIError
+	return errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusNotFound
 }
 
 // GetServerByID looks a server up by its numeric panel id.
@@ -470,24 +612,99 @@ func (c *Client) DeleteServer(ctx context.Context, externalID string) error {
 	return nil
 }
 
+// DeleteServerIdempotent deletes a server using an uncached lookup. A 404 on
+// either lookup or deletion means the desired absent state already holds.
+func (c *Client) DeleteServerIdempotent(ctx context.Context, externalID string) error {
+	s, err := c.GetServerUncached(ctx, externalID)
+	if err != nil {
+		if IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	if _, err := c.api(ctx, nil, "servers/"+strconv.Itoa(s.Id), http.MethodDelete); err != nil {
+		if IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	InvalidateServer(externalID)
+	return nil
+}
+
 // CreateServer provisions a server from a product definition. The egg supplies
 // the docker image, the startup command and the default environment, so they are
 // resolved here rather than being stored on the product.
 func (c *Client) CreateServer(ctx context.Context, s Server) error {
-	egg, err := c.GetEgg(ctx, s.NestId, s.EggId)
+	request, err := c.PrepareCreateServerRequest(ctx, s)
 	if err != nil {
 		return err
 	}
-	env, err := c.GetEnv(ctx, s.NestId, s.EggId)
+	return c.CreateServerRequest(ctx, request)
+}
+
+// PrepareCreateServerRequest resolves mutable egg, tag and environment data
+// before a durable operation is stored.
+func (c *Client) PrepareCreateServerRequest(ctx context.Context, s Server) (json.RawMessage, error) {
+	tagSlug := strings.TrimSpace(s.TagSlug)
+	if tagSlug == "" && s.NestId > 0 {
+		tag, err := c.TagForLegacyNest(ctx, s.NestId)
+		if err != nil {
+			return nil, err
+		}
+		tagSlug = tag.Slug
+	}
+	if tagSlug == "" {
+		return nil, errors.New("pterodactyl: product has no Panel 2 tag mapping")
+	}
+	allowedEggIDs := s.AllowedEggIDs
+	if len(allowedEggIDs) == 0 {
+		allowedEggIDs = []int{s.EggId}
+	}
+	allowed := false
+	for _, id := range allowedEggIDs {
+		if id == s.EggId {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return nil, errors.New("pterodactyl: product primary egg is outside its allowed egg list")
+	}
+	hasTag, err := c.EggHasTag(ctx, s.EggId, tagSlug)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if !hasTag {
+		return nil, errors.New("pterodactyl: product egg is not assigned to its tag")
+	}
+	egg, err := c.GetEgg(ctx, 0, s.EggId)
+	if err != nil {
+		return nil, err
+	}
+	image := egg.DockerImage
+	if s.DockerImage != "" {
+		allowed := false
+		for _, candidate := range egg.DockerImages {
+			if candidate == s.DockerImage {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return nil, errors.New("pterodactyl: selected image is not allowed by the egg")
+		}
+		image = s.DockerImage
+	}
+	env, err := c.GetEnv(ctx, 0, s.EggId)
+	if err != nil {
+		return nil, err
 	}
 	body := map[string]interface{}{
 		"name":         s.Name,
 		"user":         s.UserId,
-		"nest":         s.NestId,
 		"egg":          s.EggId,
-		"docker_image": egg.DockerImage,
+		"docker_image": image,
 		"startup":      egg.StartUp,
 		"description":  s.Description,
 		"oom_disabled": s.Limits.OOMDisabled,
@@ -513,6 +730,23 @@ func (c *Client) CreateServer(ctx context.Context, s Server) error {
 			"default": s.Allocation,
 		},
 	}
+	return json.Marshal(body)
+}
+
+// CreateServer submits an already resolved request body. Persisting this body
+// lets recovery retry the same provisioning intent after a restart or config
+// change without silently using current product or egg settings.
+func (c *Client) CreateServerRequest(ctx context.Context, request json.RawMessage) error {
+	var body any
+	if err := json.Unmarshal(request, &body); err != nil {
+		return err
+	}
+	var fields struct {
+		ExternalID string `json:"external_id"`
+	}
+	if err := json.Unmarshal(request, &fields); err != nil {
+		return err
+	}
 	raw, err := c.api(ctx, body, "servers", http.MethodPost)
 	if err != nil {
 		return err
@@ -526,10 +760,10 @@ func (c *Client) CreateServer(ctx context.Context, s Server) error {
 	// The panel answers 201 with an empty attributes object when it accepts the
 	// request but fails to queue the creation; treating that as success would
 	// leave a paid order without a server, so it is an error.
-	if dec.Attributes == (Server{}) {
+	if dec.Attributes.Id == 0 && dec.Attributes.Identifier == "" && dec.Attributes.Uuid == "" {
 		return errors.New("pterodactyl: create server returned an empty object: " + string(raw))
 	}
-	glgf.Info("pterodactyl: created server ", dec.Attributes.Identifier, " for external id ", s.ExternalId)
+	glgf.Info("pterodactyl: created server ", dec.Attributes.Identifier, " for external id ", fields.ExternalID)
 	return nil
 }
 
@@ -580,24 +814,23 @@ func (c *Client) UpdateServerBuild(ctx context.Context, externalID string, b Pos
 
 // UpdateServerStartup re-points a server at another egg, which is how a
 // reinstall with a different game type is expressed.
-func (c *Client) UpdateServerStartup(ctx context.Context, externalID string, packID int) error {
+func (c *Client) UpdateServerStartup(ctx context.Context, externalID string, eggID int) error {
 	s, err := c.GetServer(ctx, externalID)
 	if err != nil {
 		return err
 	}
-	egg, err := c.GetEgg(ctx, s.NestId, s.EggId)
+	egg, err := c.GetEgg(ctx, 0, eggID)
 	if err != nil {
 		return err
 	}
-	env, err := c.GetEnv(ctx, s.NestId, s.EggId)
+	env, err := c.GetEnv(ctx, 0, eggID)
 	if err != nil {
 		return err
 	}
 	body := map[string]interface{}{
 		"environment":  env,
 		"startup":      egg.StartUp,
-		"egg":          s.EggId,
-		"pack":         packID,
+		"egg":          eggID,
 		"image":        egg.DockerImage,
 		"skip_scripts": false,
 	}
@@ -606,89 +839,6 @@ func (c *Client) UpdateServerStartup(ctx context.Context, externalID string, pac
 	}
 	InvalidateServer(externalID)
 	return nil
-}
-
-// ---------------------------------------------------------------------------
-// Authentication handover
-// ---------------------------------------------------------------------------
-
-// Login authenticates against the panel's own front end and returns the value of
-// the pterodactyl_session cookie, which the caller plants on the shared parent
-// domain so the customer does not have to sign in twice.
-//
-// The panel protects /auth/login with Laravel's CSRF token, so the cookie
-// endpoint is called first and the XSRF-TOKEN value is replayed in the header.
-func (c *Client) Login(ctx context.Context, email, password string) (string, error) {
-	if c.url == "" {
-		return "", errors.New("pterodactyl: hostname is not configured")
-	}
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		return "", err
-	}
-	client := &http.Client{Jar: jar, Timeout: requestTimeout}
-
-	// Step one: obtain the XSRF-TOKEN cookie.
-	csrfReq, err := http.NewRequestWithContext(ctx, http.MethodGet, c.url+"/sanctum/csrf-cookie", nil)
-	if err != nil {
-		return "", err
-	}
-	csrfResp, err := client.Do(csrfReq)
-	if err != nil {
-		return "", err
-	}
-	_ = csrfResp.Body.Close()
-
-	var xsrf string
-	for _, ck := range csrfResp.Cookies() {
-		if ck.Name == "XSRF-TOKEN" {
-			xsrf = ck.Value
-		}
-	}
-	if xsrf == "" {
-		// Laravel URL-encodes the cookie value; the header wants it decoded.
-		// A missing cookie means the panel is not reachable or the endpoint
-		// moved, and the login below would fail with an opaque 419.
-		return "", errors.New("pterodactyl: no XSRF-TOKEN cookie, cannot sign in")
-	}
-
-	// Step two: post the credentials with the token replayed.
-	buf := &bytes.Buffer{}
-	if err := json.NewEncoder(buf).Encode(map[string]interface{}{
-		"user":                 email,
-		"password":             password,
-		"g-recaptcha-response": "",
-	}); err != nil {
-		return "", err
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url+"/auth/login", buf)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("x-xsrf-token", strings.ReplaceAll(xsrf, "%3D", "="))
-	req.Header.Set("origin", c.url)
-	req.Header.Set("referer", c.url+"/auth/login")
-	req.Header.Set("accept", "application/json")
-	req.Header.Set("content-type", "application/json")
-	req.Header.Set("user-agent", "peo/1.0 (+"+c.url+")")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	raw, _ := io.ReadAll(resp.Body)
-
-	for _, ck := range resp.Cookies() {
-		if ck.Name == "pterodactyl_session" {
-			return ck.Value, nil
-		}
-	}
-	if resp.StatusCode >= http.StatusBadRequest {
-		return "", fmt.Errorf("pterodactyl: login returned %d: %s",
-			resp.StatusCode, strings.TrimSpace(string(raw)))
-	}
-	return "", errors.New("pterodactyl: no pterodactyl_session cookie in login response")
 }
 
 // ---------------------------------------------------------------------------

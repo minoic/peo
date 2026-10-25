@@ -42,6 +42,11 @@ One container, one port, one origin. The Go binary serves both the API and the
 compiled SPA, which is why there is no CORS surface in production and no cookie
 domain juggling for ordinary API traffic.
 
+The cron manager closes unpaid orders at the 15-minute payment deadline. The
+Mongo transition is conditional on the order still being unpaid, unconfirmed,
+open, and without an active provisioning operation; the same condition fences
+new payment claims so a delayed scheduler cannot allow a late payment.
+
 ```
                     +-------------------------------------------+
    browser  ----->  |  peo  (Go, :8080)                         |
@@ -59,13 +64,30 @@ domain juggling for ordinary API traffic.
                                         blacklist)                     API
 ```
 
-The only public unauthenticated mutation endpoint is
-`POST /api/v1/alipay/notify`, which verifies the Alipay signature exactly as the
-legacy code did. `/healthz` is outside the API prefix and returns a bare object
+Public writes include login, registration, email confirmation and password reset,
+each with its own validation or credential/code checks. The provider callback
+`POST /api/v1/alipay/notify` authenticates Alipay through its signature rather
+than a PEO Bearer token. `/healthz` is outside the API prefix and returns a bare object
 rather than the standard envelope; it is consumed by the container healthcheck,
 not by the SPA. Both `/healthz` and `GET /api/v1/admin/health` call the same
 `service.Admin.Health`, so the two diagnostics cannot disagree about whether a
 component is up.
+
+### Panel 2 server console
+
+PEO calls the versioned `peo-bridge` Application extension for server metadata,
+resources, power, commands, files, backups, and startup settings. Console requests
+first validate both read and write capabilities, the extension id and protocol
+version. Ownership is resolved from PEO's entity record before a Panel UUID is
+used. The Application token never leaves Go.
+
+The browser opens terminal sessions through a single-use PEO ticket bound to the
+current user, entity, JWT id and JWT expiry. Go verifies the exact configured
+Origin before consuming the ticket, obtains a short-lived Wings credential, and
+proxies text events while filtering client commands and credential-bearing
+events. Logout cancels active proxy sessions. File uploads and downloads stream
+through Go; signed upstream destinations must match Panel node metadata or the
+extension's configured trusted storage origins, and redirects are disabled.
 
 ---
 
@@ -75,9 +97,9 @@ component is up.
 server/
 ├── cmd/peo/main.go          config -> store -> cron -> router -> listen -> shutdown
 ├── web/                     //go:embed all:assets  (the compiled SPA)
-├── conf/settings.toml       generated on first run from the embedded default
+
 └── internal/
-    ├── config/              viper + TOML, Alipay client, Reload()
+    ├── config/              embedded defaults + MongoDB settings, Alipay client
     ├── models/              BSON document structs, collection names
     ├── store/               repository layer, one type per collection
     ├── auth/                JWT issue/verify, password hashing, blacklist key
@@ -97,7 +119,7 @@ server/
     │   ├── static.go        SPA asset server + fallback
     │   ├── response.go      re-export of apierr for handler ergonomics
     │   ├── dto/             the wire contract
-    │   └── handlers/        12 handlers, 67 endpoints
+    │   └── handlers/        authentication, commerce, content, admin and console HTTP boundaries
     └── cron/                robfig/cron registration
 ```
 
@@ -167,13 +189,13 @@ redefining them.
 
 ## 4. Authentication
 
-The legacy scheme was a Beego encrypted cookie carrying three session keys.
-Those are gone; the trust model is otherwise unchanged.
+Authentication uses Bearer JWTs and the current account document.
 
 - **Login** — `POST /api/v1/auth/login` returns
-  `{accessToken, expiresAt, user}`. The token is a JWT signed with the key that
-  is hardcoded in `legacy/internal/session/auth_jwt.go`, kept so tokens and the
-  signing scheme do not change. `JWTSecret` in the config can override it.
+  `{accessToken, expiresAt, user}`. The token is signed with the installation's
+  `JWTSecret`. Startup persists a random secret when the stored value is empty
+  or the former public fallback. That rotation invalidates earlier tokens.
+  Signing and verification reject an empty or known public key.
 - **Transport** — `Authorization: Bearer <token>`.
 - **Claims** — `sub` is the Mongo ObjectID hex (replacing the legacy `ID`
   session key), `name` replaces `UN`, `admin` mirrors `isAdmin`.
@@ -183,11 +205,16 @@ Those are gone; the trust model is otherwise unchanged.
   re-reads the user on every request instead of trusting the claims.
 - **Logout** — `POST /api/v1/auth/logout` writes the token id into Redis under
   `JWTBLACKLIST:<jti>` with the token's remaining lifetime. Every authenticated
-  request checks that key. `OptionalAuth()` does not check it, because it only
-  needs to know whether to personalise a public response.
+  request checks that key. Redis errors reject protected requests with
+  `500 internal_error`; `OptionalAuth()` treats revoked tokens and Redis errors
+  as anonymous. Terminal ticket checks and active sessions also fail closed.
 - **Password** — `md5(plaintext + DatabaseSalt)`, hex encoded, identical to
   legacy. Not upgraded to bcrypt: that is a behaviour change and out of scope.
 - **Admin** — the user document's `isAdmin` flag, checked by `middleware.Admin`.
+- **Panel mirror** — newly created accounts use independent random passwords
+  and `root_admin=false`, including mirrors of PEO administrators. Existing
+  Panel roles and passwords are not automatically changed; new mirror passwords
+  are not cached as plaintext in MongoDB.
 
 Token lifetimes are unchanged: 24 hours normally, 60 days when `remember` is set.
 
@@ -233,18 +260,19 @@ The legacy code cached panel responses in a `gcache` and, separately, cached the
 product catalogue and the Minecraft probe results in **package-level variables
 written from request handlers**. That was a data race.
 
-The port keeps the panel cache exactly as it was and moves the other two behind
-proper ownership:
+Caches have explicit owners and bind Panel data to its upstream identity:
 
 - **Pterodactyl client layer** — `gcache` (ARC, 128 entries, 1–3 minute TTL) with
   the original key shapes `NEST<id>`, `NEST<id>EGG<id>`, `ALLEGGS<nestID>`,
   `SERVER<id>`, and a capacity-4 channel semaphore bounding concurrent panel
-  requests. Unchanged.
+  requests. Panel identity scopes cache keys so a configuration switch cannot
+  return another Panel's data.
 - **`service.Cache`** — a struct guarded by a `sync.RWMutex` holding the probe
   results. **Handlers only read; the cron only writes.** Both accessors are
   nil-receiver safe, so a zero-value service cannot panic.
-- **`ProductService`** — its own `sync.RWMutex` plus a `sync.Map` for the per-nest
-  egg cache. Rebuilt by the cron, read by handlers; `Storefront` also builds once
+- **`ProductService`** — its own `sync.RWMutex` plus a `sync.Map` for the per-tag
+  egg cache, scoped to Panel identity and bounded by a TTL. Rebuilt by the cron,
+  read by handlers; `Storefront` also builds once
   if it is asked for a catalogue before the first cron tick, so a cold process
   never serves an empty shop. That warm-up path takes the write lock like any
   other rebuild, which is what keeps it safe rather than privileged.
@@ -254,8 +282,7 @@ proper ownership:
   replaced by plain Redis counters keyed per action and per user or IP.
 
 This is [accepted behaviour fix #5](../AGENTS.md): the race is gone, and the
-observable behaviour is unchanged because the caches were only ever populated by
-the cron in practice.
+cache ownership prevents concurrent refreshes from mutating shared maps unsafely.
 
 ### Redis key families
 
@@ -318,26 +345,37 @@ out at `probeCacheTTL` (30 s), and probing is bounded to 16 workers.
 
 ## 7. Configuration
 
-The same TOML file with the same key names, minus `MYSQL*`, `SqlTablePrefix` and
-`Language`, plus `MongoURI` and `MongoDatabaseName`.
+MongoDB connection settings come only from `PEO_MONGO_URI` and
+`PEO_MONGO_DATABASE_NAME`. They are deployment environment variables and are
+not editable through the admin console. All other application settings are
+stored in the singleton `app_settings` document in MongoDB.
 
-- `config.Init()` creates `conf/settings.toml` from the embedded default when it
-  is missing. Unlike legacy it **does not exit** — it logs a warning and
-  continues with the generated defaults, so a container can boot unattended.
-- `config.Reload()` re-reads the file, trims a trailing `/` from `WebHostName`
-  and `PterodactylHostname`, writes the file back, rebuilds the Alipay client and
-  swaps the viper instance under a mutex.
-- `config.Save()` = write + reload. The settings service calls it after a save and
-  then calls `store.Reset()` / `store.Init()` and `redis.Reset()` so the
-  datastores reconnect with the new values.
+- `config.Init()` loads embedded defaults and the two MongoDB environment
+  variables. `store.Init()` connects and then the process loads settings from
+  MongoDB before starting cron jobs or serving requests.
+- If `app_settings` does not exist, embedded defaults seed it. When an existing
+  `conf/settings.toml` is present, its non-Mongo settings are imported once
+  during this initialization. MongoDB connection values in the file are ignored.
+- Saving settings updates the MongoDB document, applies the new values in
+  memory, rebuilds the Alipay client and resets Redis. MongoDB is not
+  reconnected because its connection values are fixed by the environment.
 
-The admin settings form is **generated from a server-side schema**. `/admin/settings`
-returns a list of `{key, label, description, type, value}` and the Flutter admin
-page renders inputs from it. This replaces 33 hand-written template fields and
-means the form and the persistence layer cannot drift apart.
+Settings saves are serialized within a process. A candidate is validated before
+the database write and published only after persistence succeeds, so a failed
+save cannot roll back another published configuration. Related Panel and Redis
+credentials are read from one configuration snapshot. Multiple application
+processes still require a coordinated configuration refresh; a local snapshot
+does not broadcast settings changes to other processes.
 
-The default `MongoURI` and `RedisHost` are `mongodb://mongo:27017` and
-`redis:6379` — the compose service names — so an unconfigured container works.
+The admin settings form is generated from a server-side schema. MongoDB
+connection variables are excluded from that schema. The Panel Application API
+token is write-only and never returned to the browser; blank submissions preserve
+the existing value. `ConsoleOrigins` contains the exact browser origins trusted
+for terminal WebSockets.
+
+The Compose example uses `mongodb://mongo:27017` and database `peo` for the
+MongoDB service. Redis defaults to `redis:6379` and remains editable in the
+admin settings page.
 
 ---
 
@@ -398,7 +436,7 @@ Three-stage image (`server/Dockerfile`):
 |---|---|---|
 | `web` | `debian:bookworm-slim` | Downloads the pinned Flutter SDK, verifies its SHA-256, `pub get`, `build_runner`, `flutter build web --wasm --release` |
 | `build` | `golang:1.27.1-alpine` | `go mod download`, copies `server/`, copies the SPA from stage 1 into `web/assets/`, statically links `./cmd/peo` |
-| `runtime` | `debian:bookworm-slim` | `ca-certificates` + `tzdata`, the binary, `VOLUME /conf`, `EXPOSE 8080`, healthcheck on `/healthz` |
+| `runtime` | `debian:bookworm-slim` | `ca-certificates` + `tzdata`, the binary, `EXPOSE 8080`, healthcheck on `/healthz` |
 
 The official Flutter SDK is downloaded from the release manifest rather than taken
 from `ghcr.io/cirruslabs/flutter`, because that image does not publish the pinned
@@ -407,8 +445,7 @@ closed if upstream ever serves something else.
 
 `docker-compose.yml` brings up `mongo:7`, `redis:7-alpine` and `peo`, with
 healthcheck-gated `depends_on` so the server never starts against a datastore that
-is still booting. `./conf` is bind-mounted so settings survive a container
-rebuild.
+is still booting. Application settings persist in MongoDB across image rebuilds.
 
 `make` targets wrap all of this; run `make help`.
 
@@ -433,5 +470,5 @@ differences are decisions.
 | (p) | — | `SendAnyEmail` concatenates its fragments instead of `fmt.Sprint`ing them | Legacy `mail_manager.go:59` called `fmt.Sprint(text)` on a `[]string`, which renders as `[a b c]`, so every work-order and expiry notification arrived wrapped in square brackets and separated by spaces. `message.Compose` and `email.joinText` both join with `""`, which is what the callers' fragments were written for. |
 | (q) | registration confirmation mail | still not sent, but the code is now readable | Legacy `email.ConfirmRegister` (`legacy/internal/email/mail_confirm.go:29`) had no caller, so the confirmation-mail path was dead and accounts were confirmed by hand; `legacy/AGENTS.md:97` records this. The port deliberately keeps the behaviour — `IssueRegistrationKey` likewise has no caller — and `POST /api/v1/auth/confirm-email/:key` still works for a token inserted by hand. Only the misleading "wired up again" comments were corrected. |
 | (r) | — | `IssueRegistrationKey` deletes its token when the mail cannot be sent | The legacy version created the row then called `sendConfirmMail`, which **panicked** on a connect failure (`mail_manager.go:17`) and left the row behind. A failed send now leaves no orphan token. Unreachable in production for the same reason as (q), but correct if the path is ever switched on. |
-| (s) | panel password follows the site password | `ChangePassword` skips the panel call when `PteUserCreated` is false, instead of failing afterwards | Legacy called `pterodactyl.ChangePassword(user.Name, newPassword)` unconditionally, so a customer who had never got a panel account (a registration that raced a panel outage) had their site password committed and were then shown "未能成功更改翼龙面板密码" — an error they could never clear, because every retry hit the same missing account. The port keeps legacy's ordering and its error, but only when there is an account to rotate; otherwise the change simply succeeds. The `pterodactylPasswords` row is upserted on success, because `PterodactylSession` authenticates the console hand-off with it. |
+| (s) | panel password follows the site password | `ChangePassword` skips the panel call when `PteUserCreated` is false, instead of failing afterwards | Legacy called `pterodactyl.ChangePassword(user.Name, newPassword)` unconditionally, so a customer who had never got a panel account (a registration that raced a panel outage) had their site password committed and were then shown "未能成功更改翼龙面板密码" — an error they could never clear, because every retry hit the same missing account. The port keeps legacy's ordering and its error, but only when there is an account to rotate; otherwise the change simply succeeds. The `pterodactylPasswords` row is upserted on success for server-side Panel account maintenance. |
 | (t) | panel account is created at registration confirmation | `ConfirmRegistration` reports the panel outcome instead of creating the account | Legacy registered the account immediately but only created the panel mirror in `MailConfirm` (`reg_controller.go:154`), so a customer could not buy until they clicked the mailed link. The port creates the panel account in `Register` so purchase works straight away, which means `ConfirmRegistration` must not repeat the call — the panel rejects a duplicate username. It then sends the same `pterodactyl_account_success_tips` / `pterodactyl_account_failed` text legacy did (`:163`, `:171`), so the customer's inbox is unchanged. |

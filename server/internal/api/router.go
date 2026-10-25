@@ -30,9 +30,10 @@ func Router() *gin.Engine {
 			"ok": true,
 		}
 		for name, component := range map[string]service.ComponentStatus{
-			"mongo":       health.Mongo,
-			"redis":       health.Redis,
-			"pterodactyl": health.Pterodactyl,
+			"mongo":           health.Mongo,
+			"redis":           health.Redis,
+			"pterodactyl":     health.Pterodactyl,
+			"panel_extension": health.PanelExtension,
 		} {
 			status[name] = component.OK
 			if !component.OK {
@@ -52,6 +53,7 @@ func Router() *gin.Engine {
 	product := handlers.NewProductHandler()
 	order := handlers.NewOrderHandler()
 	server := handlers.NewServerHandler()
+	console := handlers.NewConsoleHandler()
 	gallery := handlers.NewGalleryHandler()
 	message := handlers.NewMessageHandler()
 	workOrder := handlers.NewWorkOrderHandler()
@@ -66,18 +68,19 @@ func Router() *gin.Engine {
 	public.GET("/site/storefront", site.Storefront)
 	public.GET("/products/:specId", product.Detail)
 	public.GET("/nests/:nestId/eggs", product.Eggs)
+	public.GET("/tags/:tagSlug/eggs", product.TagEggs)
 	public.POST("/auth/login", auth.Login)
 	public.POST("/auth/register", auth.Register)
 	public.GET("/auth/confirm-email/:key", auth.ConfirmEmail)
 	public.POST("/auth/forget-password", auth.ForgetPassword)
 	public.POST("/auth/reset-password", auth.ResetPassword)
 	public.POST("/alipay/notify", recharge.AlipayNotify)
+	public.GET("/gallery", gallery.List)
 
 	authOnly := api.Group("/")
 	authOnly.Use(middleware.Auth())
 	authOnly.POST("/auth/logout", auth.Logout)
 	authOnly.GET("/auth/me", auth.Me)
-	authOnly.POST("/user/pterodactyl-session", auth.PterodactylSession)
 	authOnly.PUT("/user/password", user.Password)
 	authOnly.PUT("/user/email", user.Email)
 	authOnly.POST("/user/email/confirm", user.ConfirmEmail)
@@ -95,7 +98,25 @@ func Router() *gin.Engine {
 	authOnly.POST("/servers/:id/renew-by-balance", server.RenewByBalance)
 	authOnly.POST("/servers/:id/reinstall", server.Reinstall)
 	authOnly.POST("/servers/:id/delete", server.RequestDelete)
-	authOnly.GET("/gallery", gallery.List)
+	authOnly.GET("/servers/:id/console", console.Metadata)
+	authOnly.GET("/servers/:id/resources", console.Resources)
+	authOnly.POST("/servers/:id/power", console.Power)
+	authOnly.POST("/servers/:id/command", console.Command)
+	authOnly.POST("/servers/:id/terminal-ticket", console.Ticket)
+	authOnly.GET("/servers/:id/files", console.Files)
+	authOnly.POST("/servers/:id/files/read", console.ReadFile)
+	authOnly.PUT("/servers/:id/files/write", console.WriteFile)
+	authOnly.POST("/servers/:id/files/:action", console.FileAction)
+	authOnly.GET("/servers/:id/files/download", console.DownloadFile)
+	authOnly.PUT("/servers/:id/files/upload", console.UploadFile)
+	authOnly.GET("/servers/:id/backups", console.Backups)
+	authOnly.POST("/servers/:id/backups", console.CreateBackup)
+	authOnly.GET("/servers/:id/backups/:backupId/download", console.DownloadBackup)
+	authOnly.POST("/servers/:id/backups/:backupId/:action", console.BackupAction)
+	authOnly.DELETE("/servers/:id/backups/:backupId", console.DeleteBackup)
+	authOnly.GET("/servers/:id/startup", console.Startup)
+	authOnly.PUT("/servers/:id/startup/variable", console.StartupVariable)
+	authOnly.PUT("/servers/:id/startup/image", console.StartupImage)
 	authOnly.GET("/gallery/mine", gallery.MyItems)
 	authOnly.POST("/gallery", gallery.Submit)
 	authOnly.POST("/gallery/:id/like", gallery.Like)
@@ -120,6 +141,8 @@ func Router() *gin.Engine {
 	adminOnly.GET("/admin/products", admin.Products)
 	adminOnly.GET("/admin/products/raw", product.AdminList)
 	adminOnly.GET("/admin/products/form", admin.ProductForm)
+	adminOnly.GET("/admin/panel/tags", admin.PanelTags)
+	adminOnly.GET("/admin/panel/tags/:tagSlug/eggs", admin.PanelTagEggs)
 	adminOnly.POST("/admin/products", admin.CreateProduct)
 	adminOnly.PUT("/admin/products/:specId", admin.UpdateProduct)
 	adminOnly.DELETE("/admin/products/:specId", admin.DeleteProduct)
@@ -134,6 +157,9 @@ func Router() *gin.Engine {
 	adminOnly.GET("/admin/settings", admin.Settings)
 	adminOnly.PUT("/admin/settings", admin.SaveSettings)
 	adminOnly.GET("/admin/health", admin.Health)
+
+	terminal := api.Group("/")
+	terminal.GET("/servers/:id/terminal", console.Terminal)
 
 	webRoot := config.String("WebRoot")
 	if strings.TrimSpace(webRoot) == "" {

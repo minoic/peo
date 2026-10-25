@@ -19,9 +19,6 @@ import (
 	"github.com/robbert229/jwt"
 )
 
-// legacyJWTKey is the key hard coded in the Beego implementation. It is kept as
-// the default so that a deployment which does not set JWTSecret keeps working
-// exactly as before; new installs should set JWTSecret in settings.toml.
 const legacyJWTKey = "xiCI^gi0!HE1kKZO6*W6k&SPS3$6jufiu*0T7$t!jUktm@#o"
 
 // Token lifetimes. "remember me" logs the user in for two months, otherwise a
@@ -47,13 +44,14 @@ type Claims struct {
 // JWTSecret in the admin UI takes effect without a restart. The driver's Encode
 // and Validate methods have pointer receivers, so a variable is needed rather
 // than returning the call result directly.
-func algo() *jwt.Algorithm {
+func algo() (*jwt.Algorithm, error) {
 	key := config.String("JWTSecret")
-	if key == "" {
-		key = legacyJWTKey
+	key = strings.TrimSpace(key)
+	if len(key) < 32 || key == legacyJWTKey {
+		return nil, errors.New("JWTSecret is not initialized with a private key")
 	}
 	a := jwt.HmacSha512(key)
-	return &a
+	return &a, nil
 }
 
 // GenerateToken issues a signed token for a user. remember selects the long
@@ -75,7 +73,11 @@ func GenerateToken(username string, subject string, isAdmin bool, remember bool)
 		ttl = LongTokenTTL
 	}
 	claims.SetTime("exp", time.Now().Add(ttl))
-	token, err := algo().Encode(claims)
+	signer, err := algo()
+	if err != nil {
+		return "", err
+	}
+	token, err := signer.Encode(claims)
 	if err != nil {
 		glgf.Error("cannot generate token for " + username + ": " + err.Error())
 		return "", err
@@ -94,7 +96,10 @@ func randomTokenID() (string, error) {
 
 // ParseToken validates the signature and expiry and returns the claims.
 func ParseToken(token string) (*Claims, error) {
-	a := algo()
+	a, err := algo()
+	if err != nil {
+		return nil, err
+	}
 	if err := a.Validate(token); err != nil {
 		return nil, err
 	}

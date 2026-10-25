@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Flutter Web - WASM Debug" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="filePath" value="$PROJECT_DIR$/flutter/lib/main.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$/flutter" />
+    <option name="buildFlavor" value="" />
+    <option name="additionalArgs" value="--wasm --web-port=5173 --dart-define=API_BASE_URL=http://localhost:8080/api/v1" />
+    <option name="targetName" value="chrome" />
+    <method v="2" />
+  </configuration>
+</component>

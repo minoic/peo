@@ -43,15 +43,15 @@ answered by reading the original line rather than by guessing.
 
 | # | Workstream | Scope | Status |
 |---|---|---|---|
-| ws1 | Server foundation | `models`, `store`, `auth`, `redis`, `config`, `middleware` | **done** |
-| ws2 | Server service layer | `service` + `pterodactyl`, `status`, `email`, `cryptoo`, `message`, `random` | **done** |
-| ws3 | Server API | `dto`, `handlers`, `router`, `static` | **done** |
-| ws4 | Server cron and deploy | `cron`, `cmd/peo`, `Dockerfile`, compose, Makefile | **done** |
-| ws5 | Flutter core | app shell, `Dio` client, auth cubit, `go_router`, models | in progress |
-| ws6 | Flutter user pages | shop, console, orders, renew, recharge, messages, settings | in progress |
-| ws7 | Flutter admin pages | dashboard, users, orders, keys, gallery, work orders, settings | in progress |
-| ws8 | Documentation | this file and its siblings | **done** |
-| ws9 | CI and repository files | workflow, README, CHANGELOG | **done** |
+| ws1 | Server foundation | `models`, `store`, `auth`, `redis`, `config`, `middleware` | **implemented; tested** |
+| ws2 | Server service layer | `service` + `pterodactyl`, `status`, `email`, `cryptoo`, `message`, `random` | **implemented; B8 parity audit complete and tests pass** |
+| ws3 | Server API | `dto`, `handlers`, `router`, `static` | **implemented; tests pass** |
+| ws4 | Server cron and deploy | `cron`, `cmd/peo`, `Dockerfile`, compose, Makefile | **implemented; C9 image/runtime smoke passed** |
+| ws5 | Flutter core | app shell, `Dio` client, auth cubit, `go_router`, models | **implemented; focused tests pass** |
+| ws6 | Flutter user pages | shop, console, orders, renew, recharge, messages, settings | **implemented; parity follow-ups complete and tested** |
+| ws7 | Flutter admin pages | dashboard, users, orders, keys, gallery, work orders, settings | **implemented; targeted checks pass** |
+| ws8 | Documentation | this file and its siblings | **in progress** |
+| ws9 | CI and repository files | workflow, README, CHANGELOG | **Flutter CI gates blocking and locally verified; other repository-file review remains outside active plan** |
 
 `ws5`–`ws7` are being executed as a single Flutter deliverable because they share
 one routing tree and one model layer; splitting them further would have produced
@@ -133,18 +133,20 @@ in the recharge-key cleanup, and the confirmation lookup by primary key instead 
 
 ## 6. Verification
 
-Everything below is run from `server/` unless stated otherwise.
+Status checked on 2026-09-26. Commands run in the indicated module directory.
 
 | Gate | Command | Current |
 |---|---|---|
-| Compiles | `go build ./...` | **pass** |
-| Static analysis | `go vet ./...` | **pass** |
-| Formatting | `gofmt -l ./cmd ./internal` | **empty** |
-| Tests | `go test ./...` | **pass** |
-| Compose file | `docker compose config` | **pass** |
-| Frontend analyze | `flutter analyze` | ws5–ws7 |
-| Frontend tests | `flutter test` | ws5–ws7 |
-| Frontend bundle | `flutter build web --wasm --release` | ws5–ws7 |
+| Server build | `cd server; go build ./...` | **pass** |
+| Server tests | `cd server; go test ./...` | **pass (2026-09-26)** after Phase B8 parity corrections; most packages currently have no tests |
+| Server static analysis | `cd server; go vet ./...` | **not rerun in this audit**; prior plan recorded pass |
+| Go formatting | `gofmt -l ./cmd ./internal` | **not rerun in this audit**; prior plan recorded empty |
+| Compose configuration | `docker compose config --quiet` | **pass** |
+| Flutter analysis | `cd flutter; flutter analyze` | **pass (2026-09-26)** — no issues found |
+| Flutter tests | `cd flutter; flutter test` | **pass (2026-09-26)** — 12 focused tests cover bootstrap, routes/pages, API errors, and session behavior |
+| Flutter code generation | `cd flutter; dart run build_runner build --delete-conflicting-outputs` | **pass (2026-09-26)** (tool reports the option was removed and ignored; no outputs written) |
+| Flutter WASM bundle | `cd flutter; flutter build web --wasm --release` | **pass (2026-09-26)** — rerun after parity implementations; built `flutter/build/web` |
+| Docker image / runtime smoke test | image build plus Mongo/Redis-backed `/healthz` | **pass (2026-09-26)** — latest full image build and isolated checks: health 200 with Mongo/Redis/Pterodactyl healthy, site API/root/static asset/SPA fallback 200, unknown API route 404; cleanup verified. Used cached MongoDB 8.2, Redis 7-alpine, and an isolated HTTP Pterodactyl probe mock. |
 
 The Go test suite is deliberately small and high-value: `internal/api` holds the
 67-route pinning test, an 8-case test for the dual-source SPA handler, and a
@@ -189,28 +191,95 @@ The legacy Beego admin server on `8088` is not carried over.
 
 ---
 
-## 8. Open items
+## 8. Open items and execution plan
 
-### Must happen before a release
+The implementation and automated validation gates are complete. Final release
+sign-off remains blocked on explicit acceptance of the greenfield data decision and
+explicit legacy disposition approval. Preserve `legacy/` until those approvals are
+recorded.
 
-1. **Flutter parity review.** `ws5`–`ws7` must cover every page in the inventory
-   of [`ARCHITECTURE.md` §9](./ARCHITECTURE.md); the list came from the 30 legacy
-   templates, so it is the checklist.
-2. **Remove the three `continue-on-error: true` flags** from the `flutter` job in
-   [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). They are there
-   because generate/analyze/test had nothing to run before the SPA existed; while
-   they remain, a broken analyser or a failing test still produces a green build.
-3. **Delete `legacy/`** once the port has been signed off. Until then it is the
-   only way to answer a behaviour question.
+### Active task breakdown
 
-### Should happen, lower priority
+Independent work is assigned to child sessions with file/scope ownership. The
+coordinating session tracks dependencies and updates this table and the phase
+checklist as each result is verified; it does not duplicate implementation work.
 
-4. **`service/` sub-packages** for `order`, `gallery` and `settings`
-   (divergence (b)). Cosmetic; it changes no behaviour and no wire shape.
-5. **`internal/buildinfo`** is populated only by linker flags, so a `go run`
-   reports `dev`/empty. That is intended.
-6. **`ProductInput.startup`** (divergence (e)) if the legacy field is ever
-   confirmed to have been live.
+| Task | Scope / deliverable | Owner | Status |
+|---|---|---|---|
+| A4 | Complete routed admin pages: dashboard, users, orders, products/editor, keys, gallery moderation, work orders, settings | Child session | **complete (2026-09-26)** — improved admin coverage in `admin_pages.dart`; existing DTO/API/cubits used and admin routes remain gated by `isAdmin`; `flutter analyze lib/pages/admin` and focused dashboard route test passed |
+| A5 | Review page/route parity against architecture inventory, route/API contracts, and legacy flows; record actionable gaps | Review and follow-up sessions complete | **complete (2026-09-26)** — implemented password reset, substantive terms, gallery interactions/images, recharge QR/status/gates, user navigation/panel provisioning, console status/summary, and discount/email-notice flags. Public approved-gallery GET now uses `OptionalAuth`; mine and mutations remain authenticated. Updated `API.md` and `CONTRACT-ROUTES.md`. Flutter tests (12), analyze, server tests, WASM build, and diff check pass. |
+| B6 | Add focused Flutter bootstrap, redirect, representative page, and API/session tests | Child session | **complete (2026-09-26)** — 12 Flutter tests pass across bootstrap/shop, auth/admin redirects, representative console/admin access, Bearer token handling, API errors, and expired-token session reset; analyze clean |
+| B7 | Make Flutter generation, analysis, and tests blocking in CI; validate frontend gates/WASM build | Child session | **complete (2026-09-26)** — removed all three `continue-on-error` directives; generation, `flutter analyze`, `flutter test`, and `flutter build web --wasm --release` passed locally |
+| B8 | Audit server business parity, fix only confirmed mismatches, and validate targeted behavior | Child session | **complete (2026-09-26)** — corrected legacy expiry grace/notifications, renewal distinctions, password/key formats, Redis key shape, cooldown/email behavior, undocumented Alipay cap, and balance-payment rollback; verified accepted fixes. `go test ./...` and `git diff --check -- server` pass. |
+| C9 | Build image and smoke-test API, assets, SPA fallback, and dependency-backed `/healthz` | Coordinator; final verification | **complete (2026-09-26)** — rebuilt latest worktree as `peo-c9-final-20260926:smoke`; isolated runtime passed `/healthz` 200 (Mongo/Redis/Pterodactyl all true), site config 200, root 200, static asset 200 (1,548 bytes), SPA fallback 200, unknown API 404; app cleanup verified. Used cached MongoDB 8.2, Redis 7-alpine, and an isolated Pterodactyl HTTP probe mock. |
+| C10 | Review integrated release sign-off prerequisites; preserve `legacy/` pending explicit sign-off | Child session (read-only) | **review complete; approval blocked** — automated validation and C9 runtime proof passed, A5/B8 parity complete. Greenfield data acceptance and explicit legacy-disposition approval require owner sign-off. Do not delete `legacy/`. |
+
+### Phase A — Make the SPA a real application
+
+1. **Wire the app entrypoint.** ✅ Complete (2026-09-26). Replaced the generated
+   counter scaffold in `flutter/lib/main.dart` with initialization for
+   `TokenStore`, `ApiClient`, `PeoApi`, session/site cubits, `buildRouter`, and
+   required `BlocProvider`s. Router and session subscriptions are disposed by
+   the app state. Replaced the default counter widget test with a focused
+   bootstrap test.
+2. **Implement public pages.** ✅ Complete (2026-09-26). Added the routed
+   login, registration, forgot-password, confirmation, shop/product detail,
+   gallery, terms, and not-found pages using the existing API/state layer.
+3. **Implement user pages.** ✅ Complete (2026-09-26). Added the routed
+   console/server details, order list/detail/payment, renew/reinstall, recharge,
+   messages, account/settings, and work-order pages using the existing cubits
+   and API contracts.
+4. **Implement admin pages.** ✅ Complete (2026-09-26). Dashboard, users, orders,
+   products/editor, keys, gallery moderation, work orders, and settings are routed
+   and use the existing DTOs/cubits; admin routing is gated by `isAdmin`.
+5. **Complete parity review.** ✅ Complete (2026-09-26). Reviewed the page inventory
+   against [`ARCHITECTURE.md` §9](./ARCHITECTURE.md), API/route contracts, and legacy
+   flows. Implemented password reset, substantive terms, gallery workflows/images,
+   recharge QR and feature gates, user navigation and panel provisioning, console
+   status/summary, and discount/email-notice flags. Public approved-gallery reads
+   use `OptionalAuth`; private/mutating gallery routes remain authenticated. API and
+   route contracts were updated. Final Flutter test/analyze and WASM checks passed.
+
+### Phase B — Restore trustworthy validation
+
+6. **Add focused frontend tests.** ✅ Complete (2026-09-26). Tests cover
+   entrypoint/bootstrap and shop, signed-out/user/admin route behavior, a
+   representative console flow, Bearer-token attachment, API error handling,
+   and expired-token session reset. `flutter test` passes (12 tests) and
+   `flutter analyze` reports no issues.
+7. **Make Flutter CI blocking.** ✅ Complete (2026-09-26). Removed all three
+   `continue-on-error: true` directives for generation, analysis, and tests in
+   [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). Code generation,
+   `flutter analyze`, `flutter test`, and the WASM release build all passed locally.
+8. **Audit server business parity.** ✅ Complete (2026-09-26). Compared service
+   behavior with `legacy/` and [`AGENTS.md`](../AGENTS.md), and corrected confirmed
+   mismatches in expiry grace/notifications, renewal paths, password/key formats,
+   Redis key shape, cooldown/email behavior, Alipay amount cap, and balance-payment
+   rollback. Verified accepted fixes. `go test ./...` and `git diff --check -- server`
+   passed. Pricing arithmetic, key limits, core cooldown names/TTLs, and the
+   documented email-code TTL divergences were also checked.
+
+### Phase C — Prove the deployable artifact
+
+9. **Build and smoke-test the image.** ✅ Complete (2026-09-26). Rebuilt the latest
+   worktree and passed isolated runtime checks: `/healthz` returned 200 with MongoDB,
+   Redis, and Pterodactyl probe healthy; site config, root, static asset (1,548 bytes),
+   and SPA fallback returned 200; unknown API path returned 404. Temporary containers,
+   network, and config directory were cleaned and verified absent. Used cached MongoDB
+   8.2, Redis 7-alpine, and an isolated Pterodactyl HTTP probe mock.
+10. **Release sign-off and legacy disposition.** Review the full page/API/data
+    parity checklist. Delete `legacy/` only after explicit sign-off; until then,
+    preserve it as the read-only behavior reference.
+
+### Lower-priority structural cleanup
+
+- Split `service/order`, `service/gallery`, and `service/settings` into
+  sub-packages if it is still useful after functional parity (divergence (b));
+  cosmetic and not a release blocker.
+- `internal/buildinfo` is populated only by linker flags; `go run` reporting
+  `dev`/empty is intentional.
+- Revisit `ProductInput.startup` (divergence (e)) only if legacy evidence shows
+  the field had a live behavior impact.
 
 ### Explicitly not planned
 

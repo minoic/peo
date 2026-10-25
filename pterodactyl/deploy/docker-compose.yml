@@ -1,0 +1,116 @@
+x-panel-environment: &panel-environment
+  APP_URL: "${PEO_PANEL_APP_URL:-http://localhost:8088}"
+  APP_TIMEZONE: "Asia/Shanghai"
+  APP_SERVICE_AUTHOR: "noreply@example.com"
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_ENVIRONMENT_ONLY: "true"
+  # For multiple replicas, supply the same APP_KEY and HASHIDS_SALT to every replica.
+  # APP_KEY: "base64:..."
+  # HASHIDS_SALT: "..."
+  # Set LE_EMAIL only when this container terminates HTTPS with Let's Encrypt.
+  # LE_EMAIL: "admin@example.com"
+  DB_HOST: "database"
+  DB_PORT: "3306"
+  DB_DATABASE: "panel"
+  DB_USERNAME: "pterodactyl"
+  DB_PASSWORD: &db-password "PTERODACTYL_DB_PASSWORD"
+  CACHE_STORE: "redis"
+  SESSION_DRIVER: "redis"
+  SESSION_CONNECTION: "sessions"
+  QUEUE_CONNECTION: "redis"
+  REDIS_HOST: "cache"
+  REDIS_QUEUE_RETRY_AFTER: "90"
+  MAIL_MAILER: "smtp"
+  MAIL_FROM_ADDRESS: "noreply@example.com"
+  MAIL_HOST: "mail"
+  MAIL_PORT: "1025"
+  MAIL_USERNAME: ""
+  MAIL_PASSWORD: ""
+  MAIL_ENCRYPTION: ""
+  QUEUE_WORKER_ENABLED: "true"
+  # Enable the scheduler on exactly one replica.
+  SCHEDULER_ENABLED: "true"
+
+services:
+  database:
+    image: mariadb:11.4
+    restart: unless-stopped
+    volumes:
+      - database-data:/var/lib/mysql
+    environment:
+      MARIADB_PASSWORD: *db-password
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: "panel"
+      MARIADB_USER: "pterodactyl"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+  cache:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  panel:
+    image: "${PEO_PANEL_IMAGE:-minoic/peo:panel-2.0.0-beta.2-peo.1}"
+    restart: unless-stopped
+    # Longer than the worker timeout; lets running jobs finish before shutdown.
+    stop_grace_period: 90s
+    ports:
+      - "8088:80"
+      # - "443:443"
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    volumes:
+      - panel-var:/app/var
+      - panel-nginx:/etc/nginx/http.d
+      - panel-certs:/etc/letsencrypt
+      - panel-logs:/app/storage/logs
+      - panel-extensions:/app/extensions
+      - panel-extension-assets:/app/public/assets/extensions
+    environment: *panel-environment
+  extension-install:
+    image: "${PEO_PANEL_IMAGE:-minoic/peo:panel-2.0.0-beta.2-peo.1}"
+    profiles: ["extension-install"]
+    restart: "no"
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    volumes:
+      - panel-var:/app/var
+      - panel-nginx:/etc/nginx/http.d
+      - panel-certs:/etc/letsencrypt
+      - panel-logs:/app/storage/logs
+      - panel-extensions:/app/extensions
+      - panel-extension-assets:/app/public/assets/extensions
+    environment: *panel-environment
+    command: ["php", "artisan", "p:extension:install", "/opt/peo-panel-extension", "--enable", "--replace", "--no-interaction"]
+  mail:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+
+volumes:
+  database-data:
+  redis-data:
+  panel-var:
+  panel-nginx:
+  panel-certs:
+  panel-logs:
+  panel-extensions:
+  panel-extension-assets:

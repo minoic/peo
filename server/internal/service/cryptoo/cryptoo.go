@@ -12,8 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// KeyLength is the length of a generated activation code.
-const KeyLength = 32
+// KeyLength matches the legacy alphabet-only activation code format.
+const KeyLength = 20
 
 // GenerateWareKeys creates amount activation codes for a product, each valid
 // for validityDays days. The codes are inserted in one batch, whereas the
@@ -25,9 +25,13 @@ func GenerateWareKeys(ctx context.Context, specID bson.ObjectID, amount, validit
 	exp := time.Now().AddDate(0, 0, validityDays)
 	keys := make([]models.WareKey, 0, amount)
 	for i := 0; i < amount; i++ {
+		key, err := random.Letters(KeyLength)
+		if err != nil {
+			return err
+		}
 		keys = append(keys, models.WareKey{
 			SpecID:    specID,
-			KeyString: random.Code(),
+			KeyString: key,
 			Exp:       exp,
 		})
 	}
@@ -43,8 +47,12 @@ func GenerateRechargeKeys(ctx context.Context, balance uint, amount, validityDay
 	exp := time.Now().AddDate(0, 0, validityDays)
 	keys := make([]models.RechargeKey, 0, amount)
 	for i := 0; i < amount; i++ {
+		key, err := random.Letters(KeyLength)
+		if err != nil {
+			return err
+		}
 		keys = append(keys, models.RechargeKey{
-			KeyString: random.Code(),
+			KeyString: key,
 			Balance:   balance,
 			Exp:       exp,
 		})

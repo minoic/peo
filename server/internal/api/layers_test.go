@@ -1,10 +1,8 @@
 package api
 
 import (
-	"bytes"
 	"go/ast"
 	"go/parser"
-	"go/printer"
 	"go/token"
 	"os"
 	"path/filepath"
@@ -116,14 +114,9 @@ func TestLayerRule2StoreSurfaceHasNoBSONM(t *testing.T) {
 		}
 		rel = filepath.ToSlash(rel)
 
-		report := func(kind, name string, node any) {
+		report := func(kind, name string, node ast.Node) {
 			checked++
-			var buf bytes.Buffer
-			if printErr := printer.Fprint(&buf, fset, node); printErr != nil {
-				t.Errorf("print internal/%s: %v", rel, printErr)
-				return
-			}
-			if strings.Contains(buf.String(), "bson.M") {
+			if exportedTypeHasBSONM(node, file) {
 				t.Errorf("internal/%s: exported %s %s exposes bson.M, but AGENTS.md section 3 rule 2 keeps raw driver types inside store",
 					rel, kind, name)
 			}
@@ -153,6 +146,36 @@ func TestLayerRule2StoreSurfaceHasNoBSONM(t *testing.T) {
 	}
 }
 
+func exportedTypeHasBSONM(node ast.Node, file *ast.File) bool {
+	aliases := map[string]bool{}
+	for _, imp := range file.Imports {
+		path := strings.Trim(imp.Path.Value, `"`)
+		if path != "go.mongodb.org/mongo-driver/bson" && path != "go.mongodb.org/mongo-driver/v2/bson" {
+			continue
+		}
+		name := "bson"
+		if imp.Name != nil {
+			name = imp.Name.Name
+		}
+		if name != "_" && name != "." {
+			aliases[name] = true
+		}
+	}
+	found := false
+	ast.Inspect(node, func(n ast.Node) bool {
+		sel, ok := n.(*ast.SelectorExpr)
+		if !ok || sel.Sel.Name != "M" {
+			return true
+		}
+		id, ok := sel.X.(*ast.Ident)
+		if ok && aliases[id.Name] {
+			found = true
+		}
+		return true
+	})
+	return found
+}
+
 // TestLayerRule3ServiceNeverTouchesGin pins rule 3. `net/http` is deliberately
 // allowed: the Pterodactyl client is an HTTP client, and the rule forbids the
 // transport framework, not the standard library's client types.
@@ -172,9 +195,6 @@ func TestLayerRule3ServiceNeverTouchesGin(t *testing.T) {
 // the caller's, so only the header-read call is matched.
 func TestLayerRule4OnlyMiddlewareReadsAuthorization(t *testing.T) {
 	root := internalDir(t)
-	// Assembled at run time so that this file does not contain the very pattern
-	// it searches for -- otherwise the audit would flag itself.
-	needle := "GetHeader(" + `"` + "Authorization" + `"` + ")"
 	scanned := 0
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") {
@@ -185,15 +205,18 @@ func TestLayerRule4OnlyMiddlewareReadsAuthorization(t *testing.T) {
 			return relErr
 		}
 		rel = filepath.ToSlash(rel)
-		if strings.HasPrefix(rel, "middleware/") {
+		// Tests may read outgoing HTTP headers to assert that clients send the
+		// caller's token upstream; this rule applies to production request paths.
+		if strings.HasPrefix(rel, "middleware/") || strings.HasSuffix(rel, "_test.go") {
 			return nil
 		}
-		src, readErr := os.ReadFile(path)
+		fset := token.NewFileSet()
+		file, readErr := parser.ParseFile(fset, path, nil, 0)
 		if readErr != nil {
 			return readErr
 		}
 		scanned++
-		if strings.Contains(string(src), needle) {
+		if readsAuthorization(file) {
 			t.Errorf("internal/%s reads the Authorization header, but AGENTS.md section 3 rule 4 makes middleware the only place that may",
 				rel)
 		}
@@ -204,5 +227,112 @@ func TestLayerRule4OnlyMiddlewareReadsAuthorization(t *testing.T) {
 	}
 	if scanned == 0 {
 		t.Fatal("internal contains no Go files; the audit would pass vacuously")
+	}
+}
+
+func readsAuthorization(file *ast.File) bool {
+	reads := false
+	headerAliases := map[string]bool{}
+	ast.Inspect(file, func(node ast.Node) bool {
+		switch stmt := node.(type) {
+		case *ast.AssignStmt:
+			for i, rhs := range stmt.Rhs {
+				selector, ok := rhs.(*ast.SelectorExpr)
+				if !ok || selector.Sel.Name != "Header" || i >= len(stmt.Lhs) {
+					continue
+				}
+				if alias, ok := stmt.Lhs[i].(*ast.Ident); ok {
+					headerAliases[alias.Name] = true
+				}
+			}
+		case *ast.ValueSpec:
+			for i, value := range stmt.Values {
+				selector, ok := value.(*ast.SelectorExpr)
+				if !ok || selector.Sel.Name != "Header" || i >= len(stmt.Names) {
+					continue
+				}
+				headerAliases[stmt.Names[i].Name] = true
+			}
+		}
+		return true
+	})
+	isAuthorization := func(expr ast.Expr) bool {
+		lit, ok := expr.(*ast.BasicLit)
+		return ok && lit.Kind == token.STRING && strings.EqualFold(strings.Trim(lit.Value, `"`), "Authorization")
+	}
+	ast.Inspect(file, func(node ast.Node) bool {
+		switch expr := node.(type) {
+		case *ast.CallExpr:
+			selector, ok := expr.Fun.(*ast.SelectorExpr)
+			if !ok || len(expr.Args) == 0 || !isAuthorization(expr.Args[0]) {
+				return true
+			}
+			if selector.Sel.Name == "GetHeader" {
+				reads = true
+				return true
+			}
+			if selector.Sel.Name == "Get" {
+				if header, ok := selector.X.(*ast.SelectorExpr); ok && header.Sel.Name == "Header" {
+					reads = true
+				}
+				if header, ok := selector.X.(*ast.Ident); ok && headerAliases[header.Name] {
+					reads = true
+				}
+			}
+		case *ast.IndexExpr:
+			if isAuthorization(expr.Index) {
+				if header, ok := expr.X.(*ast.SelectorExpr); ok && header.Sel.Name == "Header" {
+					reads = true
+				}
+				if header, ok := expr.X.(*ast.Ident); ok && headerAliases[header.Name] {
+					reads = true
+				}
+			}
+		}
+		return true
+	})
+	return reads
+}
+
+func TestLayerRule4AuthorizationASTFixtures(t *testing.T) {
+	for _, source := range []string{
+		`package p; func f(c *Context) { c.GetHeader("authorization") }`,
+		`package p; func f(r *http.Request) { r.Header.Get("Authorization") }`,
+		`package p; func f(r *http.Request) { _ = r.Header["Authorization"] }`,
+		`package p; func f(r *http.Request) { h := r.Header; _ = h.Get("Authorization") }`,
+	} {
+		file, err := parser.ParseFile(token.NewFileSet(), "fixture.go", source, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !readsAuthorization(file) {
+			t.Fatalf("did not detect Authorization read in %s", source)
+		}
+	}
+	file, err := parser.ParseFile(token.NewFileSet(), "outbound.go", `package p; func f(r *http.Request) { r.Header.Set("Authorization", "token") }`, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if readsAuthorization(file) {
+		t.Fatal("outbound Authorization header write was treated as a read")
+	}
+}
+
+func TestLayerRule2BSONAliasFixture(t *testing.T) {
+	file, err := parser.ParseFile(token.NewFileSet(), "fixture.go", `package store; import driver "go.mongodb.org/mongo-driver/v2/bson"; type Public struct { Filter driver.M }`, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	typeDecl := file.Decls[1].(*ast.GenDecl).Specs[0].(*ast.TypeSpec)
+	if !exportedTypeHasBSONM(typeDecl.Type, file) {
+		t.Fatal("aliased bson.M in exported field was not detected")
+	}
+	file, err = parser.ParseFile(token.NewFileSet(), "control.go", `package store; type Public struct { Filter map[string]any }`, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	typeDecl = file.Decls[0].(*ast.GenDecl).Specs[0].(*ast.TypeSpec)
+	if exportedTypeHasBSONM(typeDecl.Type, file) {
+		t.Fatal("ordinary map was treated as bson.M")
 	}
 }

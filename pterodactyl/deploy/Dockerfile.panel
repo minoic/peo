@@ -1,0 +1,3 @@
+FROM ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0
+
+COPY pterodactyl/peo-panel-extension /opt/peo-panel-extension

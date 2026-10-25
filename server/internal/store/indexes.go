@@ -40,6 +40,7 @@ func EnsureIndexes(ctx context.Context) error {
 			// Spec §5 requires uuid to be unique, as the legacy `gorm:"unique"`
 			// tag did. Registration always mints one, so it need not be sparse.
 			uniq("uniq_uuid", "uuid"),
+			{Keys: bson.D{{Key: "bootstrapKey", Value: 1}}, Options: options.Index().SetName("uniq_bootstrap_key").SetUnique(true).SetSparse(true)},
 		}},
 		{models.CollWareSpecs, []mongo.IndexModel{
 			plain("idx_ware_name", "wareName"),
@@ -50,6 +51,7 @@ func EnsureIndexes(ctx context.Context) error {
 			// The cron sweeper scans for expired servers ordered by expiry.
 			plain("idx_valid_date", "validDate"),
 			uniq("uniq_server_ext_id", "serverExternalId"),
+			{Keys: bson.D{{Key: "orderId", Value: 1}}, Options: options.Index().SetName("uniq_order_id").SetUnique(true).SetSparse(true)},
 		}},
 		{models.CollWareKeys, []mongo.IndexModel{
 			uniq("uniq_key_string", "keyString"),
@@ -59,6 +61,7 @@ func EnsureIndexes(ctx context.Context) error {
 		{models.CollOrders, []mongo.IndexModel{
 			plain("idx_user", "userId"),
 			plain("idx_confirmed", "confirmed"),
+			plain("idx_order_expiry", "closed", "paid", "createdAt"),
 		}},
 		{models.CollMessages, []mongo.IndexModel{
 			plain("idx_receiver", "receiverId"),
@@ -92,8 +95,13 @@ func EnsureIndexes(ctx context.Context) error {
 		}},
 	}
 
+	legacyDocIDIndex := mongo.IndexModel{
+		Keys:    bson.D{{Key: "doc._id", Value: 1}},
+		Options: options.Index().SetName("idx_legacy_doc_id").SetSparse(true),
+	}
 	for _, s := range specs {
-		if _, err := Collection(s.coll).Indexes().CreateMany(ctx, s.models); err != nil {
+		indexes := append(append([]mongo.IndexModel(nil), s.models...), legacyDocIDIndex)
+		if _, err := Collection(s.coll).Indexes().CreateMany(ctx, indexes); err != nil {
 			return err
 		}
 	}

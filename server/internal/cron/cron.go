@@ -34,14 +34,25 @@ const probeInterval = 30 * time.Second
 
 // Manager owns the scheduler and the shutdown gate for the jobs it started.
 type Manager struct {
-	cron *cron.Cron
-	wg   sync.WaitGroup
-	once sync.Once
+	cron     *cron.Cron
+	ctx      context.Context
+	cancel   context.CancelFunc
+	wg       sync.WaitGroup
+	once     sync.Once
+	stopOK   bool
+	jobsMu   sync.Mutex
+	jobs     map[string]bool
+	stopping bool
 }
 
 // New builds a scheduler with the standard job set registered but not started.
 func New() *Manager {
+	ctx, cancel := context.WithCancel(context.Background())
 	return &Manager{
+		ctx:    ctx,
+		cancel: cancel,
+		stopOK: true,
+		jobs:   make(map[string]bool),
 		cron: cron.New(cron.WithChain(
 			cron.Recover(glgfCronLogger{}),
 			cron.SkipIfStillRunning(glgfCronLogger{}),
@@ -63,18 +74,18 @@ func (glgfCronLogger) Error(err error, msg string, keysAndValues ...interface{})
 // Register installs every recurring job. The initial cache warm-up is triggered
 // separately by Bootstrap so a slow panel cannot delay the first request.
 func (m *Manager) Register() error {
-	jobs := []struct {
-		spec string
-		fn   func()
-	}{
-		{"@every 1m", func() { m.withContext(storefrontTimeout, m.refreshStorefront) }},
-		{"@every 5m", func() { m.withContext(storefrontTimeout, m.cacheEggs) }},
-		{"@every 5m", func() { m.withContext(serverCheckTimeout, m.checkServers) }},
-		{"@every 30m", func() { m.withContext(keyCleanupTimeout, m.deleteOutdatedKeys) }},
-		{"@every 30s", func() { m.withContext(probeTimeout, m.probeServers) }},
+	jobs := []scheduledJob{
+		{"@every 1m", "storefront", storefrontTimeout, m.refreshStorefront},
+		{"@every 5m", "eggs", storefrontTimeout, m.cacheEggs},
+		{"@every 5m", "servers", serverCheckTimeout, m.checkServers},
+		{"@every 30m", "keys", keyCleanupTimeout, m.deleteOutdatedKeys},
+		{"@every 30s", "probe", probeTimeout, m.probeServers},
+		{"@every 1m", "recover", serverCheckTimeout, m.recoverOperations},
+		{"@every 1m", "orders", keyCleanupTimeout, m.expireOrders},
 	}
 	for _, job := range jobs {
-		if _, err := m.cron.AddFunc(job.spec, job.fn); err != nil {
+		job := job
+		if _, err := m.cron.AddFunc(job.spec, func() { m.run(job.name, job.timeout, job.fn) }); err != nil {
 			return err
 		}
 	}
@@ -90,37 +101,87 @@ func (m *Manager) Start() {
 
 // Stop halts the scheduler and waits for running jobs to finish so a shutdown
 // does not abandon a half-written database operation.
-func (m *Manager) Stop() {
+func (m *Manager) Stop() bool {
 	m.once.Do(func() {
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer shutdownCancel()
+		m.jobsMu.Lock()
+		m.stopping = true
+		m.cancel()
+		m.jobsMu.Unlock()
 		ctx := m.cron.Stop()
 		select {
 		case <-ctx.Done():
-		case <-time.After(30 * time.Second):
+		case <-shutdownCtx.Done():
 			glgf.Warn("cron: jobs did not finish within the shutdown grace period")
+			m.stopOK = false
 		}
-		m.wg.Wait()
+		bootstrapDone := make(chan struct{})
+		go func() { m.wg.Wait(); close(bootstrapDone) }()
+		select {
+		case <-bootstrapDone:
+		case <-shutdownCtx.Done():
+			glgf.Warn("cron: bootstrap jobs did not finish within the shutdown grace period")
+			m.stopOK = false
+		}
 		glgf.Info("cron: scheduler stopped")
 	})
+	return m.stopOK
 }
 
 // Bootstrap performs the startup warm-up that the legacy process did before
 // serving traffic: fill the storefront cache and pre-load the server templates.
 func (m *Manager) Bootstrap() {
-	m.withContext(storefrontTimeout, func(ctx context.Context) {
+	m.runAsync("orders", keyCleanupTimeout, m.expireOrders)
+	m.runAsync("storefront", storefrontTimeout, func(ctx context.Context) {
 		service.Products.Refresh(ctx)
 	})
-	m.withContext(storefrontTimeout, m.cacheEggs)
+	m.runAsync("eggs", storefrontTimeout, m.cacheEggs)
 }
 
-// withContext runs a job on a fresh context and tracks it for the shutdown gate.
-func (m *Manager) withContext(timeout time.Duration, fn func(context.Context)) {
+func (m *Manager) expireOrders(ctx context.Context) {
+	service.Order.ExpirePending(ctx)
+}
+
+type scheduledJob struct {
+	spec, name string
+	timeout    time.Duration
+	fn         func(context.Context)
+}
+
+func (m *Manager) runAsync(name string, timeout time.Duration, fn func(context.Context)) {
+	m.jobsMu.Lock()
+	if m.stopping {
+		m.jobsMu.Unlock()
+		return
+	}
 	m.wg.Add(1)
-	go func() {
-		defer m.wg.Done()
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-		fn(ctx)
+	m.jobsMu.Unlock()
+	go func() { defer m.wg.Done(); m.run(name, timeout, fn) }()
+}
+
+func (m *Manager) run(name string, timeout time.Duration, fn func(context.Context)) {
+	if m.ctx.Err() != nil {
+		return
+	}
+	m.jobsMu.Lock()
+	if m.jobs[name] {
+		m.jobsMu.Unlock()
+		return
+	}
+	m.jobs[name] = true
+	m.jobsMu.Unlock()
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			glgf.Error("cron: job ", name, " panicked: ", recovered)
+		}
+		m.jobsMu.Lock()
+		delete(m.jobs, name)
+		m.jobsMu.Unlock()
 	}()
+	ctx, cancel := context.WithTimeout(m.ctx, timeout)
+	defer cancel()
+	fn(ctx)
 }
 
 // refreshStorefront rebuilds the cached product list.
@@ -141,6 +202,10 @@ func (m *Manager) checkServers(ctx context.Context) {
 // deleteOutdatedKeys removes expired activation and recharge codes.
 func (m *Manager) deleteOutdatedKeys(ctx context.Context) {
 	cryptoo.DeleteOutdatedKeys(ctx)
+}
+
+func (m *Manager) recoverOperations(ctx context.Context) {
+	service.RecoverOperations(ctx)
 }
 
 // probeServers refreshes the Minecraft status of every server and credits the

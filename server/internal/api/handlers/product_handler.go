@@ -56,6 +56,16 @@ func (h *ProductHandler) Eggs(c *gin.Context) {
 	ok(c, dto.EggListResponse{Eggs: eggs})
 }
 
+// TagEggs lists Panel 2 Eggs assigned to one stable Tag slug.
+func (h *ProductHandler) TagEggs(c *gin.Context) {
+	eggs, err := service.Products.EggsForTag(c.Request.Context(), c.Param("tagSlug"))
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	ok(c, dto.EggListResponse{Eggs: eggs})
+}
+
 // Allocations lists the free ports of the node the ordered product is pinned to.
 // This replaces the legacy order page, which embedded the address picker in the
 // checkout HTML; the split REST client fetches it as its own resource.

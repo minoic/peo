@@ -29,6 +29,16 @@ type AdminProductFormResponse struct {
 	Fields []service.FormField `json:"fields"`
 }
 
+type PanelTag struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	Slug         string `json:"slug"`
+	LegacyNestID *int   `json:"legacyNestId,omitempty"`
+}
+type PanelTagListResponse struct {
+	Items []PanelTag `json:"items"`
+}
+
 // AdminWorkOrderListResponse lists open tickets.
 type AdminWorkOrderListResponse struct {
 	Orders []service.WorkOrderItem `json:"orders"`

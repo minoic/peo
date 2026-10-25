@@ -32,8 +32,12 @@ func IssueRegistrationKey(ctx context.Context, u *models.User) error {
 	if u.EmailConfirmed {
 		return nil
 	}
+	keyString, err := random.String(15)
+	if err != nil {
+		return err
+	}
 	key := &models.RegConfirmKey{
-		KeyString: random.String(15),
+		KeyString: keyString,
 		UserName:  u.Name,
 		UserID:    u.ID,
 		UserEmail: u.Email,

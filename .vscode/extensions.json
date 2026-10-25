@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    // Required for the "Flutter Web (debug)" launch configuration.
+    "Dart-Code.dart-code",
+    "Dart-Code.flutter",
+    // Go backend (module lives in server/).
+    "golang.go",
+    // Compose stack in docker-compose.yml.
+    "ms-azuretools.vscode-docker",
+    "p1c2u.docker-compose",
+    // conf/settings.toml and the embedded default_settings.toml.
+    "tamasfe.even-better-toml"
+  ]
+}

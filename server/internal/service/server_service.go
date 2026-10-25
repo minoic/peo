@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"math"
 	"sync"
 	"time"
 
@@ -189,7 +191,7 @@ func (ServerService) ProbeAll(ctx context.Context, elapsed time.Duration) {
 // uptime write happens here rather than in the caller because only the probe
 // knows whether the server was reachable.
 func (ServerService) probe(ctx context.Context, host string, userID bson.ObjectID, elapsed time.Duration) {
-	pong, err := status.Ping(host)
+	pong, err := status.Ping(ctx, host)
 	if err != nil {
 		Servers.cache.putProbe(host, probeResult{Online: false, At: time.Now()})
 		return
@@ -243,35 +245,71 @@ func (ServerService) Renew(ctx context.Context, entityID, userID bson.ObjectID, 
 	if key.SpecID != e.SpecID {
 		return apierr.Fail(apierr.CodeInvalidKey, "the activation code is for another product")
 	}
+	claimID := "renew:" + e.ID.Hex() + ":" + key.ID.Hex()
+	for _, usedKeyID := range e.RenewedKeyIDs {
+		if usedKeyID == key.ID {
+			if err := store.Key.Delete(ctx, key.ID); err != nil {
+				return apierr.Wrap(apierr.CodeInternal, "cannot finish consuming the activation code", err)
+			}
+			return nil
+		}
+	}
+	if key.Exp.Before(time.Now()) && (key.ClaimID != claimID || key.ClaimUser != userID) && (e.KeyRenewal == nil || e.KeyRenewal.ID != claimID) {
+		return apierr.Fail(apierr.CodeInvalidKey, "the activation code has expired")
+	}
 	spec, err := store.Spec.ByID(ctx, key.SpecID)
 	if err != nil {
 		return apierr.Wrap(apierr.CodeNotFound, "product not found", err)
 	}
 
 	redis.Limit(ctx, limitKey, renewCooldown)
-	// The code is consumed up front and restored if the write fails, so two
-	// concurrent requests cannot both redeem it. Redis also guards this, but
-	// that guard is advisory: it can expire between the check and the write.
-	if err := store.Key.Delete(ctx, key.ID); err != nil {
-		return apierr.Wrap(apierr.CodeInternal, "cannot consume the activation code", err)
-	}
 	base := e.ValidDate
 	if time.Now().After(base) {
 		base = time.Now()
 	}
-	if err := store.Entity.SetValidDate(ctx, e.ID, base.Add(spec.ValidDuration)); err != nil {
-		restoreKey(ctx, key)
-		return apierr.Wrap(apierr.CodeInternal, "cannot update the server record", err)
+	now := time.Now()
+	op := models.KeyRenewalOperation{
+		ID: claimID, LeaseID: models.NewID().Hex(), LeaseUntil: now.Add(2 * time.Minute),
+		UserID: userID, KeyID: key.ID, ValidDate: base.Add(spec.ValidDuration), CreatedAt: now, UpdatedAt: now,
 	}
-	if err := store.Entity.SetDeleteStatus(ctx, e.ID, 0); err != nil {
-		restoreKey(ctx, key)
-		return apierr.Wrap(apierr.CodeInternal, "cannot update the server record", err)
+	if e.KeyRenewal != nil && e.KeyRenewal.ID == claimID {
+		op = *e.KeyRenewal
+		op.LeaseID = models.NewID().Hex()
+		op.LeaseUntil = now.Add(2 * time.Minute)
+		op.UpdatedAt = now
+	}
+	started, err := store.Entity.BeginKeyRenewal(ctx, e.ID, e.ValidDate, op, now)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot start the renewal", err)
+	}
+	if !started {
+		return apierr.Fail(apierr.CodeConflict, "the server is being deleted or was renewed concurrently")
+	}
+	if _, err := store.Key.Claim(ctx, key.ID, claimID, userID, e.SpecID, op.CreatedAt); err != nil {
+		if store.IsNotFound(err) {
+			if cancelErr := store.Entity.CancelKeyRenewal(ctx, e.ID, op); cancelErr != nil {
+				glgf.Error("server: cannot cancel renewal with unavailable activation code: " + cancelErr.Error())
+			}
+			return apierr.Wrap(apierr.CodeInvalidKey, "activation code is not available", err)
+		}
+		return apierr.Wrap(apierr.CodeInternal, "activation code claim could not be confirmed; renewal will be recovered", err)
+	}
+	applied, alreadyApplied, err := store.Entity.CompleteKeyRenewal(ctx, e.ID, op)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot complete the renewal", err)
+	}
+	if !applied && !alreadyApplied {
+		return apierr.Fail(apierr.CodeConflict, "the renewal is being recovered; retry shortly")
+	}
+	if err := store.Key.Delete(ctx, key.ID); err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot finish consuming the activation code", err)
 	}
 	// The deletion notice, if one was pending, is now void.
 	if err := store.DeleteConfirm.DeleteByWare(ctx, e.ID); err != nil {
 		glgf.Error("server: cannot clear delete confirmation: " + err.Error())
 	}
-	syncPanelExpiry(ctx, e, base.Add(spec.ValidDuration))
+	e.ValidDate = op.ValidDate
+	syncPanelExpiry(ctx, e, op.ValidDate, true)
 	glgf.Info("server: renewed " + e.ServerExternalID)
 	return nil
 }
@@ -294,28 +332,54 @@ func (ServerService) RenewWithBalance(ctx context.Context, entityID, userID bson
 	if cost > u.Balance {
 		return apierr.Fail(apierr.CodeInsufficientBalance, "your balance is not enough")
 	}
-	if err := store.User.AddBalance(ctx, u.ID, -int64(cost)); err != nil {
-		return apierr.Wrap(apierr.CodeInternal, "cannot charge the balance", err)
+	// Balance renewal historically adds a calendar month to the stored expiry,
+	// even when that date has passed. Key-based renewal uses max(expiry, now).
+	newDate := e.ValidDate.AddDate(0, 1, 0)
+	if uint64(cost) > math.MaxInt64 {
+		return apierr.Fail(apierr.CodeValidationFailed, "renewal price exceeds the supported balance range")
 	}
-	base := e.ValidDate
-	if time.Now().After(base) {
-		base = time.Now()
+	opID := models.NewID().Hex()
+	op := models.BalanceRenewal{ID: opID, UserID: u.ID, Amount: uint64(cost), ValidDate: newDate}
+	started, err := store.Entity.BeginBalanceRenewal(ctx, e.ID, e.ValidDate, op)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot start the renewal", err)
 	}
-	newDate := base.AddDate(0, 1, 0)
-	if err := store.Entity.SetValidDate(ctx, e.ID, newDate); err != nil {
-		// Refund: the balance was taken but the server was not extended.
-		if refundErr := store.User.AddBalance(ctx, u.ID, int64(cost)); refundErr != nil {
-			glgf.Error("server: cannot refund renewed balance: " + refundErr.Error())
+	if !started {
+		return apierr.Fail(apierr.CodeConflict, "the server is being deleted or renewed concurrently")
+	}
+	_, err = store.User.ApplyBalanceOnce(ctx, u.ID, "server-renew:"+opID, -int64(cost))
+	if errors.Is(err, store.ErrInsufficientBalance) {
+		canceled, applied, cancelErr := store.User.CancelBalanceOperation(ctx, u.ID, "server-renew:"+opID, uint64(cost))
+		if cancelErr != nil {
+			return apierr.Wrap(apierr.CodeInternal, "cannot resolve renewal charge", cancelErr)
 		}
-		return apierr.Wrap(apierr.CodeInternal, "cannot update the server record", err)
+		if applied {
+			if finishErr := store.Entity.FinishBalanceRenewal(ctx, e.ID, opID, newDate); finishErr != nil {
+				return apierr.Wrap(apierr.CodeInternal, "cannot finish the renewal; it will be recovered", finishErr)
+			}
+			e.ValidDate = newDate
+			syncPanelExpiry(ctx, e, newDate, false)
+			return nil
+		}
+		if canceled {
+			if cancelErr := store.Entity.CancelBalanceRenewal(ctx, e.ID, opID); cancelErr != nil {
+				return apierr.Wrap(apierr.CodeInternal, "cannot cancel unfunded renewal", cancelErr)
+			}
+			return apierr.Wrap(apierr.CodeInsufficientBalance, "your balance is not enough", err)
+		}
+		return apierr.Fail(apierr.CodeConflict, "the renewal charge is being resolved; retry shortly")
 	}
-	if err := store.Entity.SetDeleteStatus(ctx, e.ID, 0); err != nil {
-		glgf.Error("server: cannot clear delete status: " + err.Error())
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot charge the balance; renewal will be recovered", err)
+	}
+	if err := store.Entity.FinishBalanceRenewal(ctx, e.ID, opID, newDate); err != nil {
+		return apierr.Wrap(apierr.CodeInternal, "cannot finish the renewal; it will be recovered", err)
 	}
 	if err := store.DeleteConfirm.DeleteByWare(ctx, e.ID); err != nil {
 		glgf.Error("server: cannot clear delete confirmation: " + err.Error())
 	}
-	syncPanelExpiry(ctx, e, newDate)
+	e.ValidDate = newDate
+	syncPanelExpiry(ctx, e, newDate, false)
 	return nil
 }
 
@@ -339,7 +403,30 @@ func (ServerService) Reinstall(ctx context.Context, entityID, userID bson.Object
 	if err != nil {
 		return apierr.Wrap(apierr.CodeNotFound, "product not found", err)
 	}
-	eggs, err := pterodactyl.ClientFromConf().GetAllEggs(ctx, spec.Nest)
+	cli := pterodactyl.ClientFromConf()
+	tagSlug := spec.TagSlug
+	legacyNestID := spec.PanelLegacyNestID()
+	if tagSlug == "" && legacyNestID != 0 {
+		tag, e := cli.TagForLegacyNest(ctx, legacyNestID)
+		if e != nil {
+			return apierr.Wrap(apierr.CodeValidationFailed, "this product has no unique Panel 2 tag mapping; contact an administrator", e)
+		}
+		tagSlug = tag.Slug
+	}
+	if tagSlug == "" {
+		return apierr.Fail(apierr.CodeValidationFailed, "this product has no Panel 2 tag; contact an administrator")
+	}
+	allowedEgg := false
+	for _, allowedID := range allowedEggs(spec) {
+		if allowedID == eggID {
+			allowedEgg = true
+			break
+		}
+	}
+	if !allowedEgg {
+		return apierr.Fail(apierr.CodeValidationFailed, "the selected integration is not allowed by this product")
+	}
+	eggs, err := cli.GetEggsForTag(ctx, tagSlug)
 	if err != nil {
 		return apierr.Wrap(apierr.CodePterodactylError, "cannot list the available eggs", err)
 	}
@@ -351,9 +438,8 @@ func (ServerService) Reinstall(ctx context.Context, entityID, userID bson.Object
 		}
 	}
 	if !allowed {
-		return apierr.Fail(apierr.CodeValidationFailed, "the selected integration does not belong to this server")
+		return apierr.Fail(apierr.CodeValidationFailed, "the selected integration does not belong to this product tag")
 	}
-	cli := pterodactyl.ClientFromConf()
 	if err := cli.UpdateServerStartup(ctx, e.ServerExternalID, eggID); err != nil {
 		return apierr.Wrap(apierr.CodePterodactylError, "cannot update the server startup", err)
 	}
@@ -386,10 +472,15 @@ func (ServerService) RequestDelete(ctx context.Context, entityID, userID bson.Ob
 		return err
 	}
 	if e.DeleteStatus == 0 {
-		if err := store.DeleteConfirm.Create(ctx, &models.DeleteConfirm{WareID: e.ID}); err != nil {
+		changed, err := store.Entity.RequestDelete(ctx, e.ID)
+		if err != nil {
 			return apierr.Wrap(apierr.CodeInternal, "cannot record the deletion request", err)
 		}
-		if err := store.Entity.SetDeleteStatus(ctx, e.ID, 1); err != nil {
+		if !changed {
+			return apierr.Fail(apierr.CodeConflict, "the server state changed; refresh and try again")
+		}
+		if err := store.DeleteConfirm.Create(ctx, &models.DeleteConfirm{WareID: e.ID}); err != nil {
+			_, _ = store.Entity.ResetDeleteRequest(ctx, e.ID)
 			return apierr.Wrap(apierr.CodeInternal, "cannot record the deletion request", err)
 		}
 	}
@@ -399,7 +490,7 @@ func (ServerService) RequestDelete(ctx context.Context, entityID, userID bson.Ob
 // syncPanelExpiry rewrites the panel description so the date the customer sees
 // in the Pterodactyl console matches the one this application enforces. A
 // failure here is cosmetic and is reported to an administrator.
-func syncPanelExpiry(ctx context.Context, e *models.WareEntity, validDate time.Time) {
+func syncPanelExpiry(ctx context.Context, e *models.WareEntity, validDate time.Time, unsuspend bool) {
 	cli := pterodactyl.ClientFromConf()
 	// Legacy warned the customer on this branch too, before it even tried to
 	// rewrite the description (user_console_controller.go:267): if the panel
@@ -422,7 +513,10 @@ func syncPanelExpiry(ctx context.Context, e *models.WareEntity, validDate time.T
 		message.SendAdmin(ctx, e.UserID, withoutDescription)
 		return
 	}
-	// A renewed server must start working again even if it was suspended.
+	if !unsuspend {
+		return
+	}
+	// Key-based renewal unsuspends the panel server, matching the legacy flow.
 	if err := cli.UnsuspendServer(ctx, e.ServerExternalID); err != nil {
 		glgf.Warn("server: cannot unsuspend renewed server " + e.ServerExternalID + ": " + err.Error())
 		message.SendAdmin(ctx, e.UserID, message.Compose(

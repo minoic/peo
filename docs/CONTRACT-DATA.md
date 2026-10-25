@@ -1,6 +1,6 @@
 # Data Contract
 
-Status: **frozen**. This file describes what the new backend persists, how a
+This file describes what the backend persists, how a
 legacy MySQL row maps onto a MongoDB document, and which vocabularies the values
 use.
 
@@ -35,6 +35,12 @@ id first (needed when one document references another before the insert), and
 
 `EnsureID`, `Touch`, `StampNow` and `IDString` are the embedded method set the
 store's generic helpers assert on. Reflection is never used.
+
+Models embed `Doc` with the BSON `inline` option, so `_id`, `createdAt`, and
+`updatedAt` are stored at the document root. Older records written before this
+option was added contain those fields under `doc`; store reads preserve the
+nested application ID, and ID lookups support both shapes without rewriting
+existing records.
 
 ### 1.2 Integers become ObjectIDs
 
@@ -145,7 +151,10 @@ Field order below matches the struct, which is the JSON order the client sees.
 | `node` | int | `0` means "let the panel pick" |
 | `memory`, `cpu`, `swap`, `disk`, `io` | int | Pterodactyl limits |
 | `backups` | int | |
-| `nest`, `egg` | int | Pterodactyl ids |
+| `nest`, `egg` | int | Retained legacy Nest id and primary Panel 2 Egg id |
+| `legacyNestId` | int | Optional explicit `legacy_nest_id` mapping; old documents fall back to `nest` |
+| `tagSlug` | string | Panel 2 template classification for this product |
+| `allowedEggIds` | []int | Eggs customers may select when reinstalling; primary `egg` is always included |
 | `discount` | int | percent |
 | `startOnCompletion` | bool | |
 | `oomDisabled` | bool | always `true` at creation; see §6 |
@@ -185,6 +194,8 @@ A purchased, provisioned server.
 | `originPrice`, `finalPrice` | uint | |
 | `paid` | bool | |
 | `confirmed` | bool | **indexed**; confirmed implies paid |
+| `closed` | bool | true after 15 minutes without payment; retained in history |
+| `closedAt` | time | set when automatic closure succeeds |
 
 ### `messages` — `Message`
 
@@ -270,15 +281,15 @@ The presence of a row *is* the state; there is no boolean.
 | `userId` | ObjectID | **unique** |
 | `password` | string | `json:"-"` |
 
-The panel password is seeded to the username
-(`delay_controller.go:74`) and cached here so the single-sign-on handover needs
-no panel call.
+The panel password is seeded to the username (`delay_controller.go:74`) and
+cached here for server-side Panel account maintenance. It is never sent to the
+browser and is not used to create a Panel session.
 
 ---
 
 ## 4. Indexes
 
-26 indexes over 13 collections, created by `store.EnsureIndexes` on every start.
+39 indexes over 13 collections, created by `store.EnsureIndexes` on every start.
 Creation is idempotent: `CreateMany` ignores an index that already exists with
 the same name and keys.
 
@@ -291,32 +302,48 @@ server called it.
 | `users` | `uniq_name` | `name` | yes |
 | `users` | `uniq_email` | `email` | yes |
 | `users` | `uniq_uuid` | `uuid` | yes |
+| `users` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `ware_specs` | `idx_ware_name` | `wareName` | |
+| `ware_specs` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `ware_entities` | `idx_user` | `userId` | |
 | `ware_entities` | `idx_delete_status` | `deleteStatus` | |
 | `ware_entities` | `idx_valid_date` | `validDate` | |
 | `ware_entities` | `uniq_server_ext_id` | `serverExternalId` | yes |
+| `ware_entities` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `ware_keys` | `uniq_key_string` | `keyString` | yes |
 | `ware_keys` | `idx_spec` | `specId` | |
 | `ware_keys` | `idx_exp` | `exp` | |
+| `ware_keys` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `orders` | `idx_user` | `userId` | |
 | `orders` | `idx_confirmed` | `confirmed` | |
+| `orders` | `idx_order_expiry` | `closed`, `paid`, `createdAt` | automatic pending-order expiry |
+| `orders` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `messages` | `idx_receiver` | `receiverId` | |
 | `messages` | `idx_receiver_read` | `receiverId`, `haveRead` | |
+| `messages` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `gallery_items` | `idx_review_passed` | `reviewPassed` | |
 | `gallery_items` | `idx_user` | `userId` | |
+| `gallery_items` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `work_orders` | `idx_closed` | `closed` | |
 | `work_orders` | `idx_user` | `userId` | |
+| `work_orders` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `recharge_keys` | `uniq_key_string` | `keyString` | yes |
 | `recharge_keys` | `idx_exp` | `exp` | |
+| `recharge_keys` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `recharge_logs` | `idx_user` | `userId` | |
 | `recharge_logs` | `uniq_out_trade_no` | `outTradeNo` | yes, sparse |
+| `recharge_logs` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `reg_confirm_keys` | `uniq_key_string` | `keyString` | yes |
+| `reg_confirm_keys` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `delete_confirms` | `idx_ware` | `wareId` | |
+| `delete_confirms` | `idx_legacy_doc_id` | `doc._id` | sparse |
 | `pterodactyl_passwords` | `uniq_user` | `userId` | yes |
+| `pterodactyl_passwords` | `idx_legacy_doc_id` | `doc._id` | sparse |
 
-All eleven legacy `gorm:"index"` annotations map onto an `idx_*` entry. The
-remaining fifteen are a mix of the `unique` constraints GORM enforced (and the
+Each collection also has a sparse `idx_legacy_doc_id` compatibility index.
+Among the other 26 indexes, all eleven legacy `gorm:"index"` annotations map
+onto an `idx_*` entry. The remaining fifteen are a mix of the `unique`
+constraints GORM enforced (and the
 code assumed silently — `uniq_server_ext_id`, the three `uniq_key_string`, and
 so on) and additions each justified by a real query in the service layer. The
 most obvious additions are `idx_valid_date`, which the expiry sweeper sorts on,
@@ -333,16 +360,21 @@ Spec §5 requires ten indexes and all ten are present.
 | Value | Meaning |
 |---|---|
 | `0` | active; the server is kept |
-| `1` | the deletion notice has been mailed |
-| `2` | the owner confirmed; an administrator must approve |
+| `1` | a deletion request is awaiting administrator approval |
+| `2` | legacy confirmed-deletion state; still accepted for compatibility |
+| `3` | deletion has been claimed; renewal is rejected until deletion recovery completes |
 
-The state machine is unchanged and is driven by the cron:
+The owner may request deletion of a current server. The expiry sweep may open
+a request after the fixed ten-day grace period. Approval and renewal share
+conditional entity updates; stale snapshots cannot reset a claimed deletion.
 
 ```
-validDate passed  → suspend + e-mail, DeleteStatus = 1
-          +10 days → e-mail asking for confirmation
-owner confirms    → DeleteStatus = 2, a delete_confirms row appears
-admin approves    → panel server deleted, entity deleted
+validDate passed  → attempt suspension; notify only after success
+          +10 days → deletion request (status 1)
+owner requests    → deletion request (status 1), including before expiry
+admin approves    → claim deletion (status 3), persist target, delete Panel/entity
+renewal wins first → extend expiry and clear pending request atomically
+deletion wins first → reject renewal before charging
 ```
 
 ### 5.2 `Order` status
@@ -354,8 +386,11 @@ admin approves    → panel server deleted, entity deleted
 | `pending` | `!paid` |
 | `paid` | `paid && !confirmed` |
 | `confirmed` | `confirmed` |
+| `closed` | `!paid && closed` |
 
 `confirmed` implies `paid`; no writer sets `confirmed` without `paid`.
+Orders become closed at the 15-minute boundary after creation. Orders with an
+active provisioning operation are left open so payment recovery can finish.
 
 ### 5.3 `RechargeLog.Status`
 
@@ -373,16 +408,20 @@ produced for both the unknown-key and the expired-key path.
 
 ### 5.4 `RechargeLog.Code`
 
-`Code` is not free text — it is the idempotency convention inherited unchanged
-from legacy, and the callback compares it:
+`Code` is display/audit text. It is not an idempotency lock and is not compared
+to decide whether a balance mutation is safe:
 
 | Pattern | Written when |
 |---|---|
 | `ByKEY_<key>_<before>_<after>` | a balance key was redeemed |
 | `ByZFB_<outTradeNo>_Waiting` | an Alipay top-up was started |
 
-`/api/v1/alipay/notify` short-circuits when the located log is already
-`success`, which is what makes a replayed callback harmless.
+`/api/v1/alipay/notify` verifies the trade binding and checks settlement status.
+The balance mutation and its operation receipt are written atomically in the
+same user document. The receipt prevents a second credit even when concurrent
+callbacks read an earlier log status or the process stops before marking the
+log successful. Receipts must not be removed as soon as a log reaches success:
+an already running callback may still hold the older pending state.
 
 ### 5.5 `GalleryItem.ReviewPassed`
 
@@ -411,15 +450,15 @@ attached to the wrong account.
 | Panel account lookup | `cli.GetUser(user.Name, true)` | `cli.GetUser(ctx, u.Name)` |
 | `ExternalId` on account creation | `newUser.Name` | `u.Name` |
 | `Username` | `newUser.Name` | `u.Name` |
-| `Password` | `newUser.Name` | `u.Name` |
+| `Password` | `newUser.Name` | independent cryptographically random value on creation |
 | `FirstName` | `newUser.Name` | `u.Name` |
 | `LastName` | `"_"` | `"_"` |
-| `RootAdmin` | `newUser.IsAdmin` | `u.IsAdmin` |
+| `RootAdmin` | `newUser.IsAdmin` | `false`, independent of the PEO administrator role |
 | Server `ExternalId` and panel name | `user.Name + strconv.Itoa(order.ID)` | `u.Name + o.ID.Hex()` |
 | `WareEntity.ServerExternalID` | same value | same value |
 | `WareEntity.UserExternalID` | `user.Name` | `u.Name` |
 | Server `OOMDisabled` | `true`, hardcoded | `true` |
-| Panel password bootstrap | username | username |
+| Panel password bootstrap | username | independent random password; no new plaintext cache writes |
 
 Two of these are easy to get subtly wrong, so they are spelled out:
 
@@ -433,15 +472,16 @@ Two of these are easy to get subtly wrong, so they are spelled out:
   ObjectID of the entity. It is unique-indexed, so a collision is a loud write
   failure rather than two servers sharing an identity.
 
-`RootAdmin` mirrors `IsAdmin` on both account-creation paths: registration
-(`reg_controller.go:106`) and the retry path in the settings page
-(`user_settings_controller.go:160`). The first-ever registrant is made an
-administrator, so the bootstrap administrator is also a panel root admin.
+Both registration and the mirror retry path create Panel accounts with
+`RootAdmin=false`. PEO administrator status does not grant Panel root access.
+Existing Panel roles and credentials are not automatically changed. The
+`pterodactyl_passwords` collection remains readable for compatibility, but the
+application no longer writes new plaintext mirror passwords; existing entries
+require an explicit operator cleanup rather than an automatic destructive migration.
 
-**Nothing panel-side consumes a password change.** `pterodactyl.Client.ChangePassword`
-exists in the port because the legacy API client had it, but no service calls
-it. The account password (`PUT /user/password`) and the panel password are
-different values and the latter never changes after creation.
+`PUT /user/password` updates the PEO password and attempts the existing Panel
+password synchronization. A Panel failure can leave those credentials different;
+password-reset behavior and session-revocation policy remain separate concerns.
 
 ---
 
@@ -457,9 +497,43 @@ different values and the latter never changes after creation.
 
 ---
 
-## 8. Migration
+## 8. Runtime application settings
 
-There is none. This is a greenfield schema: the target deployment starts against
-an empty MongoDB, and the rewrite explicitly does not carry the MySQL data over.
-`legacy/` is kept only so behaviour can be diffed while the port is reviewed; it
-is not a data source.
+The application configuration is stored separately from the 13 business documents
+in the singleton `app_settings` collection. Its `_id` is the fixed string `app`;
+`values` contains the business settings map and `updatedAt` records the last save.
+This document can contain credentials for SMTP, Alipay and Pterodactyl, so access
+remains behind the existing administrator settings API. MongoDB URI and database
+name are not stored here; they come from `PEO_MONGO_URI` and
+`PEO_MONGO_DATABASE_NAME`.
+
+On first startup, embedded defaults seed the collection. If the collection is empty
+and a legacy `conf/settings.toml` exists, non-Mongo settings are imported once.
+
+## 9. Recovery fields and compatibility
+
+The review remediation adds internal fields to existing MongoDB documents;
+these fields are excluded from public JSON responses. It does not import MySQL.
+
+| Document | Internal state | Purpose |
+|---|---|---|
+| User | `bootstrapKey` | Unique sparse election key; first administrator role and account are inserted atomically. The key remains after later role changes. |
+| User | `balanceOperations` | Durable receipts for applied or canceled balance operations, written with the balance mutation. |
+| Activation/recharge code | `claimId`, `claimUser` | Atomic consumption ownership; missing fields on old codes mean unclaimed. Claimed codes survive ordinary expiry cleanup until resolved. |
+| Entity | `renewedKeyIds`, `balanceRenewal`, `keyRenewal`, `panelDelete` | Renewal receipts, unfinished renewal intents and pinned external deletion recovery. |
+| Order | `provision` | Payment/provisioning intent, exact Panel request payload, target identity, phase and worker lease. |
+| Recharge log | `paymentAppId` and settlement metadata | Authenticated settlement progress and application binding. `Code` remains display text. Legacy unsettled records without the binding require reconciliation. |
+
+Mandatory indexes must be created successfully before startup continues. Existing
+documents without recovery fields retain their ordinary behavior; the application
+does not guess whether historical pending trades, payments or orphan Panel
+servers had an effect before these receipts existed. Such cases require a separate
+reconciliation using external records.
+
+Balance receipts are retained to reject stale workers and replays. At the
+per-user receipt capacity (currently 10,000), new mutations fail closed instead of
+silently trimming history. An archival strategy must preserve those replay
+guarantees; deleting receipts by age alone is unsafe.
+
+For migration and runtime verification notes, see
+[`IMPLEMENTATION-MigrationReview.md`](./IMPLEMENTATION-MigrationReview.md).

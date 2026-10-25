@@ -19,12 +19,9 @@ PterodactylHostname = "https://pterodactyl.example.com"
 PterodactylToken = ""
 
 ############################
-#Database Settings
+#Application Settings
 ############################
 DatabaseSalt = "PEOSALT"
-# MongoDB connection string, e.g. mongodb://user:password@host:27017
-MongoURI = "mongodb://mongo:27017"
-MongoDatabaseName = "peo"
 RedisHost = "redis:6379"
 RedisPassword = ""
 RedisDB = 0
@@ -38,6 +35,8 @@ JWTSecret = ""
 # Comma separated list of browser origins allowed to call the API, e.g.
 # http://localhost:8080,https://panel.example.com . "*" allows every origin.
 CORSOrigins = "*"
+# Exact browser origins allowed to open the proxied console WebSocket.
+ConsoleOrigins = ""
 # Directory served as the compiled Flutter web application.
 WebRoot = "web"
 

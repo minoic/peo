@@ -62,10 +62,17 @@ used auto-increment integers in every URL and form.
 `middleware` is the only code that reads that header. Handlers use
 `middleware.UserID(c)`.
 
+JWT signing uses the installation's `JWTSecret`. Startup replaces an empty or
+formerly public fallback secret with a persisted random key; existing tokens
+then require a fresh login. Protected requests return `500 internal_error` if
+Redis cannot establish revocation status. Public optional authentication falls
+back to anonymous for revoked tokens or revocation-check failures.
+
 ### Routes bound with `OptionalAuth()`
 
 These are public, but personalise their output when a valid token is present:
-`/site/config` reports `loggedIn`, `isAdmin` and `unread`.
+`/site/config` reports `loggedIn`, `isAdmin` and `unread`. The approved gallery
+feed (`GET /gallery`) is also public, so signed-out visitors can browse it.
 
 ### Routes bound with `Auth()` + `Admin()`
 
@@ -258,11 +265,17 @@ The Alipay server-to-server callback. The body is
 the signature, records the trade, and answers with the literal body `success` or
 `fail` — **not** the JSON envelope, because that is what Alipay parses.
 
-This is the only public unauthenticated mutation endpoint in the system.
+This callback does not use a PEO Bearer token; the Alipay signature authenticates
+the payment provider. Login, registration, email confirmation and password-reset
+requests are also public writes and enforce their own credential, code and
+validation checks. See the public route table in `CONTRACT-ROUTES.md`.
 
 ---
 
 ## 4. Authenticated endpoints
+
+The approved-items feed `GET /gallery` is public; all endpoints in this section
+require authentication, as documented below.
 
 All of these require `Authorization: Bearer <token>` and answer `401` without it.
 
@@ -272,18 +285,14 @@ All of these require `Authorization: Bearer <token>` and answer `401` without it
 |---|---|---|---|
 | `POST` | `/auth/logout` | — | `{message}`; blacklists the token |
 | `GET` | `/auth/me` | — | `{user}` |
-| `POST` | `/user/pterodactyl-session` | — | `{cookie, loginUrl, subdomain}` |
 
 `POST /auth/logout` writes the token's id into Redis under `JWTBLACKLIST:<jti>`
 for the token's remaining lifetime. The client must drop its stored token
 regardless of the response.
 
-`POST /user/pterodactyl-session` is the passwordless hand-off to the panel. The
-server sets the `pterodactyl_session` cookie itself (12 hours, `SameSite=None`,
-`Secure`) and also returns it in the body so a non-browser client can use it. The
-legacy version answered `302`; a REST client cannot follow that usefully, so the
-target URL is data now. **`subdomain` must be a subdomain of the site host or the
-cookie will not be sent** — the configuration is validated for this.
+Panel credentials and sessions remain server-side. Browser console access uses
+the PEO terminal ticket and WebSocket proxy documented in the server-console
+section; the API does not issue Panel cookies.
 
 ### Account
 
@@ -311,6 +320,11 @@ cookie will not be sent** — the configuration is validated for this.
 `POST /orders` only records the intent. The allocation and host name are chosen
 on the payment screen, so creation does not need them, and the price is frozen
 into `originPrice` / `finalPrice` at that moment.
+
+An unpaid order is closed 15 minutes after creation. The order remains in the
+customer's history with `closed: true` and `closedAt`; payment attempts after
+the deadline return `409 conflict`. An active payment/provisioning operation
+is allowed to recover and complete.
 
 `GET /orders/:id/allocations` lists the free ports on the node the ordered
 product is pinned to:
@@ -341,6 +355,49 @@ Failures: `404` unknown order, `409 already_paid`, `400 insufficient_balance`,
 | `POST` | `/servers/:id/renew-by-balance` | — | `{message}` |
 | `POST` | `/servers/:id/reinstall` | `{eggId}` | `{message}` |
 | `POST` | `/servers/:id/delete` | — | `{message}` |
+| `GET` | `/servers/:id/console` | — | `{server, limits, startup}` |
+| `GET` | `/servers/:id/resources` | — | `{currentState, isSuspended, resources}` |
+| `POST` | `/servers/:id/power` | `{signal}` | `{accepted}` |
+| `POST` | `/servers/:id/command` | `{command}` | `{accepted}` |
+| `POST` | `/servers/:id/terminal-ticket` | empty | `{ticket, expiresAt}` |
+| `GET` | `/servers/:id/terminal` | WebSocket query `ticket` | PEO terminal event stream |
+| `GET` | `/servers/:id/files` | `?directory=/` | `{items}` |
+| `POST` | `/servers/:id/files/read` | `{file}` | `{content}` |
+| `PUT` | `/servers/:id/files/write` | `{file, content}` | `{message}` |
+| `POST` | `/servers/:id/files/:action` | action-specific | `{message}` |
+| `GET` | `/servers/:id/files/download` | `?file=...` | streamed file bytes |
+| `PUT` | `/servers/:id/files/upload` | raw bytes, `directory` and `filename` query | `{message}` |
+| `GET` | `/servers/:id/backups` | — | `{items}` |
+| `POST` | `/servers/:id/backups` | `{name?}` | `{backup}` |
+| `GET` | `/servers/:id/backups/:backupId/download` | — | streamed archive bytes |
+| `POST` | `/servers/:id/backups/:backupId/:action` | action-specific | `{message}` |
+| `DELETE` | `/servers/:id/backups/:backupId` | — | `{message}` |
+| `GET` | `/servers/:id/startup` | — | `{command, variables, dockerImages, dockerImage}` |
+| `PUT` | `/servers/:id/startup/variable` | `{key, value}` | `{message}` |
+| `PUT` | `/servers/:id/startup/image` | `{image}` | `{message}` |
+
+File list items include `isEditable`. If the Panel omits its editability hint,
+PEO infers this field from text MIME types and known text/config extensions;
+binary, archive, image, directory, and symlink entries remain non-editable.
+
+All console REST operations require authentication and the entity owner or an
+administrator. The terminal ticket is single-use, expires within 30 seconds (and
+never outlives its login token), and binds the user, entity and token id. The
+WebSocket GET is intentionally outside Bearer middleware; it requires the exact
+configured browser `Origin` and a ticket in the query string, and the entity id
+in the path must match the ticket. Panel and Wings credentials stay in Go.
+File and backup URLs returned by Panel are consumed only by Go after validating
+the trusted node or storage origin; the browser receives streamed bytes, not a
+signed URL. Uploads are multipart streamed to Wings and honor request
+cancellation.
+
+File action bodies follow Panel Client API shapes: `rename` takes
+`{root, files:[{from,to}]}`, `copy` takes `{location}` (the source path),
+`create-folder` takes `{root,name}`, `delete`/`compress` take `{root,files}`,
+`decompress` takes `{root,file}`, and `chmod` takes
+`{root,files:[{file,mode}]}`. Backup actions are `lock` (`{locked}`) and
+`restore` (`{truncate}`); backup ids are checked against the selected server's
+own list before every action.
 
 `GET /servers` returns `models.WareEntity` documents. `GET /servers/status`
 returns the lightweight polled shape, which is what the console table renders:
@@ -358,13 +415,17 @@ returns the lightweight polled shape, which is what the console table renders:
 Statuses are answered from a cron-maintained cache and are at most 30 seconds
 stale. This is why the console no longer blocks on one TCP handshake per server.
 
-`deleteStatus` is the delete state machine: `0` normal, `1` the expiry notice was
-sent, `2` the owner confirmed and the server awaits an administrator. The
-transitions themselves are unchanged from legacy.
+`deleteStatus` is the delete state machine: `0` normal, `1` awaiting administrator
+approval, `2` legacy confirmed state, and `3` deletion claimed/in progress.
+Renewal and approval use conditional updates; once deletion is claimed, renewal
+is rejected before charging. A stale approval after a successful renewal fails.
 
 `renew` and `reinstall` are rate limited per entity / per user through Redis.
 
 ### Gallery
+
+The approved-items read `GET /gallery` is public (`OptionalAuth`), so signed-out
+visitors can browse it. `/gallery/mine` and every mutation require `Auth()`.
 
 | Method | Path | Body | Response |
 |---|---|---|---|
@@ -379,11 +440,15 @@ transitions themselves are unchanged from legacy.
   "likes": 4, "reviewPassed": false, "userName": "…", "createdAt": "2006-01-02 15:04" }
 ```
 
+`GET /gallery` is public (`OptionalAuth`) and returns approved items to signed-out
+visitors. `/gallery/mine` and all gallery mutations require `Auth`.
+
 `imgSource` is a URL chosen by the user; the server does not host uploads and does
 not fetch it.
 
-The gallery routes are **always registered**, even when `AlbumEnabled` is false.
-The client hides the UI. This is divergence (j) in
+The gallery routes are **always registered**, even when `AlbumEnabled` is false;
+the Flutter UI is what hides the feature. The approved public feed remains
+available to API clients. This is divergence (j) in
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) — a 404 from a working route and a 404 from
 a missing route are indistinguishable while debugging.
 
@@ -448,8 +513,10 @@ The client renders `qrCodeBase64` and polls
 replaces the legacy HTML badge. `RechargeLog.status` is the same enum.
 
 `outTradeNo` is a path parameter, not an ObjectID: it is the Alipay trade number.
-The legacy `OutTradeNo` / `Code` conventions, which are what make the callback
-idempotent, are unchanged.
+The callback validates the stored trade's amount and application identity before
+acknowledging it. An operation receipt written atomically with the user's balance
+provides idempotency; the display `Code` string does not. A write failure leaves
+the operation retryable instead of acknowledging an unfinished settlement.
 
 ---
 
@@ -525,7 +592,10 @@ single-cycle `PUT` path reads `discount`.
 |---|---|---|
 | `wareName`, `wareDescription` | string | |
 | `cpu` `disk` `memory` `swap` `io` `backups` | int | resource limits |
-| `nodeId` `nestId` `eggId` | int | Pterodactyl ids |
+| `nodeId` `nestId` `eggId` | int | Panel node, legacy Nest mapping, and primary Panel 2 Egg |
+| `legacyNestId` | int | Optional explicit legacy mapping; old products fall back to `nestId` |
+| `tagSlug` | string | Panel 2 template classification |
+| `allowedEggIds` | `int[]` | Reinstall choices in this Tag; primary Egg is always included |
 | `image` | string | optional Docker image override |
 | `deleteTime` | int | grace period, in days |
 | `price` | uint | undiscounted monthly price |
@@ -546,8 +616,11 @@ form generically:
 
 Note the field names here are **snake_case** (`ware_name`, `node_id`,
 `delete_time`) because they mirror the legacy HTML form, whereas `ProductInput`
-is **camelCase**. The client maps one to the other; `service.FormField` is the
-only place the two vocabularies meet.
+is **camelCase**. The Panel 2 form uses `tag_slug`, `egg_id`, and
+`allowed_egg_ids` (`number_list`); the client maps those to `tagSlug`, `eggId`,
+and `allowedEggIds`. The primary Egg is always included in the allowed list, and
+all configured Eggs must belong to the selected Tag. `service.FormField`
+describes this form vocabulary.
 
 ### Keys
 
@@ -604,6 +677,12 @@ static paths; they collapse into one parameterised route.
                "description": "…", "type": "text", "value": "peo" } ] }
 ```
 
+`PterodactylToken` is write-only: its field has `secret:true`, `configured`, and
+an empty `value`. Submitting an empty or whitespace-only token keeps the current
+secret; a non-empty value replaces it. `WebHostName` identifies the PEO browser
+origin, and `ConsoleOrigins` is a comma-separated list of exact additional browser
+origins allowed to open terminal WebSockets.
+
 `type` is one of `text`, `number`, `bool`. The client renders the matching input.
 
 `PUT /admin/settings` takes a sparse map:
@@ -615,13 +694,14 @@ static paths; they collapse into one parameterised route.
 Everything is a **string**, including booleans and numbers, because that is what
 an HTML form produces and it keeps one code path. The server parses against the
 schema and returns `400 validation_failed` naming the offending key. Unknown keys
-are ignored, so an old client cannot introduce arbitrary TOML entries.
+are ignored, so an old client cannot introduce arbitrary configuration entries.
 
-A successful save writes `conf/settings.toml`, reloads the configuration, and
-**reconnects Mongo and Redis** so the change is live immediately. A save that
-changes `MongoURI` or `RedisHost` therefore briefly drops the datastore
-connections; that is intended and is why the response is only sent after the
-reconnect attempt.
+Business settings are stored in the MongoDB `app_settings` document. A
+successful save updates that document, applies the values in memory, rebuilds
+the Alipay client and resets Redis so updated connection settings take effect.
+MongoDB connection settings are not exposed by this API; configure
+`PEO_MONGO_URI` and `PEO_MONGO_DATABASE_NAME` in the deployment environment.
+Unknown keys are ignored.
 
 ### Health
 
@@ -632,6 +712,7 @@ reconnect attempt.
   "mongo":       { "ok": true,  "message": "success" },
   "redis":       { "ok": true,  "message": "success" },
   "pterodactyl": { "ok": false, "message": "…" },
+  "panelExtension": { "ok": false, "message": "Panel API token lacks extension permissions" },
   "version": "v1.0.0", "buildTime": "…", "goVersion": "go1.27.1"
 }
 ```

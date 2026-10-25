@@ -3,7 +3,10 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"errors"
+	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/minoic/glgf"
@@ -24,9 +27,6 @@ const (
 	// keyCooldown throttles balance top-ups by code, matching the legacy three
 	// second window.
 	keyCooldown = 3 * time.Second
-	// maxRechargeAmount caps a single Alipay top-up so a mistyped amount cannot
-	// request a four figure payment.
-	maxRechargeAmount = 100000
 )
 
 // Recharge status values recorded on a RechargeLog. The legacy column held a
@@ -58,6 +58,42 @@ var Recharge = RechargeService{}
 // hides the QR tab when it is not.
 func (RechargeService) AlipayEnabled() bool { return config.AliClient() != nil }
 
+func balanceDelta(amount uint) (int64, error) {
+	if uint64(amount) > math.MaxInt64 {
+		return 0, errors.New("amount exceeds signed balance range")
+	}
+	return int64(amount), nil
+}
+
+func parseAlipayAmount(raw string) (uint, error) {
+	parts := strings.Split(raw, ".")
+	if len(parts) > 2 || parts[0] == "" {
+		return 0, errors.New("invalid amount")
+	}
+	whole, err := strconv.ParseUint(parts[0], 10, 64)
+	if err != nil || whole > uint64(math.MaxUint)/100 {
+		return 0, errors.New("invalid amount")
+	}
+	cents := uint64(0)
+	if len(parts) == 2 {
+		fraction := parts[1]
+		if len(fraction) == 1 {
+			fraction += "0"
+		}
+		if len(fraction) != 2 {
+			return 0, errors.New("invalid amount")
+		}
+		cents, err = strconv.ParseUint(fraction, 10, 8)
+		if err != nil {
+			return 0, errors.New("invalid amount")
+		}
+	}
+	if cents != 0 || uint64(uint(whole)) != whole {
+		return 0, errors.New("Alipay amount must match whole-unit account balance")
+	}
+	return uint(whole), nil
+}
+
 // Logs returns the top-up history of a user, newest first.
 func (RechargeService) Logs(ctx context.Context, userID bson.ObjectID) ([]models.RechargeLog, error) {
 	return store.RechargeLog.ByUser(ctx, userID)
@@ -65,12 +101,9 @@ func (RechargeService) Logs(ctx context.Context, userID bson.ObjectID) ([]models
 
 // ByKey redeems a balance top-up code.
 //
-// The legacy implementation treated the balance update and the code deletion as
-// independent writes and tried to compensate with a manual rollback; here the
-// balance is credited first and the code is only removed once it succeeded, so
-// the only failure mode left is a code that is briefly redeemable twice. The
-// log entry is written either way, because the history is what the customer
-// sees when a top-up apparently vanished.
+// The code is atomically assigned to this user and the balance update carries
+// that code's stable operation ID. The claimed code remains recoverable if the
+// process stops between crediting the balance and deleting the code.
 func (RechargeService) ByKey(ctx context.Context, userID bson.ObjectID, keyString string) error {
 	u, err := store.User.ByID(ctx, userID)
 	if err != nil {
@@ -94,22 +127,25 @@ func (RechargeService) ByKey(ctx context.Context, userID bson.ObjectID, keyStrin
 		Recharge.log(ctx, userID, "FAILED_ByKEY_EXPIRED_"+keyString, "cdkey", 0, RechargeInvalid)
 		return apierr.Fail(apierr.CodeInvalidKey, "invalid KEY")
 	}
-	before := u.Balance
-	if err := store.User.AddBalance(ctx, u.ID, int64(key.Balance)); err != nil {
+	claimed, err := store.RKey.Claim(ctx, key.ID, "recharge-key:"+key.ID.Hex(), u.ID, time.Now())
+	if err != nil {
+		return apierr.Wrap(apierr.CodeInvalidKey, "invalid KEY", err)
+	}
+	delta, err := balanceDelta(key.Balance)
+	if err != nil {
+		return apierr.Wrap(apierr.CodeValidationFailed, "recharge amount exceeds supported balance", err)
+	}
+	_, err = store.User.ApplyBalanceOnce(ctx, u.ID, "recharge-key:"+claimed.ID.Hex(), delta)
+	if err != nil {
 		Recharge.log(ctx, userID, "FAILED_ByKEY_"+keyString, "cdkey", 0, RechargeFailed)
 		return apierr.Wrap(apierr.CodeInternal, "database error", err)
 	}
 	if err := store.RKey.Delete(ctx, key.ID); err != nil {
-		// Undo the credit: leaving the code in place while the balance is
-		// already topped up would let the same code be redeemed again.
-		if back := store.User.AddBalance(ctx, u.ID, -int64(key.Balance)); back != nil {
-			glgf.Error("recharge: cannot roll back balance for " + u.Name + ": " + back.Error())
-		}
-		Recharge.log(ctx, userID, "FAILED_ByKEY_"+keyString, "cdkey", 0, RechargeFailed)
+		glgf.Error("recharge: cannot delete claimed recharge code " + key.ID.Hex() + ": " + err.Error())
 		return apierr.Wrap(apierr.CodeInternal, "database error", err)
 	}
 	Recharge.log(ctx, userID,
-		"ByKEY_"+key.KeyString+"_"+strconv.FormatUint(uint64(before), 10)+"_"+strconv.FormatUint(uint64(before+key.Balance), 10),
+		"ByKEY_"+key.KeyString,
 		"cdkey", key.Balance, RechargeSuccess)
 	glgf.Info("recharge: " + u.Name + " redeemed " + key.KeyString + " for " + strconv.FormatUint(uint64(key.Balance), 10))
 	return nil
@@ -119,45 +155,49 @@ func (RechargeService) ByKey(ctx context.Context, userID bson.ObjectID, keyStrin
 // base64 encoded PNG plus the trade number the client may quote when asking
 // whether the top-up has landed.
 func (RechargeService) PreCreate(ctx context.Context, userID bson.ObjectID, amount uint) (qrBase64, tradeNo string, err error) {
-	client := config.AliClient()
+	settings := config.Snapshot()
+	client := settings.AliClient()
 	if client == nil {
 		return "", "", apierr.Fail(apierr.CodeForbidden, "Alipay top-up is not enabled")
 	}
 	if amount == 0 {
 		return "", "", apierr.Fail(apierr.CodeValidationFailed, "the top-up amount must be greater than 0")
 	}
-	if amount > maxRechargeAmount {
-		return "", "", apierr.Fail(apierr.CodeValidationFailed, "the top-up amount is too large")
-	}
-	host := config.String("WebHostName")
+	host := settings.String("WebHostName")
 	if host == "" {
 		return "", "", apierr.Fail(apierr.CodeInternal, "WebHostName is not configured")
 	}
-	tradeNo = random.Digits(16)
+	tradeNo, err = random.Digits(16)
+	if err != nil {
+		return "", "", apierr.Wrap(apierr.CodeInternal, "cannot create payment reference", err)
+	}
 	p := alipay.TradePreCreate{}
 	p.NotifyURL = host + "/api/v1/alipay/notify"
-	p.Subject = config.String("WebApplicationName") + " balance top-up"
+	p.Subject = settings.String("WebApplicationName") + " balance top-up"
 	p.OutTradeNo = tradeNo
 	p.TotalAmount = strconv.FormatUint(uint64(amount), 10)
 
-	resp, err := client.TradePreCreate(p)
-	if err != nil {
-		return "", "", apierr.Wrap(apierr.CodePterodactylError, "cannot create the Alipay order", err)
-	}
-	if resp.QRCode == "" {
-		return "", "", apierr.Fail(apierr.CodeInternal, "Alipay did not return a QR code")
-	}
 	log := &models.RechargeLog{
-		UserID:     userID,
-		Code:       "ByZFB_" + tradeNo + "_Waiting",
-		Method:     "Alipay",
-		Balance:    amount,
-		OutTradeNo: tradeNo,
-		Time:       time.Now().Format("2006-01-02 15:04:05"),
-		Status:     RechargePending,
+		UserID:       userID,
+		Code:         "ByZFB_" + tradeNo + "_Waiting",
+		Method:       "Alipay",
+		Balance:      amount,
+		OutTradeNo:   tradeNo,
+		PaymentAppID: settings.String("AliPayAppID"),
+		Time:         time.Now().Format("2006-01-02 15:04:05"),
+		Status:       RechargePending,
 	}
 	if err := store.RechargeLog.Create(ctx, log); err != nil {
 		return "", "", apierr.Wrap(apierr.CodeInternal, "cannot record the top-up", err)
+	}
+	resp, err := client.TradePreCreate(p)
+	if err != nil {
+		_ = store.RechargeLog.MarkPaid(ctx, log.ID, RechargeFailed)
+		return "", "", apierr.Wrap(apierr.CodePterodactylError, "cannot create the Alipay order", err)
+	}
+	if resp.QRCode == "" {
+		_ = store.RechargeLog.MarkPaid(ctx, log.ID, RechargeFailed)
+		return "", "", apierr.Fail(apierr.CodeInternal, "Alipay did not return a QR code")
 	}
 	img, err := qrcode.Encode(resp.QRCode, qrcode.High, 256)
 	if err != nil {
@@ -185,8 +225,8 @@ func (RechargeService) Status(ctx context.Context, userID bson.ObjectID, tradeNo
 // the protocol allows: Alipay signs the body and the SDK verifies that
 // signature before this function is reached. A notification is then matched to a
 // stored top-up by trade number. The legacy implementation re-matched the record
-// by rewriting its code string inside a database update; here the status column
-// marks a top-up as credited, so "already handled" is a single field read.
+// by rewriting its code string inside a database update; here a durable
+// processing claim and a user-side operation receipt make retries idempotent.
 //
 // The returned string is the literal body the Alipay protocol expects; it is not
 // a JSON envelope because the caller here is Alipay, not the Flutter app.
@@ -200,31 +240,56 @@ func (RechargeService) HandleAlipayNotification(ctx context.Context, notify *ali
 		glgf.Error("recharge: unknown trade number " + notify.OutTradeNo + ": " + err.Error())
 		return "fail"
 	}
+	amount, amountErr := parseAlipayAmount(notify.TotalAmount)
+	expectedAppID := log.PaymentAppID
+	if expectedAppID == "" {
+		if log.Status != RechargeSuccess {
+			glgf.Error("recharge: legacy Alipay trade requires reconciliation before settlement: " + notify.OutTradeNo)
+			return "fail"
+		}
+		expectedAppID = config.Snapshot().String("AliPayAppID")
+	}
+	if amountErr != nil || amount != log.Balance || notify.AppId != expectedAppID || log.Method != "Alipay" || log.OutTradeNo == "" {
+		glgf.Error("recharge: Alipay trade binding mismatch for " + notify.OutTradeNo)
+		return "fail"
+	}
 	if log.Status == RechargeSuccess {
 		return "success"
+	}
+	claimed, err := store.RechargeLog.ClaimSettlement(ctx, log.ID, time.Now())
+	if err != nil || !claimed {
+		if err != nil {
+			glgf.Error("recharge: cannot claim settlement for " + notify.OutTradeNo + ": " + err.Error())
+		}
+		return "fail"
 	}
 	u, err := store.User.ByID(ctx, log.UserID)
 	if err != nil {
 		glgf.Error("recharge: cannot load user " + log.UserID.Hex() + ": " + err.Error())
 		return "fail"
 	}
-	before := u.Balance
-	if err := store.User.AddBalance(ctx, u.ID, int64(log.Balance)); err != nil {
-		glgf.Error("recharge: cannot credit " + u.Name + ": " + err.Error())
+	if err := settleAlipayLog(ctx, log, u); err != nil {
+		glgf.Error("recharge: cannot settle " + log.OutTradeNo + ": " + err.Error())
 		return "fail"
-	}
-	code := "ByZFB_" + log.OutTradeNo + "_" + strconv.FormatUint(uint64(before), 10) + "_" +
-		strconv.FormatUint(uint64(before+log.Balance), 10) + "_Finished"
-	if err := store.RechargeLog.MarkPaid(ctx, log.ID, RechargeSuccess); err != nil {
-		glgf.Error("recharge: cannot mark " + log.OutTradeNo + " as paid: " + err.Error())
-	}
-	if err := store.RechargeLog.SetCode(ctx, log.ID, code); err != nil {
-		glgf.Error("recharge: cannot update log code for " + log.OutTradeNo + ": " + err.Error())
 	}
 	glgf.Info("recharge: " + u.Name + " topped up " + strconv.FormatUint(uint64(log.Balance), 10))
 	message.SendToAdmins(ctx, message.Compose(
 		"User ", u.Name, " (", u.Email, ") topped up ", strconv.FormatUint(uint64(log.Balance), 10), " CNY"))
 	return "success"
+}
+
+func settleAlipayLog(ctx context.Context, log *models.RechargeLog, user *models.User) error {
+	delta, err := balanceDelta(log.Balance)
+	if err != nil {
+		return err
+	}
+	if _, err := store.User.ApplyBalanceOnce(ctx, user.ID, "alipay:"+log.ID.Hex(), delta); err != nil {
+		return err
+	}
+	if err := store.RechargeLog.SetCode(ctx, log.ID, "ByZFB_"+log.OutTradeNo+"_Finished"); err != nil {
+		return err
+	}
+	return store.RechargeLog.MarkPaid(ctx, log.ID, RechargeSuccess)
 }
 
 // log records a top-up attempt for the history list.

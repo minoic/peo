@@ -24,6 +24,28 @@ jobs:
   server:
     name: Server
     runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PEO_TEST_MONGO_URI: mongodb://localhost:27017
+      PEO_TEST_REDIS_ADDR: localhost:6379
     defaults:
       run:
         working-directory: server
@@ -57,6 +79,9 @@ jobs:
 
       - name: Test
         run: go test ./... -cover
+
+      - name: Race test
+        run: go test -race ./...
 
   flutter:
     name: Flutter Web
@@ -99,15 +124,12 @@ jobs:
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
-        continue-on-error: true
 
       - name: Analyze
         run: flutter analyze
-        continue-on-error: true
 
       - name: Test
         run: flutter test
-        continue-on-error: true
 
       - name: Build web (WASM)
         run: flutter build web --wasm --release

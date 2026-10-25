@@ -1,0 +1,68 @@
+name: Panel extension
+
+on:
+  pull_request:
+    paths:
+      - "pterodactyl/**"
+      - ".github/workflows/panel-extension.yml"
+  push:
+    paths:
+      - "pterodactyl/**"
+      - ".github/workflows/panel-extension.yml"
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint against the pinned Panel PHP runtime
+        run: |
+          docker run --rm --entrypoint php -v "$GITHUB_WORKSPACE/pterodactyl/peo-panel-extension:/tmp/extension:ro" ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0 -l /tmp/extension/routes/application.php
+          docker run --rm --entrypoint php -v "$GITHUB_WORKSPACE/pterodactyl/peo-panel-extension:/tmp/extension:ro" ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0 -l /tmp/extension/src/PeoBridgeProvider.php
+          docker run --rm --entrypoint php -v "$GITHUB_WORKSPACE/pterodactyl/peo-panel-extension:/tmp/extension:ro" ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0 -l /tmp/extension/src/Http/BridgeController.php
+      - name: Run official extension doctor
+        run: >-
+          docker run --rm --entrypoint php
+          -e APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          -e CACHE_STORE=array
+          -e QUEUE_CONNECTION=sync
+          -v "$GITHUB_WORKSPACE/pterodactyl/peo-panel-extension:/tmp/extension:ro"
+          ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0
+          artisan p:extension:doctor /tmp/extension
+      - name: Run bridge contract checks
+        run: >-
+          docker run --rm --entrypoint php
+          -e PANEL_VENDOR_AUTOLOAD=/app/vendor/autoload.php
+          -e APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          -e APP_ENV=testing
+          -e DB_CONNECTION=sqlite
+          -e DB_DATABASE=:memory:
+          -e CACHE_STORE=array
+          -e QUEUE_CONNECTION=sync
+          -e SESSION_DRIVER=array
+          -v "$GITHUB_WORKSPACE/pterodactyl/peo-panel-extension:/tmp/extension:ro"
+          ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0
+          /tmp/extension/tests/contract.php
+      - name: Build the pinned-base companion image
+        run: docker build -f pterodactyl/deploy/Dockerfile.panel -t peo-panel:2.0.0-beta.2-peo.1 .
+      - name: Package with the official extension command
+        run: >-
+          docker run --rm --entrypoint php
+          -e APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          -e CACHE_STORE=array
+          -e QUEUE_CONNECTION=sync
+          -v "$GITHUB_WORKSPACE/pterodactyl/peo-panel-extension:/tmp/extension:ro"
+          -v "$GITHUB_WORKSPACE/pterodactyl:/tmp/output"
+          ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0
+          artisan p:extension:pack /tmp/extension --output=/tmp/output/peo-bridge-1.0.0.pteroext --force
+      - name: Check packaged files
+        run: >-
+          docker run --rm --entrypoint unzip
+          -v "$GITHUB_WORKSPACE/pterodactyl:/tmp/output:ro"
+          ghcr.io/pterodactyl/panel:v2.0.0-beta.2@sha256:b3f1229ab8143615a93d8207096059e9903b5b7868cfb34ae0152d22203618c0
+          -l /tmp/output/peo-bridge-1.0.0.pteroext
+      - uses: actions/upload-artifact@v4
+        with:
+          name: peo-bridge-pteroext
+          path: pterodactyl/peo-bridge-1.0.0.pteroext
+          if-no-files-found: error

@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -37,9 +39,15 @@ dependencies:
   flutter_bloc: ^9.1.1
   go_router: ^18.0.1
   dio: ^5.11.1
+  dio_web_adapter: ^2.2.2
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
   shared_preferences: ^2.5.5
+
+  # Browser interop for the two things the SPA cannot do in Dart alone: saving
+  # the generated key archive to disk, and opening the panel hand-off tab. This
+  # is the Web-only package that replaces `dart:html`, and it compiles to WASM.
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

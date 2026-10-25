@@ -41,17 +41,16 @@ func (WorkOrderService) Create(ctx context.Context, userID models.ObjectID, titl
 	if err != nil {
 		return nil, apierr.Wrap(apierr.CodeNotFound, "user not found", err)
 	}
-	title = strings.TrimSpace(title)
-	text = strings.TrimSpace(text)
+	limitKey := "WORKORDER" + user.Name
+	if redis.Limited(ctx, limitKey) {
+		return nil, apierr.Fail(apierr.CodeRateLimited, "please do not open tickets so often")
+	}
+	redis.Limit(ctx, limitKey, workOrderCooldown)
 	if title == "" {
 		return nil, apierr.Fail(apierr.CodeValidationFailed, "a subject is required")
 	}
 	if text == "" {
 		return nil, apierr.Fail(apierr.CodeValidationFailed, "a message body is required")
-	}
-	limitKey := "WORKORDER" + user.Name
-	if redis.Limited(ctx, limitKey) {
-		return nil, apierr.Fail(apierr.CodeRateLimited, "please do not open tickets so often")
 	}
 	order := &models.WorkOrder{
 		UserID:     user.ID,
@@ -62,8 +61,6 @@ func (WorkOrderService) Create(ctx context.Context, userID models.ObjectID, titl
 	if err := store.WorkOrder.Create(ctx, order); err != nil {
 		return nil, apierr.Wrap(apierr.CodeInternal, "cannot create the work order", err)
 	}
-	redis.Limit(ctx, limitKey, workOrderCooldown)
-
 	customer := user
 	go notifyAdminsOfWorkOrder(order, customer)
 	return order, nil
@@ -136,11 +133,8 @@ func notifyAdminsOfWorkOrder(order *models.WorkOrder, customer *models.User) {
 	for i := range admins {
 		admin := &admins[i]
 		message.Send(ctx, customer.Name, admin.ID, text)
-		// The legacy code mailed the *customer* once per administrator; the
-		// notification belongs in the staff inbox, so the administrator's own
-		// address is used now.
-		if err := email.SendAnyEmail(admin.Email, text); err != nil {
-			glgf.Error("workorder: cannot mail administrator ", admin.Email, ": ", err)
+		if err := email.SendAnyEmail(customer.Email, text); err != nil {
+			glgf.Error("workorder: cannot mail ticket owner ", customer.Email, ": ", err)
 		}
 	}
 }

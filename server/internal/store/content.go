@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/minoic/peo/server/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -21,7 +22,7 @@ func (GalleryItems) Create(ctx context.Context, g *models.GalleryItem) error {
 
 // ByID looks an album item up by primary key.
 func (GalleryItems) ByID(ctx context.Context, id bson.ObjectID) (*models.GalleryItem, error) {
-	return findOne[models.GalleryItem](ctx, models.CollGalleryItems, bson.M{"_id": id})
+	return findOne[models.GalleryItem](ctx, models.CollGalleryItems, docIDFilter(id))
 }
 
 // Approved returns the publicly visible items, newest first.
@@ -43,20 +44,20 @@ func (GalleryItems) ByUser(ctx context.Context, userID bson.ObjectID) ([]models.
 
 // SetApproved flips the moderation flag.
 func (GalleryItems) SetApproved(ctx context.Context, id bson.ObjectID, approved bool) error {
-	_, err := updateOne(ctx, models.CollGalleryItems, bson.M{"_id": id}, bson.M{"reviewPassed": approved})
+	_, err := updateOne(ctx, models.CollGalleryItems, docIDFilter(id), bson.M{"reviewPassed": approved})
 	return err
 }
 
 // IncrementLikes adds one like. The atomic $inc avoids a read-modify-write race
 // that the legacy implementation had.
 func (GalleryItems) IncrementLikes(ctx context.Context, id bson.ObjectID) error {
-	_, err := updateOneRaw(ctx, models.CollGalleryItems, bson.M{"_id": id}, incUpdate(bson.M{"likes": 1}))
+	_, err := updateOneRaw(ctx, models.CollGalleryItems, docIDFilter(id), incUpdate(bson.M{"likes": 1}))
 	return err
 }
 
 // Delete removes an album item.
 func (GalleryItems) Delete(ctx context.Context, id bson.ObjectID) error {
-	_, err := deleteOne(ctx, models.CollGalleryItems, bson.M{"_id": id})
+	_, err := deleteOne(ctx, models.CollGalleryItems, docIDFilter(id))
 	return err
 }
 
@@ -74,7 +75,7 @@ func (WorkOrders) Create(ctx context.Context, w *models.WorkOrder) error {
 
 // ByID looks a ticket up by primary key.
 func (WorkOrders) ByID(ctx context.Context, id bson.ObjectID) (*models.WorkOrder, error) {
-	return findOne[models.WorkOrder](ctx, models.CollWorkOrders, bson.M{"_id": id})
+	return findOne[models.WorkOrder](ctx, models.CollWorkOrders, docIDFilter(id))
 }
 
 // Open returns every unclosed ticket, oldest first, for the admin list.
@@ -96,7 +97,7 @@ func (WorkOrders) CountOpen(ctx context.Context) (int64, error) {
 
 // Close marks a ticket as resolved.
 func (WorkOrders) Close(ctx context.Context, id bson.ObjectID) error {
-	_, err := updateOne(ctx, models.CollWorkOrders, bson.M{"_id": id}, bson.M{"closed": true})
+	_, err := updateOne(ctx, models.CollWorkOrders, docIDFilter(id), bson.M{"closed": true})
 	return err
 }
 
@@ -126,13 +127,37 @@ func (RechargeLogs) ByTradeNo(ctx context.Context, tradeNo string) (*models.Rech
 
 // MarkPaid records the outcome of an asynchronous Alipay callback.
 func (RechargeLogs) MarkPaid(ctx context.Context, id bson.ObjectID, status string) error {
-	_, err := updateOne(ctx, models.CollRechargeLogs, bson.M{"_id": id}, bson.M{"status": status})
+	_, err := updateOne(ctx, models.CollRechargeLogs, docIDFilter(id), bson.M{"status": status})
 	return err
+}
+
+// ClaimSettlement gives one callback worker the right to settle a pending log.
+// Stale processing claims may be retried after one minute; the user-side
+// operation marker makes the credit idempotent across that recovery boundary.
+func (RechargeLogs) ClaimSettlement(ctx context.Context, id bson.ObjectID, now time.Time) (bool, error) {
+	ctx, cancel := withTimeout(ctx)
+	defer cancel()
+	res, err := Collection(models.CollRechargeLogs).UpdateOne(ctx, bson.M{
+		"_id": id,
+		"$or": bson.A{
+			bson.M{"status": "pending"},
+			bson.M{"status": "processing", "updatedAt": bson.M{"$lt": now.Add(-time.Minute)}},
+		},
+	}, bson.M{"$set": bson.M{"status": "processing", "updatedAt": now}})
+	if err != nil {
+		return false, err
+	}
+	return res.MatchedCount == 1, nil
+}
+
+func (RechargeLogs) PendingSettlements(ctx context.Context, before time.Time) ([]models.RechargeLog, error) {
+	return findMany[models.RechargeLog](ctx, models.CollRechargeLogs,
+		bson.M{"status": "processing", "updatedAt": bson.M{"$lte": before}, "paymentAppId": bson.M{"$exists": true, "$ne": ""}}, sortAsc("updatedAt"), limitDocs(100))
 }
 
 // SetCode rewrites the human readable description of a top-up, which carries
 // the balance before and after the credit.
 func (RechargeLogs) SetCode(ctx context.Context, id bson.ObjectID, code string) error {
-	_, err := updateOne(ctx, models.CollRechargeLogs, bson.M{"_id": id}, bson.M{"code": code})
+	_, err := updateOne(ctx, models.CollRechargeLogs, docIDFilter(id), bson.M{"code": code})
 	return err
 }

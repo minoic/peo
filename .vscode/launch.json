@@ -1,0 +1,46 @@
+{
+  // F5 targets.
+  //
+  // The Go backend runs as a local VS Code debug process. Its cwd is server/
+  // so it reads server/conf/settings.toml, which connects to the Compose
+  // MongoDB and Redis ports on localhost.
+  //
+  // The `dart` type is provided by the Dart-Code extensions recommended in
+  // extensions.json. Without them VS Code reports an unsupported debug type.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Web (debug)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/flutter",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "flutterMode": "debug",
+      "toolArgs": [
+        "--web-port", "5173",
+        "--dart-define=API_BASE_URL=http://localhost:8080/api/v1"
+      ]
+    },
+    {
+      "name": "Go Backend (debug)",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/server/cmd/peo",
+      // The config path is relative to cwd: this selects server/conf/settings.toml.
+      "cwd": "${workspaceFolder}/server"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Flutter + Go (debug)",
+      "configurations": [
+        "Flutter Web (debug)",
+        "Go Backend (debug)"
+      ],
+      "preLaunchTask": "compose: up dependencies",
+      "stopAll": true
+    }
+  ]
+}

@@ -23,17 +23,20 @@ type Error = apierr.Error
 
 // Error codes, re-exported for handler and DTO readability.
 const (
-	CodeUnauthorized        = apierr.CodeUnauthorized
-	CodeForbidden           = apierr.CodeForbidden
-	CodeNotFound            = apierr.CodeNotFound
-	CodeValidationFailed    = apierr.CodeValidationFailed
-	CodeConflict            = apierr.CodeConflict
-	CodeRateLimited         = apierr.CodeRateLimited
-	CodeInsufficientBalance = apierr.CodeInsufficientBalance
-	CodeInvalidKey          = apierr.CodeInvalidKey
-	CodeAlreadyPaid         = apierr.CodeAlreadyPaid
-	CodePterodactylError    = apierr.CodePterodactylError
-	CodeInternal            = apierr.CodeInternal
+	CodeUnauthorized          = apierr.CodeUnauthorized
+	CodeForbidden             = apierr.CodeForbidden
+	CodeNotFound              = apierr.CodeNotFound
+	CodeValidationFailed      = apierr.CodeValidationFailed
+	CodeConflict              = apierr.CodeConflict
+	CodeRateLimited           = apierr.CodeRateLimited
+	CodeInsufficientBalance   = apierr.CodeInsufficientBalance
+	CodeInvalidKey            = apierr.CodeInvalidKey
+	CodeAlreadyPaid           = apierr.CodeAlreadyPaid
+	CodePterodactylError      = apierr.CodePterodactylError
+	CodeExtensionUnavailable  = apierr.CodeExtensionUnavailable
+	CodePanelPermissionDenied = apierr.CodePanelPermissionDenied
+	CodePanelUnavailable      = apierr.CodePanelUnavailable
+	CodeInternal              = apierr.CodeInternal
 )
 
 // Fail builds a coded error with a user facing message.
