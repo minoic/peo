@@ -173,11 +173,11 @@ One image, one port, two sidecars.
 
 | Component | Image | Volume | Port |
 |---|---|---|---|
-| `peo` | built from `server/Dockerfile` | `conf/` mount | `8080` |
+| `peo` | built from `Dockerfile` | `conf/` mount | `8080` |
 | `mongo` | `mongo:7` | `mongo-data` | internal |
 | `redis` | `redis:7` | `redis-data` | internal |
 
-`server/Dockerfile` is a three-stage build: Flutter Web (WASM) → Go binary with
+`Dockerfile` is a three-stage build: Flutter Web (WASM) → Go binary with
 the bundle embedded → a slim runtime with `curl` for the healthcheck. The Flutter
 toolchain is downloaded from the official release archive and verified against a
 pinned `sha256`; it is **not** taken from `ghcr.io/cirruslabs/flutter`, whose tag

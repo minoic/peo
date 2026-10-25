@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-#
 # peo - single image, single port.
 #
 #   stage `web`     builds the Flutter Web (WASM) SPA

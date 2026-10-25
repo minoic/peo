@@ -55,7 +55,7 @@ The root Compose file currently defines MongoDB and Redis; the application
 service is not enabled there. To build the application image:
 
 ```sh
-docker build -f server/Dockerfile -t peo:local .
+docker build -f Dockerfile -t peo:local .
 ```
 
 The image build compiles Flutter Web, regenerates Freezed/JSON code, embeds the
@@ -65,7 +65,7 @@ settings, including Redis, are persisted in MongoDB.
 
 ## Frontend development
 
-Use the Flutter version pinned in `server/Dockerfile` (3.47.4) with web support:
+Use the Flutter version pinned in `Dockerfile` (3.47.4) with web support:
 
 ```sh
 cd flutter

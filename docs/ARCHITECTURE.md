@@ -430,7 +430,7 @@ replaces the legacy `handleNavbar` helper that every template invoked.
 
 ## 10. Build and deployment
 
-Three-stage image (`server/Dockerfile`):
+Three-stage image (`Dockerfile`):
 
 | Stage | Base | Does |
 |---|---|---|
