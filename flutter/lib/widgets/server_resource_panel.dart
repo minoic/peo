@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/server_console.dart';
 import '../state/server_workspace_cubit.dart';
@@ -12,6 +13,7 @@ class ServerResourcePanel extends StatelessWidget {
     required this.limits,
     required this.updatedAt,
     required this.staleMessage,
+    this.address = '',
     this.showSummary = true,
     this.showCharts = true,
   });
@@ -21,6 +23,7 @@ class ServerResourcePanel extends StatelessWidget {
   final ConsoleLimits? limits;
   final DateTime? updatedAt;
   final String staleMessage;
+  final String address;
   final bool showSummary;
   final bool showCharts;
 
@@ -91,6 +94,8 @@ class ServerResourcePanel extends StatelessWidget {
                 colour: const Color(0xff287a52),
                 height: 80,
               ),
+              const SizedBox(height: 8),
+              _AddressTile(address: address),
             ],
           ),
         if (showCharts && showSummary) const SizedBox(height: 10),
@@ -109,6 +114,96 @@ class ServerResourcePanel extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _AddressTile extends StatelessWidget {
+  const _AddressTile({required this.address});
+
+  final String address;
+
+  @override
+  Widget build(BuildContext context) {
+    final colour = const Color(0xff287a52);
+    final scheme = Theme.of(context).colorScheme;
+    final enabled = address.isNotEmpty;
+    return SizedBox(
+      height: 80,
+      child: Material(
+        color: Color.alphaBlend(colour.withValues(alpha: 0.06), scheme.surface),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: colour.withValues(alpha: 0.24)),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: enabled
+              ? () async {
+                  var copied = false;
+                  try {
+                    await Clipboard.setData(ClipboardData(text: address));
+                    copied = true;
+                  } on Exception {
+                    copied = false;
+                  }
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          copied
+                              ? 'Server address copied'
+                              : 'Could not copy server address',
+                        ),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.dns_outlined, size: 16, color: colour),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Server address',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ),
+                    Icon(
+                      enabled ? Icons.copy : Icons.content_copy,
+                      size: 14,
+                      color: enabled ? colour : scheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Tooltip(
+                  message: enabled ? '$address\nClick to copy' : 'Unavailable',
+                  child: Text(
+                    enabled ? address : 'Unavailable',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: enabled ? colour : scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -687,6 +687,7 @@ class _ConsoleTabState extends State<_ConsoleTab> {
       limits: console?.limits,
       updatedAt: workspace.state.resourceUpdatedAt,
       staleMessage: workspace.state.resourceError,
+      address: console?.server.address ?? '',
     );
     return LayoutBuilder(
       builder: (context, constraints) => ListView(
@@ -738,6 +739,7 @@ class _ConsoleTabState extends State<_ConsoleTab> {
                     limits: console?.limits,
                     updatedAt: workspace.state.resourceUpdatedAt,
                     staleMessage: workspace.state.resourceError,
+                    address: console?.server.address ?? '',
                     showSummary: true,
                     showCharts: false,
                   ),

@@ -355,7 +355,7 @@ Failures: `404` unknown order, `409 already_paid`, `400 insufficient_balance`,
 | `POST` | `/servers/:id/renew-by-balance` | — | `{message}` |
 | `POST` | `/servers/:id/reinstall` | `{eggId}` | `{message}` |
 | `POST` | `/servers/:id/delete` | — | `{message}` |
-| `GET` | `/servers/:id/console` | — | `{server, limits, startup}` |
+| `GET` | `/servers/:id/console` | — | `{server, limits, startup}`; `server.address` is the primary Panel allocation alias or IP with port (empty when unavailable) |
 | `GET` | `/servers/:id/resources` | — | `{currentState, isSuspended, resources}` |
 | `POST` | `/servers/:id/power` | `{signal}` | `{accepted}` |
 | `POST` | `/servers/:id/command` | `{command}` | `{accepted}` |

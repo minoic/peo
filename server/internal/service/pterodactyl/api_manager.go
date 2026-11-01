@@ -462,6 +462,21 @@ func (c *Client) GetAllocations(ctx context.Context, nodeID int) ([]Allocation, 
 	return free, nil
 }
 
+// GetAllocation returns the allocation with the given ID, including assigned
+// allocations. GetAllocations intentionally filters those out for provisioning.
+func (c *Client) GetAllocation(ctx context.Context, nodeID, allocationID int) (*Allocation, error) {
+	all, err := paged[Allocation](ctx, c, "nodes/"+strconv.Itoa(nodeID)+"/allocations")
+	if err != nil {
+		return nil, err
+	}
+	for i := range all {
+		if all[i].ID == allocationID {
+			return &all[i], nil
+		}
+	}
+	return nil, nil
+}
+
 // GetEnv returns an egg's default environment variables, which the panel
 // requires when a server is created.
 func (c *Client) GetEnv(ctx context.Context, nestID, eggID int) (map[string]string, error) {

@@ -346,7 +346,7 @@ $ServerStartupCopyWith<$Res> get startup {
 /// @nodoc
 mixin _$ConsoleServer {
 
- String get id; String get identifier; String get name; String get status; bool get suspended; bool get installing;
+ String get id; String get identifier; String get name; String get status; bool get suspended; bool get installing; String get address;
 /// Create a copy of ConsoleServer
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -360,20 +360,20 @@ $ConsoleServerCopyWith<ConsoleServer> get copyWith => _$ConsoleServerCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as ConsoleServer;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConsoleServer&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.identifier, _this.identifier) || other.identifier == _this.identifier)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.suspended, _this.suspended) || other.suspended == _this.suspended)&&(identical(other.installing, _this.installing) || other.installing == _this.installing));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConsoleServer&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.identifier, _this.identifier) || other.identifier == _this.identifier)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.suspended, _this.suspended) || other.suspended == _this.suspended)&&(identical(other.installing, _this.installing) || other.installing == _this.installing)&&(identical(other.address, _this.address) || other.address == _this.address));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ConsoleServer;
-  return Object.hash(runtimeType,_this.id,_this.identifier,_this.name,_this.status,_this.suspended,_this.installing);
+  return Object.hash(runtimeType,_this.id,_this.identifier,_this.name,_this.status,_this.suspended,_this.installing,_this.address);
 }
 
 @override
 String toString() {
   final _this = this as ConsoleServer;
-  return 'ConsoleServer(id: ${_this.id}, identifier: ${_this.identifier}, name: ${_this.name}, status: ${_this.status}, suspended: ${_this.suspended}, installing: ${_this.installing})';
+  return 'ConsoleServer(id: ${_this.id}, identifier: ${_this.identifier}, name: ${_this.name}, status: ${_this.status}, suspended: ${_this.suspended}, installing: ${_this.installing}, address: ${_this.address})';
 }
 
 
@@ -384,7 +384,7 @@ abstract mixin class $ConsoleServerCopyWith<$Res>  {
   factory $ConsoleServerCopyWith(ConsoleServer value, $Res Function(ConsoleServer) _then) = _$ConsoleServerCopyWithImpl;
 @useResult
 $Res call({
- String id, String identifier, String name, String status, bool suspended, bool installing
+ String id, String identifier, String name, String status, bool suspended, bool installing, String address
 });
 
 
@@ -401,7 +401,7 @@ class _$ConsoleServerCopyWithImpl<$Res>
 
 /// Create a copy of ConsoleServer
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? identifier = null,Object? name = null,Object? status = null,Object? suspended = null,Object? installing = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? identifier = null,Object? name = null,Object? status = null,Object? suspended = null,Object? installing = null,Object? address = null,}) {
   return _then(ConsoleServer(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,identifier: null == identifier ? _self.identifier : identifier // ignore: cast_nullable_to_non_nullable
@@ -409,7 +409,8 @@ as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,suspended: null == suspended ? _self.suspended : suspended // ignore: cast_nullable_to_non_nullable
 as bool,installing: null == installing ? _self.installing : installing // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -494,10 +495,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String identifier,  String name,  String status,  bool suspended,  bool installing)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String identifier,  String name,  String status,  bool suspended,  bool installing,  String address)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ConsoleServer() when $default != null:
-return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspended,_that.installing);case _:
+return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspended,_that.installing,_that.address);case _:
   return orElse();
 
 }
@@ -515,10 +516,10 @@ return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspende
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String identifier,  String name,  String status,  bool suspended,  bool installing)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String identifier,  String name,  String status,  bool suspended,  bool installing,  String address)  $default,) {final _that = this;
 switch (_that) {
 case _ConsoleServer():
-return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspended,_that.installing);case _:
+return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspended,_that.installing,_that.address);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -535,10 +536,10 @@ return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspende
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String identifier,  String name,  String status,  bool suspended,  bool installing)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String identifier,  String name,  String status,  bool suspended,  bool installing,  String address)?  $default,) {final _that = this;
 switch (_that) {
 case _ConsoleServer() when $default != null:
-return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspended,_that.installing);case _:
+return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspended,_that.installing,_that.address);case _:
   return null;
 
 }
@@ -550,7 +551,7 @@ return $default(_that.id,_that.identifier,_that.name,_that.status,_that.suspende
 @JsonSerializable()
 
 class _ConsoleServer implements ConsoleServer {
-  const _ConsoleServer({this.id = '', this.identifier = '', this.name = '', this.status = '', this.suspended = false, this.installing = false});
+  const _ConsoleServer({this.id = '', this.identifier = '', this.name = '', this.status = '', this.suspended = false, this.installing = false, this.address = ''});
   factory _ConsoleServer.fromJson(Map<String, dynamic> json) => _$ConsoleServerFromJson(json);
 
 @override@JsonKey() final  String id;
@@ -559,6 +560,7 @@ class _ConsoleServer implements ConsoleServer {
 @override@JsonKey() final  String status;
 @override@JsonKey() final  bool suspended;
 @override@JsonKey() final  bool installing;
+@override@JsonKey() final  String address;
 
 /// Create a copy of ConsoleServer
 /// with the given fields replaced by the non-null parameter values.
@@ -573,18 +575,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ConsoleServer&&(identical(other.id, id) || other.id == id)&&(identical(other.identifier, identifier) || other.identifier == identifier)&&(identical(other.name, name) || other.name == name)&&(identical(other.status, status) || other.status == status)&&(identical(other.suspended, suspended) || other.suspended == suspended)&&(identical(other.installing, installing) || other.installing == installing));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ConsoleServer&&(identical(other.id, id) || other.id == id)&&(identical(other.identifier, identifier) || other.identifier == identifier)&&(identical(other.name, name) || other.name == name)&&(identical(other.status, status) || other.status == status)&&(identical(other.suspended, suspended) || other.suspended == suspended)&&(identical(other.installing, installing) || other.installing == installing)&&(identical(other.address, address) || other.address == address));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,identifier,name,status,suspended,installing);
+    return Object.hash(runtimeType,id,identifier,name,status,suspended,installing,address);
 }
 
 @override
 String toString() {
-    return 'ConsoleServer(id: $id, identifier: $identifier, name: $name, status: $status, suspended: $suspended, installing: $installing)';
+    return 'ConsoleServer(id: $id, identifier: $identifier, name: $name, status: $status, suspended: $suspended, installing: $installing, address: $address)';
 }
 
 
@@ -595,7 +597,7 @@ abstract mixin class _$ConsoleServerCopyWith<$Res> implements $ConsoleServerCopy
   factory _$ConsoleServerCopyWith(_ConsoleServer value, $Res Function(_ConsoleServer) _then) = __$ConsoleServerCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String identifier, String name, String status, bool suspended, bool installing
+ String id, String identifier, String name, String status, bool suspended, bool installing, String address
 });
 
 
@@ -612,7 +614,7 @@ class __$ConsoleServerCopyWithImpl<$Res>
 
 /// Create a copy of ConsoleServer
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? identifier = null,Object? name = null,Object? status = null,Object? suspended = null,Object? installing = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? identifier = null,Object? name = null,Object? status = null,Object? suspended = null,Object? installing = null,Object? address = null,}) {
   return _then(_ConsoleServer(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,identifier: null == identifier ? _self.identifier : identifier // ignore: cast_nullable_to_non_nullable
@@ -620,7 +622,8 @@ as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,suspended: null == suspended ? _self.suspended : suspended // ignore: cast_nullable_to_non_nullable
 as bool,installing: null == installing ? _self.installing : installing // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

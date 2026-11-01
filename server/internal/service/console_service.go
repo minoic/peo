@@ -60,6 +60,7 @@ type ConsoleMetadata struct {
 		Status     string `json:"status"`
 		Suspended  bool   `json:"suspended"`
 		Installing bool   `json:"installing"`
+		Address    string `json:"address"`
 	} `json:"server"`
 	Limits struct {
 		Memory  int    `json:"memory"`
@@ -173,7 +174,7 @@ func panelErr(message string, err error) error {
 }
 
 func (s ConsoleService) Metadata(ctx context.Context, id, user bson.ObjectID, admin bool) (*ConsoleMetadata, error) {
-	_, uuid, bridge, err := s.target(ctx, id, user, admin)
+	e, uuid, bridge, err := s.target(ctx, id, user, admin)
 	if err != nil {
 		return nil, err
 	}
@@ -188,6 +189,12 @@ func (s ConsoleService) Metadata(ctx context.Context, id, user bson.ObjectID, ad
 	out.Server.Status = v.Status
 	out.Server.Suspended = v.Suspended
 	out.Server.Installing = v.Installing
+	client := pterodactyl.ClientFromConf()
+	if panelServer, lookupErr := client.GetServer(ctx, e.ServerExternalID); lookupErr == nil {
+		if allocation, allocationErr := client.GetAllocation(ctx, panelServer.NodeId, panelServer.Allocation); allocationErr == nil && allocation != nil {
+			out.Server.Address = formatServerAddress(*allocation)
+		}
+	}
 	out.Limits.Memory = v.Limits.Memory
 	out.Limits.Disk = v.Limits.Disk
 	out.Limits.CPU = v.Limits.CPU
@@ -203,6 +210,20 @@ func (s ConsoleService) Metadata(ctx context.Context, id, user bson.ObjectID, ad
 		out.Startup.Variables = append(out.Startup.Variables, ConsoleVariable{Key: x.Key, Name: x.Key, Value: x.Value, DefaultValue: x.DefaultValue, IsEditable: x.Editable, Rules: x.Rules})
 	}
 	return out, nil
+}
+
+func formatServerAddress(allocation pterodactyl.Allocation) string {
+	host := strings.TrimSpace(allocation.Alias)
+	if host == "" {
+		host = strings.TrimSpace(allocation.IP)
+	}
+	if host == "" || allocation.Port <= 0 {
+		return ""
+	}
+	if strings.Contains(host, ":") && !strings.HasPrefix(host, "[") {
+		host = "[" + host + "]"
+	}
+	return fmt.Sprintf("%s:%d", host, allocation.Port)
 }
 
 func (s ConsoleService) Resources(ctx context.Context, id, user bson.ObjectID, admin bool) (ConsoleResources, error) {

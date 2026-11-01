@@ -75,6 +75,7 @@ void main() {
         'server': {
           'id': 'entity-id',
           'identifier': 'srv-01',
+          'address': 'play.example.net:25565',
           'name': 'World',
           'status': 'running',
           'suspended': false,
@@ -143,6 +144,7 @@ void main() {
       });
 
       expect(console.server.identifier, 'srv-01');
+      expect(console.server.address, 'play.example.net:25565');
       expect(console.limits.backups, 3);
       expect(console.startup.variables.single.defaultValue, 'latest');
       expect(console.startup.variables.single.isEditable, isTrue);

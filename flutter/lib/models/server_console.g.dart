@@ -34,6 +34,7 @@ _ConsoleServer _$ConsoleServerFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String? ?? '',
       suspended: json['suspended'] as bool? ?? false,
       installing: json['installing'] as bool? ?? false,
+      address: json['address'] as String? ?? '',
     );
 
 Map<String, dynamic> _$ConsoleServerToJson(_ConsoleServer instance) =>
@@ -44,6 +45,7 @@ Map<String, dynamic> _$ConsoleServerToJson(_ConsoleServer instance) =>
       'status': instance.status,
       'suspended': instance.suspended,
       'installing': instance.installing,
+      'address': instance.address,
     };
 
 _ConsoleLimits _$ConsoleLimitsFromJson(Map<String, dynamic> json) =>

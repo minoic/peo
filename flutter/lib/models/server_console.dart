@@ -27,6 +27,7 @@ abstract class ConsoleServer with _$ConsoleServer {
     @Default('') String status,
     @Default(false) bool suspended,
     @Default(false) bool installing,
+    @Default('') String address,
   }) = _ConsoleServer;
 
   factory ConsoleServer.fromJson(Map<String, dynamic> json) =>

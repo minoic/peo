@@ -93,6 +93,26 @@ func TestEggHasTagReadsPanel2EggRelationships(t *testing.T) {
 	}
 }
 
+func TestGetAllocationFindsAssignedAllocationAcrossPages(t *testing.T) {
+	client := newPanel2TestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/api/application/nodes/7/allocations" {
+			http.Error(w, "unexpected Panel request", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Query().Get("page") == "1" {
+			_, _ = io.WriteString(w, `{"data":[{"attributes":{"id":21,"ip":"192.0.2.10","port":25565,"assigned":false}}],"meta":{"pagination":{"total_pages":2}}}`)
+			return
+		}
+		_, _ = io.WriteString(w, `{"data":[{"attributes":{"id":22,"ip":"192.0.2.11","alias":"play.example.net","port":25566,"assigned":true}}],"meta":{"pagination":{"total_pages":2}}}`)
+	}))
+
+	allocation, err := client.GetAllocation(context.Background(), 7, 22)
+	if err != nil || allocation == nil || allocation.ID != 22 || !allocation.Assigned || allocation.Alias != "play.example.net" {
+		t.Fatalf("GetAllocation() = %#v, %v", allocation, err)
+	}
+}
+
 func TestCreateServerSendsPanel2EggAndResolvedStartupFields(t *testing.T) {
 	const eggID = 993741
 	var requestBody map[string]any
